@@ -2,8 +2,7 @@
 % Please edit documentation in R/Utility.R
 \name{Date_Shift}
 \alias{Date_Shift}
-\title{Automates creating a date difference column
-\code{Date_Shift} generates a new dataframe with a column containing time difference in a given unit}
+\title{Automates creating a date difference column}
 \usage{
 Date_Shift(df, dcol0, dcol1, col_name, units = "days")
 }
@@ -14,7 +13,7 @@ Date_Shift(df, dcol0, dcol1, col_name, units = "days")
 
 \item{dcol1}{list of ending month, day, and year}
 
-\item{col_name}{new column name}
+\item{col_name}{vector of new column names}
 
 \item{units}{time unit to use}
 }
@@ -22,7 +21,6 @@ Date_Shift(df, dcol0, dcol1, col_name, units = "days")
 returns the updated dataframe
 }
 \description{
-Automates creating a date difference column
 \code{Date_Shift} generates a new dataframe with a column containing time difference in a given unit
 }
 \examples{
@@ -33,7 +31,25 @@ d0 <- c(1,2,3,4)
 d1 <- c(6,7,8,9)
 y0 <- c(1990,1991,1997,1998)
 y1 <- c(2001,2003,2005,2006)
-df <- data.table("m0"=m0,"m1"=m1,"d0"=d0,"d1"=d1,"y0"=y0,"y1"=y1)
+df <- data.table::data.table("m0"=m0,"m1"=m1,"d0"=d0,"d1"=d1,"y0"=y0,"y1"=y1)
 df <- Date_Shift(df,c("m0","d0","y0"),c("m1","d1","y1"),"date_since")
 
 }
+\seealso{
+Other Data Cleaning Functions: 
+\code{\link{Check_Dupe_Columns}()},
+\code{\link{Check_Trunc}()},
+\code{\link{Correct_Formula_Order}()},
+\code{\link{Def_Control}()},
+\code{\link{Def_Control_Guess}()},
+\code{\link{Def_model_control}()},
+\code{\link{Def_modelform_fix}()},
+\code{\link{Joint_Multiple_Events}()},
+\code{\link{Replace_Missing}()},
+\code{\link{Time_Since}()},
+\code{\link{factorize}()},
+\code{\link{factorize_par}()},
+\code{\link{gen_time_dep}()},
+\code{\link{interact_them}()}
+}
+\concept{Data Cleaning Functions}

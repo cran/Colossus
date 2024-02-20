@@ -2,17 +2,16 @@
 % Please edit documentation in R/Utility.R
 \name{Def_modelform_fix}
 \alias{Def_modelform_fix}
-\title{Automatically assigns geometric-mixture values
-\code{Def_model_control} checks and assigns default values}
+\title{Automatically assigns geometric-mixture values}
 \usage{
 Def_modelform_fix(control, model_control, modelform, Term_n)
 }
 \arguments{
-\item{control}{list of parameters controlling the convergence}
+\item{control}{list of parameters controlling the convergence, see Def_Control() for options or vignette("starting_description")}
 
-\item{model_control}{controls which alternative model options are used}
+\item{model_control}{controls which alternative model options are used, see Def_model_control() for options and vignette("Alt_Run_opt") for further details}
 
-\item{modelform}{string specifying the model type}
+\item{modelform}{string specifying the model type: M, ME, A, PA, PAE, GMIX, GMIX-R, GMIX-E}
 
 \item{Term_n}{term numbers for each element of the model}
 }
@@ -20,7 +19,6 @@ Def_modelform_fix(control, model_control, modelform, Term_n)
 returns a filled list
 }
 \description{
-Automatically assigns geometric-mixture values
 \code{Def_model_control} checks and assigns default values
 }
 \examples{
@@ -36,3 +34,21 @@ model_control <- val$model_control
 modelform <- val$modelform
 
 }
+\seealso{
+Other Data Cleaning Functions: 
+\code{\link{Check_Dupe_Columns}()},
+\code{\link{Check_Trunc}()},
+\code{\link{Correct_Formula_Order}()},
+\code{\link{Date_Shift}()},
+\code{\link{Def_Control}()},
+\code{\link{Def_Control_Guess}()},
+\code{\link{Def_model_control}()},
+\code{\link{Joint_Multiple_Events}()},
+\code{\link{Replace_Missing}()},
+\code{\link{Time_Since}()},
+\code{\link{factorize}()},
+\code{\link{factorize_par}()},
+\code{\link{gen_time_dep}()},
+\code{\link{interact_them}()}
+}
+\concept{Data Cleaning Functions}

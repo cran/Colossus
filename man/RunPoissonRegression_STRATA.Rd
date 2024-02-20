@@ -2,12 +2,11 @@
 % Please edit documentation in R/Poisson_Regression.R
 \name{RunPoissonRegression_STRATA}
 \alias{RunPoissonRegression_STRATA}
-\title{Performs poisson regression with strata effect
-\code{RunPoissonRegression_STRATA} uses user provided data, time/event columns, vectors specifying the model, and options to control the convergence and starting positions}
+\title{Performs poisson regression with strata effect}
 \usage{
 RunPoissonRegression_STRATA(
   df,
-  pyr,
+  pyr0,
   event0,
   names,
   Term_n,
@@ -18,13 +17,13 @@ RunPoissonRegression_STRATA(
   fir,
   der_iden,
   control,
-  Strat_Cols
+  Strat_Col
 )
 }
 \arguments{
 \item{df}{a data.table containing the columns of interest}
 
-\item{pyr}{column used for person-years per row}
+\item{pyr0}{column used for person-years per row}
 
 \item{event0}{column used for event status}
 
@@ -38,28 +37,27 @@ RunPoissonRegression_STRATA(
 
 \item{a_n}{list of initial parameter values, used to determine number of parameters}
 
-\item{modelform}{string specifying the model type}
+\item{modelform}{string specifying the model type: M, ME, A, PA, PAE, GMIX, GMIX-R, GMIX-E}
 
 \item{fir}{term number for the initial term, used for models of the form T0*f(Ti) in which the order matters}
 
-\item{der_iden}{number for the subterm to test derivative at, only used for testing runs with a single varying parameter}
+\item{der_iden}{number for the subterm to test derivative at, only used for testing runs with a single varying parameter, should be smaller than total number of parameters}
 
-\item{control}{list of parameters controlling the convergence}
+\item{control}{list of parameters controlling the convergence, see Def_Control() for options or vignette("starting_description")}
 
-\item{Strat_Cols}{column to stratify by}
+\item{Strat_Col}{column to stratify by if needed}
 }
 \value{
 returns a list of the final results
 }
 \description{
-Performs poisson regression with strata effect
 \code{RunPoissonRegression_STRATA} uses user provided data, time/event columns, vectors specifying the model, and options to control the convergence and starting positions
 }
 \examples{
 library(data.table)
 ## basic example code reproduced from the starting-description vignette
 
-df <- data.table("UserID"=c(112, 114, 213, 214, 115, 116, 117),
+df <- data.table::data.table("UserID"=c(112, 114, 213, 214, 115, 116, 117),
            "Starting_Age"=c(18,  20,  18,  19,  21,  20,  18),
              "Ending_Age"=c(30,  45,  57,  47,  36,  60,  55),
           "Cancer_Status"=c(0,   0,   1,   0,   1,   0,   0),
@@ -91,3 +89,14 @@ e <- RunPoissonRegression_STRATA(df, pyr, event, names, Term_n, tform, keep_cons
      a_n, modelform, fir, der_iden, control, Strat_Col)
 
 }
+\seealso{
+Other Poisson Wrapper Functions: 
+\code{\link{RunPoissonEventAssignment}()},
+\code{\link{RunPoissonRegression}()},
+\code{\link{RunPoissonRegression_Guesses_CPP}()},
+\code{\link{RunPoissonRegression_Joint_Omnibus}()},
+\code{\link{RunPoissonRegression_Omnibus}()},
+\code{\link{RunPoissonRegression_Single}()},
+\code{\link{RunPoissonRegression_Tier_Guesses}()}
+}
+\concept{Poisson Wrapper Functions}

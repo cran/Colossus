@@ -1,5 +1,7 @@
 #include <RcppEigen.h>
+#ifdef _OPENMP
 #include <omp.h>
+#endif
 #include "Calc_Repeated.h"
 #include "Colossus_types.h"
 #include <fstream>
@@ -45,10 +47,12 @@ void visit_lambda(const Mat& m, const Func& f)
 }
 
 //' Utility function to calculate the term and subterm values
+//'
 //' \code{Make_subterms} Called to update term matrices, Uses lists of term numbers and types to apply formulas
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: subterm matrices, Term matrices
+//' @noRd
 // [[Rcpp::export]]
 void Make_subterms(const int& totalnum, const IntegerVector& Term_n,const StringVector&  tform, const IntegerVector& dfc, const int& fir, MatrixXd& T0, MatrixXd& Td0, MatrixXd& Tdd0, MatrixXd& Dose, MatrixXd& nonDose,  MatrixXd& TTerm, MatrixXd& nonDose_LIN, MatrixXd& nonDose_PLIN, MatrixXd& nonDose_LOGLIN,const  VectorXd& beta_0,const  MatrixXd& df0,const double& dint, const double& dslp, const int& nthreads, bool debugging, const IntegerVector& KeepConstant){
     //
@@ -57,12 +61,14 @@ void Make_subterms(const int& totalnum, const IntegerVector& Term_n,const String
     //
     vector<int> lin_count(nonDose.cols(),0);
     vector<int> dose_count(nonDose.cols(),0);
+    #ifdef _OPENMP
     #pragma omp declare reduction (eig_plus: MatrixXd: omp_out=omp_out.array() + omp_in.array()) initializer(omp_priv=MatrixXd::Constant(omp_orig.rows(),omp_orig.cols(),0.0))
     #pragma omp declare reduction (eig_mult: MatrixXd: omp_out=omp_out.array() * omp_in.array()) initializer(omp_priv=MatrixXd::Constant(omp_orig.rows(),omp_orig.cols(),1.0))
     #pragma omp declare reduction(vec_int_plus : std::vector<int> : \
             std::transform(omp_out.begin(), omp_out.end(), omp_in.begin(), omp_out.begin(), std::plus<int>())) \
             initializer(omp_priv = omp_orig)
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads) reduction(eig_plus:Dose,nonDose_LIN,nonDose_PLIN) reduction(eig_mult:nonDose_LOGLIN) reduction(vec_int_plus:lin_count,dose_count)
+    #endif
     for (int ij=0;ij<(totalnum);ij++){
         int df0_c = dfc[ij]-1;
         int tn = Term_n[ij];
@@ -78,7 +84,6 @@ void Make_subterms(const int& totalnum, const IntegerVector& Term_n,const String
 
         } else if (as< string>(tform[ij])=="plin") {
             T0.col(ij) = (df0.col(df0_c).array() * beta_0[ij]).matrix();
-//            T0.col(ij) = 1 + T0.col(ij).array();
             nonDose_PLIN.col(tn) = nonDose_PLIN.col(tn).array() + T0.col(ij).array();
 
         } else if (as< string>(tform[ij])=="loglin_slope"){
@@ -189,7 +194,9 @@ void Make_subterms(const int& totalnum, const IntegerVector& Term_n,const String
     }
     TTerm << Dose.array() * nonDose.array();
     //
+    #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+    #endif
     for (int ij=0;ij<(totalnum);ij++){
         int df0_c = dfc[ij]-1;
         int tn = Term_n[ij];
@@ -600,7 +607,9 @@ void Make_subterms(const int& totalnum, const IntegerVector& Term_n,const String
     //
     // Adds in possible log-linear subterm second derivatives between DIFFERENT covariates
     //
+    #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+    #endif
     for (int ijk=0;ijk<totalnum*(totalnum+1)/2;ijk++){
         int ij = 0;
         int jk = ijk;
@@ -631,10 +640,12 @@ void Make_subterms(const int& totalnum, const IntegerVector& Term_n,const String
 }
 
 //' Utility function to calculate the term and subterm values, but not derivatives
+//'
 //' \code{Make_subterms_Single} Called to update term matrices, Uses lists of term numbers and types to apply formulas
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: subterm matrices, Term matrices
+//' @noRd
 // [[Rcpp::export]]
 void Make_subterms_Single(const int& totalnum, const IntegerVector& Term_n,const StringVector&  tform, const IntegerVector& dfc, const int& fir, MatrixXd& T0, MatrixXd& Dose, MatrixXd& nonDose,  MatrixXd& TTerm, MatrixXd& nonDose_LIN, MatrixXd& nonDose_PLIN, MatrixXd& nonDose_LOGLIN,const  VectorXd& beta_0,const  MatrixXd& df0, const int& nthreads, bool debugging, const IntegerVector& KeepConstant){
     //
@@ -642,12 +653,14 @@ void Make_subterms_Single(const int& totalnum, const IntegerVector& Term_n,const
     //
     vector<int> lin_count(nonDose.cols(),0);
     vector<int> dose_count(nonDose.cols(),0);
+    #ifdef _OPENMP
     #pragma omp declare reduction (eig_plus: MatrixXd: omp_out=omp_out.array() + omp_in.array()) initializer(omp_priv=MatrixXd::Constant(omp_orig.rows(),omp_orig.cols(),0.0))
     #pragma omp declare reduction (eig_mult: MatrixXd: omp_out=omp_out.array() * omp_in.array()) initializer(omp_priv=MatrixXd::Constant(omp_orig.rows(),omp_orig.cols(),1.0))
     #pragma omp declare reduction(vec_int_plus : std::vector<int> : \
             std::transform(omp_out.begin(), omp_out.end(), omp_in.begin(), omp_out.begin(), std::plus<int>())) \
             initializer(omp_priv = omp_orig)
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads) reduction(eig_plus:Dose,nonDose_LIN,nonDose_PLIN) reduction(eig_mult:nonDose_LOGLIN) reduction(vec_int_plus:lin_count,dose_count)
+    #endif
     for (int ij=0;ij<(totalnum);ij++){
         int df0_c = dfc[ij]-1;
         int tn = Term_n[ij];
@@ -663,7 +676,6 @@ void Make_subterms_Single(const int& totalnum, const IntegerVector& Term_n,const
 
         } else if (as< string>(tform[ij])=="plin") {
             T0.col(ij) = (df0.col(df0_c).array() * beta_0[ij]).matrix();
-//            T0.col(ij) = 1 + T0.col(ij).array();
             nonDose_PLIN.col(tn) = nonDose_PLIN.col(tn).array() + T0.col(ij).array();
 
         } else if (as< string>(tform[ij])=="loglin_slope"){
@@ -774,7 +786,9 @@ void Make_subterms_Single(const int& totalnum, const IntegerVector& Term_n,const
         nonDose.col(ijk) = nonDose_LIN.col(ijk).array()  * nonDose_PLIN.col(ijk).array()  * nonDose_LOGLIN.col(ijk).array() ;
     }
     TTerm << Dose.array() * nonDose.array();
+    #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+    #endif
     for (int ij=0;ij<(totalnum);ij++){
         int tn = Term_n[ij];
         if (as< string>(tform[ij])=="loglin") {
@@ -830,16 +844,20 @@ void Make_subterms_Single(const int& totalnum, const IntegerVector& Term_n,const
 }
 
 //' Utility function to calculate the term and subterm values with the basic model
+//'
 //' \code{Make_subterms_Basic} Called to update term matrices, Uses lists of term numbers and types to apply formulas
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: subterm matrices, Term matrices
+//' @noRd
 // [[Rcpp::export]]
 void Make_subterms_Basic(const int& totalnum, const IntegerVector& dfc, MatrixXd& T0, const VectorXd& beta_0,const MatrixXd& df0, const int& nthreads, bool debugging){
     //
     // Calculates the sub term values
     //
+    #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+    #endif
     for (int ij=0;ij<(totalnum);ij++){
         int df0_c = dfc[ij]-1;
         T0.col(ij) = (df0.col(df0_c).array() * beta_0[ij]).matrix();
@@ -849,10 +867,12 @@ void Make_subterms_Basic(const int& totalnum, const IntegerVector& dfc, MatrixXd
 }
 
 //' Utility function to calculate the risk and risk ratios
+//'
 //' \code{Make_Risks} Called to update risk matrices, Splits into cases based on model form, Uses lists of term numbers and types to apply different derivative formulas    
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: Risk, Risk ratios
+//' @noRd
 // [[Rcpp::export]]
 void Make_Risks(string modelform, const StringVector& tform, const IntegerVector& Term_n, const int& totalnum, const int& fir, const MatrixXd& T0, const MatrixXd& Td0, const MatrixXd& Tdd0, MatrixXd& Te, MatrixXd& R, MatrixXd& Rd, MatrixXd& Rdd, MatrixXd& Dose, MatrixXd& nonDose,  MatrixXd& TTerm,  MatrixXd& nonDose_LIN, MatrixXd& nonDose_PLIN, MatrixXd& nonDose_LOGLIN, MatrixXd& RdR, MatrixXd& RddR, const int& nthreads, bool debugging, const IntegerVector& KeepConstant, const double gmix_theta, const IntegerVector& gmix_term){
     set<string> Dose_Iden; //List of dose subterms
@@ -879,7 +899,9 @@ void Make_Risks(string modelform, const StringVector& tform, const IntegerVector
         if (modelform=="A"){
             R << Te.array();
             //
+            #ifdef _OPENMP
             #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+            #endif
             for (int ijk=0;ijk<totalnum*(totalnum+1)/2;ijk++){
                 int ij = 0;
                 int jk = ijk;
@@ -962,7 +984,9 @@ void Make_Risks(string modelform, const StringVector& tform, const IntegerVector
                 Te = Te.array() + 1;
             }
             R << TTerm.col(fir).array() * Te.array();
+            #ifdef _OPENMP
             #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+            #endif
             for (int ijk=0;ijk<totalnum*(totalnum+1)/2;ijk++){
                 int ij = 0;
                 int jk = ijk;
@@ -1108,25 +1132,25 @@ void Make_Risks(string modelform, const StringVector& tform, const IntegerVector
                                 if (Dose_Iden.find(as< string>(tform[jk])) != Dose_Iden.end()){
                                     Rdd.col(p_ijk) = TTerm.col(tjk).array() * TTerm.col(tij).array() * Dose.col(tij).array().pow(-1).array() * Tdd0.col(p_ijk).array();
                                 } else if (tform[jk]=="lin") {
-                                    Rdd.col(p_ijk) = TTerm.col(tjk).array() * TTerm.col(tij).array() * Dose.col(tij).array().pow(-1).array() * Td0.col(ij).array() * nonDose_LIN.col(tij).array().pow(-1).array()    * Td0.col(jk).array();
+                                    Rdd.col(p_ijk) = TTerm.col(tjk).array() * TTerm.col(tij).array() * Dose.col(tij).array().pow(-1).array() * Td0.col(ij).array() * nonDose_LIN.col(tjk).array().pow(-1).array()    * Td0.col(jk).array();
                                 } else if (tform[jk]=="plin") {
-                                    Rdd.col(p_ijk) = TTerm.col(tjk).array() * TTerm.col(tij).array() * Dose.col(tij).array().pow(-1).array() * Td0.col(ij).array() * nonDose_PLIN.col(tij).array().pow(-1).array()   * Td0.col(jk).array();
+                                    Rdd.col(p_ijk) = TTerm.col(tjk).array() * TTerm.col(tij).array() * Dose.col(tij).array().pow(-1).array() * Td0.col(ij).array() * nonDose_PLIN.col(tjk).array().pow(-1).array()   * Td0.col(jk).array();
                                 } else if (tform[jk]=="loglin") {
-                                    Rdd.col(p_ijk) = TTerm.col(tjk).array() * TTerm.col(tij).array() * Dose.col(tij).array().pow(-1).array() * Td0.col(ij).array() * nonDose_LOGLIN.col(tij).array().pow(-1).array() * Td0.col(jk).array();
+                                    Rdd.col(p_ijk) = TTerm.col(tjk).array() * TTerm.col(tij).array() * Dose.col(tij).array().pow(-1).array() * Td0.col(ij).array() * nonDose_LOGLIN.col(tjk).array().pow(-1).array() * Td0.col(jk).array();
                                 }
                             } else if (Dose_Iden.find(as< string>(tform[jk])) != Dose_Iden.end()){
                                 if (tform[ij]=="lin") {
-                                    Rdd.col(p_ijk) = TTerm.col(tjk).array() * TTerm.col(tij).array() * Dose.col(tij).array().pow(-1).array() * Td0.col(jk).array() * nonDose_LIN.col(tij).array().pow(-1).array()    * Td0.col(ij).array();
+                                    Rdd.col(p_ijk) = TTerm.col(tjk).array() * TTerm.col(tij).array() * Dose.col(tjk).array().pow(-1).array() * Td0.col(jk).array() * nonDose_LIN.col(tij).array().pow(-1).array()    * Td0.col(ij).array();
                                 } else if (tform[ij]=="plin") {
-                                    Rdd.col(p_ijk) = TTerm.col(tjk).array() * TTerm.col(tij).array() * Dose.col(tij).array().pow(-1).array() * Td0.col(jk).array() * nonDose_PLIN.col(tij).array().pow(-1).array()   * Td0.col(ij).array();
+                                    Rdd.col(p_ijk) = TTerm.col(tjk).array() * TTerm.col(tij).array() * Dose.col(tjk).array().pow(-1).array() * Td0.col(jk).array() * nonDose_PLIN.col(tij).array().pow(-1).array()   * Td0.col(ij).array();
                                 } else if (tform[ij]=="loglin") {
-                                    Rdd.col(p_ijk) = TTerm.col(tjk).array() * TTerm.col(tij).array() * Dose.col(tij).array().pow(-1).array() * Td0.col(jk).array() * nonDose_LOGLIN.col(tij).array().pow(-1).array() * Td0.col(ij).array();
+                                    Rdd.col(p_ijk) = TTerm.col(tjk).array() * TTerm.col(tij).array() * Dose.col(tjk).array().pow(-1).array() * Td0.col(jk).array() * nonDose_LOGLIN.col(tij).array().pow(-1).array() * Td0.col(ij).array();
                                 }
                             } else if (tform[ij]=="loglin") {
                                 if( tform[jk]=="lin") {
-                                    Rdd.col(p_ijk) = TTerm.col(tjk).array() * TTerm.col(tij).array() * nonDose_LOGLIN.col(tij).array().pow(-1).array() * Td0.col(ij).array() * nonDose_LIN.col(tij).array().pow(-1).array() * Td0.col(jk).array();
+                                    Rdd.col(p_ijk) = TTerm.col(tjk).array() * TTerm.col(tij).array() * nonDose_LOGLIN.col(tij).array().pow(-1).array() * Td0.col(ij).array() * nonDose_LIN.col(tjk).array().pow(-1).array() * Td0.col(jk).array();
                                 } else if (tform[jk]=="plin") {
-                                    Rdd.col(p_ijk) = TTerm.col(tjk).array() * TTerm.col(tij).array() * nonDose_LOGLIN.col(tij).array().pow(-1).array() * Td0.col(ij).array() * nonDose_PLIN.col(tij).array().pow(-1).array() * Td0.col(jk).array();
+                                    Rdd.col(p_ijk) = TTerm.col(tjk).array() * TTerm.col(tij).array() * nonDose_LOGLIN.col(tij).array().pow(-1).array() * Td0.col(ij).array() * nonDose_PLIN.col(tjk).array().pow(-1).array() * Td0.col(jk).array();
                                 } else if (tform[jk]=="loglin") {
                                     Rdd.col(p_ijk) = TTerm.col(tjk).array() * TTerm.col(tij).array() * nonDose_LOGLIN.col(tij).array().pow(-1).array() * Td0.col(ij).array() * nonDose_LOGLIN.col(tjk).array().pow(-1).array() * Td0.col(jk).array();
                                 }
@@ -1138,13 +1162,13 @@ void Make_Risks(string modelform, const StringVector& tform, const IntegerVector
                                 }
                             } else if (tform[ij]=="lin") {
                                 if( tform[jk]=="lin") {
-                                    Rdd.col(p_ijk) = TTerm.col(tjk).array() * TTerm.col(tij).array() * nonDose_LIN.col(tij).array().pow(-1).array() * Td0.col(ij).array() * nonDose_LIN.col(tij).array().pow(-1).array() * Td0.col(jk).array();
+                                    Rdd.col(p_ijk) = TTerm.col(tjk).array() * TTerm.col(tij).array() * nonDose_LIN.col(tij).array().pow(-1).array() * Td0.col(ij).array() * nonDose_LIN.col(tjk).array().pow(-1).array() * Td0.col(jk).array();
                                 } else if (tform[jk]=="plin") {
-                                    Rdd.col(p_ijk) = TTerm.col(tjk).array() * TTerm.col(tij).array() * nonDose_LIN.col(tij).array().pow(-1).array() * Td0.col(ij).array() * nonDose_PLIN.col(tij).array().pow(-1).array() * Td0.col(jk).array();
+                                    Rdd.col(p_ijk) = TTerm.col(tjk).array() * TTerm.col(tij).array() * nonDose_LIN.col(tij).array().pow(-1).array() * Td0.col(ij).array() * nonDose_PLIN.col(tjk).array().pow(-1).array() * Td0.col(jk).array();
                                 }
                             } else if (tform[jk]=="lin") {
                                 if (tform[ij]=="plin") {
-                                    Rdd.col(p_ijk) = TTerm.col(tjk).array() * TTerm.col(tij).array() * nonDose_LIN.col(tjk).array().pow(-1).array() * Td0.col(jk).array() * nonDose_PLIN.col(tij).array().pow(-1).array() * Td0.col(ij).array();
+                                    Rdd.col(p_ijk) = TTerm.col(tjk).array() * TTerm.col(tij).array() * nonDose_LIN.col(tjk).array().pow(-1).array() * Td0.col(jk).array() * nonDose_PLIN.col(tjk).array().pow(-1).array() * Td0.col(ij).array();
                                 }
                             } else {
                                 Rdd.col(p_ijk) = TTerm.col(tjk).array() * TTerm.col(tij).array() * nonDose_PLIN.col(tjk).array().pow(-1).array() * Td0.col(jk).array() * nonDose_PLIN.col(tij).array().pow(-1).array() * Td0.col(ij).array();
@@ -1164,7 +1188,9 @@ void Make_Risks(string modelform, const StringVector& tform, const IntegerVector
         //
         Rd = Td0.array();
         //
+        #ifdef _OPENMP
         #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+        #endif
         for (int ij=0;ij<totalnum;ij++){
             int tij = Term_n[ij];
             if (KeepConstant[ij]==0){
@@ -1188,7 +1214,9 @@ void Make_Risks(string modelform, const StringVector& tform, const IntegerVector
         Rd = (Rd.array().isFinite()).select(Rd,0);
         //
         //
+        #ifdef _OPENMP
         #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+        #endif
         for (int ijk=0;ijk<totalnum*(totalnum+1)/2;ijk++){
             int ij = 0;
             int jk = ijk;
@@ -1228,7 +1256,9 @@ void Make_Risks(string modelform, const StringVector& tform, const IntegerVector
         B_vec = TTerm.rightCols(TTerm.cols()-1).array().rowwise().sum().array() - TTerm.cols() + 2;
         R << TTerm.col(0).array() * A_vec.array().pow(gmix_theta).array() * B_vec.array().pow(1-gmix_theta).array();
         //
+        #ifdef _OPENMP
         #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+        #endif
         for (int ij=0;ij<totalnum;ij++){
             int tij = Term_n[ij];
             if (KeepConstant[ij]==0){
@@ -1241,7 +1271,9 @@ void Make_Risks(string modelform, const StringVector& tform, const IntegerVector
             }
         }
         //
+        #ifdef _OPENMP
         #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+        #endif
         for (int ijk=0;ijk<totalnum*(totalnum+1)/2;ijk++){
             int ij = 0;
             int jk = ijk;
@@ -1300,10 +1332,12 @@ void Make_Risks(string modelform, const StringVector& tform, const IntegerVector
 }
 
 //' Utility function to calculate the risk and risk ratios with a weighting applied
+//'
 //' \code{Make_Risks_Weighted} Called to update weighted risk matrices, Splits into cases based on model form, Uses lists of term numbers and types to apply different derivative formulas  
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: Risk, Risk ratios
+//' @noRd
 // [[Rcpp::export]]
 void Make_Risks_Weighted(string modelform, const StringVector& tform, const IntegerVector& Term_n, const int& totalnum, const int& fir, const MatrixXd& s_weights, const MatrixXd& T0, const MatrixXd& Td0, const MatrixXd& Tdd0, MatrixXd& Te, MatrixXd& R, MatrixXd& Rd, MatrixXd& Rdd, MatrixXd& Dose, MatrixXd& nonDose,  MatrixXd& TTerm,  MatrixXd& nonDose_LIN, MatrixXd& nonDose_PLIN, MatrixXd& nonDose_LOGLIN, MatrixXd& RdR, MatrixXd& RddR, const int& nthreads, bool debugging, const IntegerVector& KeepConstant, const double gmix_theta, const IntegerVector& gmix_term){
     //
@@ -1335,10 +1369,12 @@ void Make_Risks_Weighted(string modelform, const StringVector& tform, const Inte
 
 
 //' Utility function to calculate the risk with a weighting applied and no derivatives calculated
+//'
 //' \code{Make_Risks_Weighted_Single} Called to update weighted risk matrices, Splits into cases based on model form, Uses lists of term numbers and types to apply different derivative formulas  
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: Risk, Risk ratios
+//' @noRd
 // [[Rcpp::export]]
 void Make_Risks_Weighted_Single(string modelform, const StringVector& tform, const IntegerVector& Term_n, const int& totalnum, const int& fir, const MatrixXd& s_weights, const MatrixXd& T0, MatrixXd& Te, MatrixXd& R, MatrixXd& Dose, MatrixXd& nonDose,  MatrixXd& TTerm,  MatrixXd& nonDose_LIN, MatrixXd& nonDose_PLIN, MatrixXd& nonDose_LOGLIN, const int& nthreads, bool debugging, const IntegerVector& KeepConstant, const double gmix_theta, const IntegerVector& gmix_term){
     //
@@ -1352,10 +1388,12 @@ void Make_Risks_Weighted_Single(string modelform, const StringVector& tform, con
 }
 
 //' Utility function to calculate the risk, but not derivatives
+//'
 //' \code{Make_Risks_Single} Called to update risk matrices, Splits into cases based on model form   
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: Risk, Risk ratios
+//' @noRd
 // [[Rcpp::export]]
 void Make_Risks_Single(string modelform, const StringVector& tform, const IntegerVector& Term_n, const int& totalnum, const int& fir, const MatrixXd& T0, MatrixXd& Te, MatrixXd& R, MatrixXd& Dose, MatrixXd& nonDose,  MatrixXd& TTerm,  MatrixXd& nonDose_LIN, MatrixXd& nonDose_PLIN, MatrixXd& nonDose_LOGLIN, const int& nthreads, bool debugging, const IntegerVector& KeepConstant, const double gmix_theta, const IntegerVector& gmix_term){
     set<string> Dose_Iden; //List of dose subterms
@@ -1420,15 +1458,19 @@ void Make_Risks_Single(string modelform, const StringVector& tform, const Intege
 }
 
 //' Utility function to calculate the risk and risk ratios for the basic model
+//'
 //' \code{Make_Risks_Basic} Called to update risk matrices, Splits into cases based on model form, Uses lists of term numbers and types to apply different derivative formulas    
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: Risk, Risk ratios
+//' @noRd
 // [[Rcpp::export]]
 void Make_Risks_Basic(const int& totalnum, const MatrixXd& T0, MatrixXd& R, MatrixXd& Rd, MatrixXd& Rdd, MatrixXd& RdR, const int& nthreads, bool debugging,const MatrixXd& df0, const IntegerVector& dfc, const IntegerVector& KeepConstant){
     //
     R.col(0) = T0.rowwise().prod();
+    #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+    #endif
     for (int ij=0;ij<totalnum;ij++){
         int df0_c = dfc[ij]-1;
         if (KeepConstant[ij]==0){
@@ -1438,7 +1480,9 @@ void Make_Risks_Basic(const int& totalnum, const MatrixXd& T0, MatrixXd& R, Matr
     }
     R = (R.array().isFinite()).select(R,-1);
     Rd = (Rd.array().isFinite()).select(Rd,0);
+    #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+    #endif
     for (int ijk=0;ijk<totalnum*(totalnum+1)/2;ijk++){
         int ij = 0;
         int jk = ijk;
@@ -1461,19 +1505,27 @@ void Make_Risks_Basic(const int& totalnum, const MatrixXd& T0, MatrixXd& R, Matr
     //
     for (int ij=0;ij<totalnum;ij++){//Calculates ratios
         int df0_ij = dfc[ij]-1;
-        RdR.col(ij)=df0.col(df0_ij).array();
+        if (KeepConstant[ij]==0){
+        	RdR.col(ij)=df0.col(df0_ij).array();
+    	}
     }
     return;
 }
 
+
 //' Utility function to define risk groups
+//'
 //' \code{Make_Groups} Called to update lists of risk groups, Uses list of event times and row time/event information, Matrices store starting/stopping row indices for each group    
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: Matrix of event rows for each event time, vectors of strings with rows at risk for each event time
+//' @noRd
+//'
 // [[Rcpp::export]]
 void Make_Groups(const int& ntime, const MatrixXd& df_m, IntegerMatrix& RiskFail, vector<string>&  RiskGroup,  NumericVector& tu, const int& nthreads, bool debugging ){
+    #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+    #endif
     for (int ijk=0;ijk<ntime;ijk++){
         double t0 = tu[ijk];
         VectorXi select_ind_all = (((df_m.col(0).array() < t0)||(df_m.col(0).array()==df_m.col(1).array()))&&(df_m.col(1).array()>=t0)).cast<int>(); //indices at risk
@@ -1518,13 +1570,18 @@ void Make_Groups(const int& ntime, const MatrixXd& df_m, IntegerMatrix& RiskFail
 }
 
 //' Utility function to define risk groups with competing risks
+//'
 //' \code{Make_Groups_CR} Called to update lists of risk groups, Uses list of event times and row time/event information, Matrices store starting/stopping row indices for each group, adds rows with event=2 past the event time    
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: Matrix of event rows for each event time, vectors of strings with rows at risk for each event time
+//' @noRd
+//'
 // [[Rcpp::export]]
 void Make_Groups_CR(const int& ntime, const MatrixXd& df_m, IntegerMatrix& RiskFail, vector<string>&  RiskGroup,  NumericVector& tu, const VectorXd& cens_weight, const double cens_cutoff, const int& nthreads, bool debugging ){
+    #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+    #endif
     for (int ijk=0;ijk<ntime;ijk++){
         double t0 = tu[ijk];
         VectorXi select_ind_all = ((((df_m.col(0).array() < t0)||(df_m.col(0).array()==df_m.col(1).array()))&&(df_m.col(1).array()>=t0))||((df_m.col(2).array() == 2)&&(df_m.col(1).array()<=t0))).cast<int>(); //indices at risk
@@ -1571,10 +1628,13 @@ void Make_Groups_CR(const int& ntime, const MatrixXd& df_m, IntegerMatrix& RiskF
 }
 
 //' Utility function to define risk groups with STRATA
+//'
 //' \code{Make_Groups_STRATA} Called to update lists of risk groups, Uses list of event times and row time/event information, Matrices store starting/stopping row indices for each group    
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: Matrix of event rows for each event time, vectors of strings with rows at risk for each event time
+//' @noRd
+//'
 // [[Rcpp::export]]
 void Make_Groups_STRATA(const int& ntime, const MatrixXd& df_m, IntegerMatrix& RiskFail, StringMatrix&  RiskGroup,  NumericVector& tu, const int& nthreads, bool debugging, NumericVector& STRATA_vals){
     //
@@ -1585,7 +1645,9 @@ void Make_Groups_STRATA(const int& ntime, const MatrixXd& df_m, IntegerMatrix& R
         safe_group[i] = vector<string>(RiskGroup.cols(),"");
     }
     //
+    #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads) collapse(2)
+    #endif
     for (int s_ij=0;s_ij<STRATA_vals.size();s_ij++){
         for (int ijk=0;ijk<ntime;ijk++){
             double t0 = tu[ijk];
@@ -1645,10 +1707,13 @@ void Make_Groups_STRATA(const int& ntime, const MatrixXd& df_m, IntegerMatrix& R
 }
 
 //' Utility function to define risk groups with STRATA and competing risks
+//'
 //' \code{Make_Groups_STRATA_CR} Called to update lists of risk groups, Uses list of event times and row time/event information, Matrices store starting/stopping row indices for each group , adds competing risks  
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: Matrix of event rows for each event time, vectors of strings with rows at risk for each event time
+//' @noRd
+//'
 // [[Rcpp::export]]
 void Make_Groups_STRATA_CR(const int& ntime, const MatrixXd& df_m, IntegerMatrix& RiskFail, StringMatrix&  RiskGroup,  NumericVector& tu, const int& nthreads, bool debugging, NumericVector& STRATA_vals, const VectorXd& cens_weight, const double cens_cutoff){
     //
@@ -1659,7 +1724,9 @@ void Make_Groups_STRATA_CR(const int& ntime, const MatrixXd& df_m, IntegerMatrix
         safe_group[i] = vector<string>(RiskGroup.cols(),"");
     }
     //
+    #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads) collapse(2)
+    #endif
     for (int s_ij=0;s_ij<STRATA_vals.size();s_ij++){
         for (int ijk=0;ijk<ntime;ijk++){
             double t0 = tu[ijk];
@@ -1720,15 +1787,20 @@ void Make_Groups_STRATA_CR(const int& ntime, const MatrixXd& df_m, IntegerMatrix
 
 
 //' Utility function to calculate repeated values used in Cox Log-Likelihood calculation
+//'
 //' \code{Calculate_Sides} Called to update repeated sum calculations, Uses list of event rows and risk matrices, Performs calculation of sums of risk in each group
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: risk storage matrices
+//' @noRd
+//'
 // [[Rcpp::export]]
 void Calculate_Sides(const IntegerMatrix& RiskFail, const vector<string>&  RiskGroup, const int& totalnum, const int& ntime, const MatrixXd& R, const MatrixXd& Rd, const MatrixXd& Rdd, MatrixXd& Rls1, MatrixXd& Rls2, MatrixXd& Rls3, MatrixXd& Lls1, MatrixXd& Lls2, MatrixXd& Lls3,const int& nthreads, bool debugging, const IntegerVector& KeepConstant){
     int reqrdnum = totalnum - sum(KeepConstant);
     //
+    #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+    #endif
     for (int j=0;j<ntime;j++){
         double Rs1 = 0;
         //
@@ -1755,7 +1827,9 @@ void Calculate_Sides(const IntegerMatrix& RiskFail, const vector<string>&  RiskG
         Lls1(j,0) = Ld.col(0).sum();
     }
     //
+    #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads) collapse(2)
+    #endif
     for (int ij=0;ij<reqrdnum;ij++){//totalnum*(totalnum+1)/2
         for (int j=0;j<ntime;j++){
             double Rs2 = 0;
@@ -1784,15 +1858,11 @@ void Calculate_Sides(const IntegerMatrix& RiskFail, const vector<string>&  RiskG
         }
     }
     //
+    #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads) collapse(2)
+    #endif
     for (int ijk=0;ijk<reqrdnum*(reqrdnum+1)/2;ijk++){//totalnum*(totalnum+1)/2
         for (int j=0;j<ntime;j++){
-//            int ij = 0;
-//            int jk = ijk;
-//            while (jk>ij){
-//                ij++;
-//                jk-=ij;
-//            }
             double Rs3 = 0;
             //
             vector<int> InGroup;
@@ -1822,14 +1892,19 @@ void Calculate_Sides(const IntegerMatrix& RiskFail, const vector<string>&  RiskG
 }
 
 //' Utility function to calculate repeated values used in Cox Log-Likelihood calculation
+//'
 //' \code{Calculate_Sides_CR} Called to update repeated sum calculations, Uses list of event rows and risk matrices, Performs calculation of sums of risk in each group
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: risk storage matrices
+//' @noRd
+//'
 // [[Rcpp::export]]
 void Calculate_Sides_CR(const IntegerMatrix& RiskFail, const vector<string>&  RiskGroup, const int& totalnum, const int& ntime, const MatrixXd& R, const MatrixXd& Rd, const MatrixXd& Rdd, MatrixXd& Rls1, MatrixXd& Rls2, MatrixXd& Rls3, MatrixXd& Lls1, MatrixXd& Lls2, MatrixXd& Lls3, const VectorXd& cens_weight,const int& nthreads, bool debugging, const IntegerVector& KeepConstant){
     int reqrdnum = totalnum - sum(KeepConstant);
-    #pragma omp parallel for schedule(dynamic) num_threads(nthreads) collapse(1)
+    #ifdef _OPENMP
+    #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+    #endif
     for (int j=0;j<ntime;j++){
         double Rs1 = 0;
         //
@@ -1863,7 +1938,9 @@ void Calculate_Sides_CR(const IntegerMatrix& RiskFail, const vector<string>&  Ri
         Lls1(j,0) = Ld.col(0).sum();
     }
     //
+    #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads) collapse(2)
+    #endif
     for (int ij=0;ij<reqrdnum;ij++){//totalnum*(totalnum+1)/2
         for (int j=0;j<ntime;j++){
             double Rs2 = 0;
@@ -1901,15 +1978,11 @@ void Calculate_Sides_CR(const IntegerMatrix& RiskFail, const vector<string>&  Ri
         }
     }
     //
+    #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads) collapse(2)
+    #endif
     for (int ijk=0;ijk<reqrdnum*(reqrdnum+1)/2;ijk++){//totalnum*(totalnum+1)/2
         for (int j=0;j<ntime;j++){
-//            int ij = 0;
-//            int jk = ijk;
-//            while (jk>ij){
-//                ij++;
-//                jk-=ij;
-//            }
             double Rs3 = 0;
             //
             vector<int> InGroup;
@@ -1947,13 +2020,18 @@ void Calculate_Sides_CR(const IntegerMatrix& RiskFail, const vector<string>&  Ri
 }
 
 //' Utility function to calculate repeated values used in Cox Log-Likelihood calculation
+//'
 //' \code{Calculate_Sides_CR_SINGLE} Called to update repeated sum calculations, Uses list of event rows and risk matrices, Performs calculation of sums of risk in each group
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: risk storage matrices
+//' @noRd
+//'
 // [[Rcpp::export]]
 void Calculate_Sides_CR_SINGLE(const IntegerMatrix& RiskFail, const vector<string>&  RiskGroup, const int& totalnum, const int& ntime, const MatrixXd& R, MatrixXd& Rls1, MatrixXd& Lls1, const VectorXd& cens_weight,const int& nthreads, bool debugging, const IntegerVector& KeepConstant){
-    #pragma omp parallel for schedule(dynamic) num_threads(nthreads) collapse(1)
+    #ifdef _OPENMP
+    #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+    #endif
     for (int j=0;j<ntime;j++){
         double Rs1 = 0;
         //
@@ -1990,13 +2068,18 @@ void Calculate_Sides_CR_SINGLE(const IntegerMatrix& RiskFail, const vector<strin
 }
 
 //' Utility function to calculate repeated values used in Cox Log-Likelihood calculation. but not derivatives
+//'
 //' \code{Calculate_Sides_Single} Called to update repeated sum calculations, Uses list of event rows and risk matrices, Performs calculation of sums of risk in each group
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: risk storage matrices
+//' @noRd
+//'
 // [[Rcpp::export]]
 void Calculate_Sides_Single(const IntegerMatrix& RiskFail, const vector<string>&  RiskGroup, const int& totalnum, const int& ntime, const MatrixXd& R, MatrixXd& Rls1, MatrixXd& Lls1,const int& nthreads, bool debugging){
+    #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+    #endif
     for (int j=0;j<ntime;j++){
         double Rs1 = 0;
         //
@@ -2023,13 +2106,18 @@ void Calculate_Sides_Single(const IntegerMatrix& RiskFail, const vector<string>&
 }
 
 //' Utility function to calculate repeated values used in Cox Log-Likelihood calculation. but not derivatives, applies competing risks
+//'
 //' \code{Calculate_Sides_Single_CR} Called to update repeated sum calculations, Uses list of event rows and risk matrices, Performs calculation of sums of risk in each group with competing risks
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: risk storage matrices
+//' @noRd
+//'
 // [[Rcpp::export]]
 void Calculate_Sides_Single_CR(const IntegerMatrix& RiskFail, const vector<string>&  RiskGroup, const int& totalnum, const int& ntime, const MatrixXd& R, MatrixXd& Rls1, MatrixXd& Lls1, const VectorXd& cens_weight,const int& nthreads, bool debugging){
+    #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+    #endif
     for (int j=0;j<ntime;j++){
         double Rs1 = 0;
         //
@@ -2067,14 +2155,19 @@ void Calculate_Sides_Single_CR(const IntegerMatrix& RiskFail, const vector<strin
 }
 
 //' Utility function to calculate repeated values used in Cox Log-Likelihood calculation with STRATA
+//'
 //' \code{Calculate_Sides_STRATA} Called to update repeated sum calculations, Uses list of event rows and risk matrices, Performs calculation of sums of risk in each group
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: risk storage matrices
+//' @noRd
+//'
 // [[Rcpp::export]]
 void Calculate_Sides_STRATA(const IntegerMatrix& RiskFail, const StringMatrix&  RiskGroup, const int& totalnum, const int& ntime, const MatrixXd& R, const MatrixXd& Rd, const MatrixXd& Rdd, MatrixXd& Rls1, MatrixXd& Rls2, MatrixXd& Rls3, MatrixXd& Lls1, MatrixXd& Lls2, MatrixXd& Lls3,const int& nthreads, bool debugging, NumericVector& STRATA_vals, const IntegerVector& KeepConstant){
     int reqrdnum = totalnum - sum(KeepConstant);
+    #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads) collapse(2)
+    #endif
     for (int j=0;j<ntime;j++){
         for (int s_ij=0;s_ij<STRATA_vals.size();s_ij++){
             double Rs1 = 0;
@@ -2103,16 +2196,12 @@ void Calculate_Sides_STRATA(const IntegerMatrix& RiskFail, const StringMatrix&  
         }
     }
     //
+    #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads) collapse(3)
+    #endif
     for (int ij=0;ij<reqrdnum;ij++){//totalnum*(totalnum+1)/2
         for (int j=0;j<ntime;j++){
             for (int s_ij=0;s_ij<STRATA_vals.size();s_ij++){
-//                int ij = 0;
-//                int jk = ijk;
-//                while (jk>ij){
-//                    ij++;
-//                    jk-=ij;
-//                }
                 double Rs2 = 0;
                 //
                 vector<int> InGroup;
@@ -2140,7 +2229,9 @@ void Calculate_Sides_STRATA(const IntegerMatrix& RiskFail, const StringMatrix&  
         }
     }
     //
+    #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads) collapse(3)
+    #endif
     for (int ijk=0;ijk<reqrdnum*(reqrdnum+1)/2;ijk++){//totalnum*(totalnum+1)/2
         for (int j=0;j<ntime;j++){
             for (int s_ij=0;s_ij<STRATA_vals.size();s_ij++){
@@ -2180,14 +2271,19 @@ void Calculate_Sides_STRATA(const IntegerMatrix& RiskFail, const StringMatrix&  
 }
 
 //' Utility function to calculate repeated values used in Cox Log-Likelihood calculation with STRATA and without derivative
+//'
 //' \code{Calculate_Sides_STRATA_Single} Called to update repeated sum calculations, Uses list of event rows and risk matrices, Performs calculation of sums of risk in each group but not derivatives
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: risk storage matrices
+//' @noRd
+//'
 // [[Rcpp::export]]
 void Calculate_Sides_STRATA_Single(const IntegerMatrix& RiskFail, const StringMatrix&  RiskGroup, const int& totalnum, const int& ntime, const MatrixXd& R, MatrixXd& Rls1, MatrixXd& Lls1,const int& nthreads, bool debugging, NumericVector& STRATA_vals, const IntegerVector& KeepConstant){
     int reqrdnum = totalnum - sum(KeepConstant);
+    #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads) collapse(3)
+    #endif
     for (int ij=0;ij<reqrdnum;ij++){//totalnum*(totalnum+1)/2
         for (int j=0;j<ntime;j++){
             for (int s_ij=0;s_ij<STRATA_vals.size();s_ij++){
@@ -2222,14 +2318,19 @@ void Calculate_Sides_STRATA_Single(const IntegerMatrix& RiskFail, const StringMa
 }
 
 //' Utility function to calculate repeated values used in Cox Log-Likelihood calculation with STRATA and competing risks
+//'
 //' \code{Calculate_Sides_STRATA_CR} Called to update repeated sum calculations, Uses list of event rows and risk matrices, Performs calculation of sums of risk in each group and competing risks
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: risk storage matrices
+//' @noRd
+//'
 // [[Rcpp::export]]
 void Calculate_Sides_STRATA_CR(const IntegerMatrix& RiskFail, const StringMatrix&  RiskGroup, const int& totalnum, const int& ntime, const MatrixXd& R, const MatrixXd& Rd, const MatrixXd& Rdd, MatrixXd& Rls1, MatrixXd& Rls2, MatrixXd& Rls3, MatrixXd& Lls1, MatrixXd& Lls2, MatrixXd& Lls3, const VectorXd& cens_weight,const int& nthreads, bool debugging, NumericVector& STRATA_vals, const IntegerVector& KeepConstant){
     int reqrdnum = totalnum - sum(KeepConstant);
+    #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads) collapse(2)
+    #endif
     for (int j=0;j<ntime;j++){
         for (int s_ij=0;s_ij<STRATA_vals.size();s_ij++){
             double Rs1 = 0;
@@ -2268,16 +2369,12 @@ void Calculate_Sides_STRATA_CR(const IntegerMatrix& RiskFail, const StringMatrix
         }
     }
     //
+    #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads) collapse(3)
+    #endif
     for (int ij=0;ij<reqrdnum;ij++){//totalnum*(totalnum+1)/2
         for (int j=0;j<ntime;j++){
             for (int s_ij=0;s_ij<STRATA_vals.size();s_ij++){
-//                int ij = 0;
-//                int jk = ijk;
-//                while (jk>ij){
-//                    ij++;
-//                    jk-=ij;
-//                }
                 double Rs2 = 0;
                 //
                 vector<int> InGroup;
@@ -2314,7 +2411,9 @@ void Calculate_Sides_STRATA_CR(const IntegerMatrix& RiskFail, const StringMatrix
         }
     }
     //
+    #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads) collapse(3)
+    #endif
     for (int ijk=0;ijk<reqrdnum*(reqrdnum+1)/2;ijk++){//totalnum*(totalnum+1)/2
         for (int j=0;j<ntime;j++){
             for (int s_ij=0;s_ij<STRATA_vals.size();s_ij++){
@@ -2363,14 +2462,19 @@ void Calculate_Sides_STRATA_CR(const IntegerMatrix& RiskFail, const StringMatrix
 }
 
 //' Utility function to calculate repeated values used in Cox Log-Likelihood calculation with STRATA and without derivative and with competing risks
+//'
 //' \code{Calculate_Sides_STRATA_Single_CR} Called to update repeated sum calculations, Uses list of event rows and risk matrices, Performs calculation of sums of risk in each group but not derivatives but with competing risks
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: risk storage matrices
+//' @noRd
+//'
 // [[Rcpp::export]]
 void Calculate_Sides_STRATA_Single_CR(const IntegerMatrix& RiskFail, const StringMatrix&  RiskGroup, const int& totalnum, const int& ntime, const MatrixXd& R, MatrixXd& Rls1, MatrixXd& Lls1, const VectorXd& cens_weight,const int& nthreads, bool debugging, NumericVector& STRATA_vals, const IntegerVector& KeepConstant){
     int reqrdnum = totalnum - sum(KeepConstant);
+    #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads) collapse(3)
+    #endif
     for (int ij=0;ij<reqrdnum;ij++){//totalnum*(totalnum+1)/2
         for (int j=0;j<ntime;j++){
             for (int s_ij=0;s_ij<STRATA_vals.size();s_ij++){
@@ -2413,17 +2517,22 @@ void Calculate_Sides_STRATA_Single_CR(const IntegerMatrix& RiskFail, const Strin
 }
 
 //' Utility function to calculate Cox Log-Likelihood and derivatives
+//'
 //' \code{Calc_LogLik} Called to update log-likelihoods, Uses list of event rows, risk matrices, and repeated sums, Sums the log-likelihood contribution from each event time
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: Log-likelihood vectors/matrix
+//' @noRd
+//'
 // [[Rcpp::export]]
 void Calc_LogLik(const int& nthreads,const IntegerMatrix& RiskFail, const vector<string>&  RiskGroup, const int& totalnum, const int& ntime, const MatrixXd& R, const MatrixXd& Rd, const MatrixXd& Rdd, const MatrixXd& RdR, const MatrixXd& RddR,const MatrixXd& Rls1,const MatrixXd& Rls2,const MatrixXd& Rls3,const MatrixXd& Lls1,const MatrixXd& Lls2,const MatrixXd& Lls3, vector<double>& Ll, vector<double>& Lld, vector<double>& Lldd, bool debugging,string ties_method, const IntegerVector& KeepConstant){
     int reqrdnum = totalnum - sum(KeepConstant);
+    #ifdef _OPENMP
     #pragma omp declare reduction(vec_double_plus : std::vector<double> : \
         std::transform(omp_out.begin(), omp_out.end(), omp_in.begin(), omp_out.begin(), std::plus<double>())) \
         initializer(omp_priv = omp_orig)
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads) reduction(vec_double_plus:Ll,Lld,Lldd) collapse(2)
+    #endif
     for (int ijk=0;ijk<reqrdnum*(reqrdnum+1)/2;ijk++){//performs log-likelihood calculations for every derivative combination and risk group
         for (int j=0;j<ntime;j++){
             int ij = 0;
@@ -2500,7 +2609,9 @@ void Calc_LogLik(const int& nthreads,const IntegerMatrix& RiskFail, const vector
         }
     }
     fill(Ll.begin(), Ll.end(), LogLik);
+    #ifdef _OPENMP
     #pragma omp parallel for num_threads(nthreads)
+    #endif
     for (int ijk=0;ijk<reqrdnum*(reqrdnum+1)/2;ijk++){//fills second-derivative matrix
         int ij = 0;
         int jk = ijk;
@@ -2514,17 +2625,22 @@ void Calc_LogLik(const int& nthreads,const IntegerMatrix& RiskFail, const vector
 }
 
 //' Utility function to calculate Cox Log-Likelihood and derivatives, basic model
+//'
 //' \code{Calc_LogLik_Basic} Basic model, Called to update log-likelihoods, Uses list of event rows, risk matrices, and repeated sums, Sums the log-likelihood contribution from each event time
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: Log-likelihood vectors/matrix
+//' @noRd
+//'
 // [[Rcpp::export]]
 void Calc_LogLik_Basic(const int& nthreads,const IntegerMatrix& RiskFail, const vector<string>&  RiskGroup, const int& totalnum, const int& ntime, const MatrixXd& R, const MatrixXd& Rd, const MatrixXd& Rdd, const MatrixXd& RdR,const MatrixXd& Rls1,const MatrixXd& Rls2,const MatrixXd& Rls3,const MatrixXd& Lls1,const MatrixXd& Lls2,const MatrixXd& Lls3, vector<double>& Ll, vector<double>& Lld, vector<double>& Lldd, bool debugging,string ties_method, const IntegerVector& KeepConstant){
     int reqrdnum = totalnum - sum(KeepConstant);
+    #ifdef _OPENMP
     #pragma omp declare reduction(vec_double_plus : std::vector<double> : \
         std::transform(omp_out.begin(), omp_out.end(), omp_in.begin(), omp_out.begin(), std::plus<double>())) \
         initializer(omp_priv = omp_orig)
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads) reduction(vec_double_plus:Ll,Lld,Lldd) collapse(2)
+    #endif
     for (int ijk=0;ijk<reqrdnum*(reqrdnum+1)/2;ijk++){//performs log-likelihood calculations for every derivative combination and risk group
         for (int j=0;j<ntime;j++){
             int ij = 0;
@@ -2595,7 +2711,9 @@ void Calc_LogLik_Basic(const int& nthreads,const IntegerMatrix& RiskFail, const 
         }
     }
     fill(Ll.begin(), Ll.end(), LogLik);
+    #ifdef _OPENMP
     #pragma omp parallel for num_threads(nthreads)
+    #endif
     for (int ijk=0;ijk<reqrdnum*(reqrdnum+1)/2;ijk++){//fills second-derivative matrix
         int ij = 0;
         int jk = ijk;
@@ -2609,16 +2727,21 @@ void Calc_LogLik_Basic(const int& nthreads,const IntegerMatrix& RiskFail, const 
 }
 
 //' Utility function to calculate Cox Log-Likelihood, basic model
+//'
 //' \code{Calc_LogLik_Basic_Single} Basic model, Called to update log-likelihoods, Uses list of event rows, risk matrices, and repeated sums, Sums the log-likelihood contribution from each event time
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: Log-likelihood vectors/matrix
+//' @noRd
+//'
 // [[Rcpp::export]]
 void Calc_LogLik_Basic_Single(const int& nthreads,const IntegerMatrix& RiskFail, const vector<string>&  RiskGroup, const int& totalnum, const int& ntime, const MatrixXd& R, const MatrixXd& Rls1,const MatrixXd& Lls1, vector<double>& Ll, bool debugging,string ties_method, const IntegerVector& KeepConstant){
+	#ifdef _OPENMP
     #pragma omp declare reduction(vec_double_plus : std::vector<double> : \
         std::transform(omp_out.begin(), omp_out.end(), omp_in.begin(), omp_out.begin(), std::plus<double>())) \
         initializer(omp_priv = omp_orig)
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads) reduction(vec_double_plus:Ll)
+    #endif
 	for (int j=0;j<ntime;j++){
 		double Rs1 = Rls1(j,0);
 		//
@@ -2653,16 +2776,21 @@ void Calc_LogLik_Basic_Single(const int& nthreads,const IntegerMatrix& RiskFail,
 }
 
 //' Utility function to calculate Cox Log-Likelihood
+//'
 //' \code{Calc_LogLik_Single} Called to update log-likelihoods, Uses list of event rows, risk matrices, and repeated sums, Sums the log-likelihood contribution from each event time
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: Log-likelihood vectors/matrix
+//' @noRd
+//'
 // [[Rcpp::export]]
 void Calc_LogLik_Single(const int& nthreads,const IntegerMatrix& RiskFail, const vector<string>&  RiskGroup, const int& totalnum, const int& ntime, const MatrixXd& R,const MatrixXd& Rls1,const MatrixXd& Lls1, vector<double>& Ll, bool debugging,string ties_method){
+	#ifdef _OPENMP
     #pragma omp declare reduction(vec_double_plus : std::vector<double> : \
         std::transform(omp_out.begin(), omp_out.end(), omp_in.begin(), omp_out.begin(), std::plus<double>())) \
         initializer(omp_priv = omp_orig)
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads) reduction(vec_double_plus:Ll)
+    #endif
     for (int j=0;j<ntime;j++){
         double Rs1 = Rls1(j,0);
         //
@@ -2693,17 +2821,22 @@ void Calc_LogLik_Single(const int& nthreads,const IntegerMatrix& RiskFail, const
 }
 
 //' Utility function to calculate Cox Log-Likelihood and derivatives with STRATA
+//'
 //' \code{Calc_LogLik_STRATA} Called to update log-likelihoods, Uses list of event rows, risk matrices, and repeated sums, Sums the log-likelihood contribution from each event time
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: Log-likelihood vectors/matrix
+//' @noRd
+//'
 // [[Rcpp::export]]
 void Calc_LogLik_STRATA(const int& nthreads,const IntegerMatrix& RiskFail, const StringMatrix& RiskGroup, const int& totalnum, const int& ntime, const MatrixXd& R, const MatrixXd& Rd, const MatrixXd& Rdd, const MatrixXd& RdR, const MatrixXd& RddR,const MatrixXd& Rls1,const MatrixXd& Rls2,const MatrixXd& Rls3,const MatrixXd& Lls1,const MatrixXd& Lls2,const MatrixXd& Lls3, vector<double>& Ll, vector<double>& Lld, vector<double>& Lldd, bool debugging,string ties_method, NumericVector& STRATA_vals, const IntegerVector& KeepConstant){
     int reqrdnum = totalnum - sum(KeepConstant);
+    #ifdef _OPENMP
     #pragma omp declare reduction(vec_double_plus : std::vector<double> : \
         std::transform(omp_out.begin(), omp_out.end(), omp_in.begin(), omp_out.begin(), std::plus<double>())) \
         initializer(omp_priv = omp_orig)
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads) reduction(vec_double_plus:Ll,Lld,Lldd) collapse(3)
+    #endif
     for (int ijk=0;ijk<reqrdnum*(reqrdnum+1)/2;ijk++){//performs log-likelihood calculations for every derivative combination and risk group
         for (int j=0;j<ntime;j++){
             for (int s_ij=0;s_ij<STRATA_vals.size();s_ij++){
@@ -2784,7 +2917,9 @@ void Calc_LogLik_STRATA(const int& nthreads,const IntegerMatrix& RiskFail, const
         }
     }
     fill(Ll.begin(), Ll.end(), LogLik);
+    #ifdef _OPENMP
     #pragma omp parallel for num_threads(nthreads)
+    #endif
     for (int ijk=0;ijk<reqrdnum*(reqrdnum+1)/2;ijk++){//fills second-derivative matrix
         int ij = 0;
         int jk = ijk;
@@ -2798,17 +2933,22 @@ void Calc_LogLik_STRATA(const int& nthreads,const IntegerMatrix& RiskFail, const
 }
 
 //' Utility function to calculate just Cox Log-Likelihood with STRATA
+//'
 //' \code{Calc_LogLik_STRATA_SINGLE} Called to update log-likelihoods, Uses list of event rows, risk matrices, and repeated sums, Sums the log-likelihood contribution from each event time and strata
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: Log-likelihood vectors/matrix
+//' @noRd
+//'
 // [[Rcpp::export]]
 void Calc_LogLik_STRATA_SINGLE(const int& nthreads,const IntegerMatrix& RiskFail, const StringMatrix& RiskGroup, const int& totalnum, const int& ntime, const MatrixXd& R,const MatrixXd& Rls1,const MatrixXd& Lls1, vector<double>& Ll, bool debugging,string ties_method, NumericVector& STRATA_vals, const IntegerVector& KeepConstant){
 //    int reqrdnum = totalnum - sum(KeepConstant);
+	#ifdef _OPENMP
     #pragma omp declare reduction(vec_double_plus : std::vector<double> : \
         std::transform(omp_out.begin(), omp_out.end(), omp_in.begin(), omp_out.begin(), std::plus<double>())) \
         initializer(omp_priv = omp_orig)
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads) reduction(vec_double_plus:Ll) collapse(2)
+    #endif
     for (int j=0;j<ntime;j++){
         for (int s_ij=0;s_ij<STRATA_vals.size();s_ij++){
             double Rs1 =  Rls1(j,s_ij);
@@ -2846,17 +2986,22 @@ void Calc_LogLik_STRATA_SINGLE(const int& nthreads,const IntegerMatrix& RiskFail
 }
 
 //' Utility function to calculate Cox Log-Likelihood and derivatives with STRATA, basic model
+//'
 //' \code{Calc_LogLik_STRATA_BASIC} Called to update log-likelihoods, Uses list of event rows, risk matrices, and repeated sums, Sums the log-likelihood contribution from each event time, basic model
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: Log-likelihood vectors/matrix
+//' @noRd
+//'
 // [[Rcpp::export]]
 void Calc_LogLik_STRATA_BASIC(const int& nthreads,const IntegerMatrix& RiskFail, const StringMatrix& RiskGroup, const int& totalnum, const int& ntime, const MatrixXd& R, const MatrixXd& Rd, const MatrixXd& Rdd, const MatrixXd& RdR,const MatrixXd& Rls1,const MatrixXd& Rls2,const MatrixXd& Rls3,const MatrixXd& Lls1,const MatrixXd& Lls2,const MatrixXd& Lls3, vector<double>& Ll, vector<double>& Lld, vector<double>& Lldd, bool debugging,string ties_method, NumericVector& STRATA_vals, const IntegerVector& KeepConstant){
     int reqrdnum = totalnum - sum(KeepConstant);
+    #ifdef _OPENMP
     #pragma omp declare reduction(vec_double_plus : std::vector<double> : \
         std::transform(omp_out.begin(), omp_out.end(), omp_in.begin(), omp_out.begin(), std::plus<double>())) \
         initializer(omp_priv = omp_orig)
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads) reduction(vec_double_plus:Ll,Lld,Lldd) collapse(3)
+    #endif
     for (int ijk=0;ijk<reqrdnum*(reqrdnum+1)/2;ijk++){//performs log-likelihood calculations for every derivative combination and risk group
         for (int j=0;j<ntime;j++){
             for (int s_ij=0;s_ij<STRATA_vals.size();s_ij++){
@@ -2931,7 +3076,9 @@ void Calc_LogLik_STRATA_BASIC(const int& nthreads,const IntegerMatrix& RiskFail,
         }
     }
     fill(Ll.begin(), Ll.end(), LogLik);
+    #ifdef _OPENMP
     #pragma omp parallel for num_threads(nthreads)
+    #endif
     for (int ijk=0;ijk<reqrdnum*(reqrdnum+1)/2;ijk++){//fills second-derivative matrix
         int ij = 0;
         int jk = ijk;
@@ -2945,17 +3092,22 @@ void Calc_LogLik_STRATA_BASIC(const int& nthreads,const IntegerMatrix& RiskFail,
 }
 
 //' Utility function to calculate Cox Log-Likelihood and derivatives with STRATA, basic model, no derivatives
+//'
 //' \code{Calc_LogLik_STRATA_BASIC_SINGLE} Called to update log-likelihoods, Uses list of event rows, risk matrices, and repeated sums, Sums the log-likelihood contribution from each event time, basic model
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: Log-likelihood vectors/matrix
+//' @noRd
+//'
 // [[Rcpp::export]]
 void Calc_LogLik_STRATA_BASIC_SINGLE(const int& nthreads,const IntegerMatrix& RiskFail, const StringMatrix& RiskGroup, const int& totalnum, const int& ntime, const MatrixXd& R ,const MatrixXd& Rls1,const MatrixXd& Lls1, vector<double>& Ll, bool debugging,string ties_method, NumericVector& STRATA_vals, const IntegerVector& KeepConstant){
     int reqrdnum = totalnum - sum(KeepConstant);
+    #ifdef _OPENMP
     #pragma omp declare reduction(vec_double_plus : std::vector<double> : \
         std::transform(omp_out.begin(), omp_out.end(), omp_in.begin(), omp_out.begin(), std::plus<double>())) \
         initializer(omp_priv = omp_orig)
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads) reduction(vec_double_plus:Ll) collapse(3)
+    #endif
     for (int ij=0;ij<reqrdnum;ij++){//performs log-likelihood calculations for every derivative combination and risk group
         for (int j=0;j<ntime;j++){
             for (int s_ij=0;s_ij<STRATA_vals.size();s_ij++){
@@ -3004,10 +3156,13 @@ void Calc_LogLik_STRATA_BASIC_SINGLE(const int& nthreads,const IntegerMatrix& Ri
 }
 
 //' Utility function to calculate poisson log-likelihood and derivatives
+//'
 //' \code{Poisson_LogLik} Called to update log-likelihoods, Uses list risk matrices and person-years, Sums the log-likelihood contribution from each row
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: Log-likelihood vectors/matrix
+//' @noRd
+//'
 // [[Rcpp::export]]
 void Poisson_LogLik(const int& nthreads, const int& totalnum, const MatrixXd& PyrC, const MatrixXd& R, const MatrixXd& Rd, const MatrixXd& Rdd, const MatrixXd& RdR, const MatrixXd& RddR, vector<double>& Ll, vector<double>& Lld, vector<double>& Lldd, bool debugging, const IntegerVector& KeepConstant){
     int reqrdnum = totalnum - sum(KeepConstant);
@@ -3018,8 +3173,9 @@ void Poisson_LogLik(const int& nthreads, const int& totalnum, const MatrixXd& Py
     fill(Ll.begin(), Ll.end(), (temp.array().isFinite()).select(temp,0).sum());
     
     CoL = PyrC.col(1).array() * R.col(0).array().pow(-1).array();
-
+	#ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+    #endif
     for (int ijk=0;ijk<reqrdnum*(reqrdnum+1)/2;ijk++){//totalnum*(totalnum+1)/2
         int ij = 0;
         int jk = ijk;
@@ -3041,10 +3197,13 @@ void Poisson_LogLik(const int& nthreads, const int& totalnum, const MatrixXd& Py
 }
 
 //' Utility function to calculate poisson log-likelihood
+//'
 //' \code{Poisson_LogLik_Single} Called to update log-likelihoods, Uses list risk matrices and person-years, Sums the log-likelihood contribution from each row
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: Log-likelihood vectors/matrix
+//' @noRd
+//'
 // [[Rcpp::export]]
 void Poisson_LogLik_Single(const int& nthreads, const int& totalnum, const MatrixXd& PyrC, const MatrixXd& R, vector<double>& Ll, bool debugging){
     int reqrdnum = Ll.size();
@@ -3055,10 +3214,13 @@ void Poisson_LogLik_Single(const int& nthreads, const int& totalnum, const Matri
 }
 
 //' Utility function to keep intercept parameters within the range of possible values
+//'
 //' \code{Intercept_Bound} Called to update the parameter list in the event that intercepts leave the bounds of possible values
 //' @inheritParams CPP_template
 //' 
 //' @return Updates vector in place: parameter vector
+//' @noRd
+//'
 // [[Rcpp::export]]
 void Intercept_Bound(const int& nthreads, const int& totalnum, const VectorXd& beta_0, vector<double>& dbeta, const IntegerVector& dfc, const  MatrixXd& df0, const IntegerVector& KeepConstant, bool debugging,const StringVector&  tform){
     set<string> Dose_Iden; //List of dose subterms
@@ -3066,7 +3228,9 @@ void Intercept_Bound(const int& nthreads, const int& totalnum, const VectorXd& b
     Dose_Iden.insert("step_int");
     Dose_Iden.insert("lin_quad_int");
     Dose_Iden.insert("lin_exp_int");
+    #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+    #endif
     for (int ij=0;ij<totalnum;ij++){
         if ((Dose_Iden.find(as< string>(tform[ij])) != Dose_Iden.end())&&(KeepConstant[ij]==0)){
             int df0_c = dfc[ij]-1;
@@ -3083,18 +3247,127 @@ void Intercept_Bound(const int& nthreads, const int& totalnum, const VectorXd& b
     return;
 }
 
+//' Utility function to calculate the change to make each iteration, applying linear constraints
+//'
+//' \code{Calc_Change_Cons} Called to update the parameter changes, Uses log-likelihoods and control parameters, Applies newton steps and change limitations with a system of constraints    
+//' @inheritParams CPP_template
+//'
+//' @return Updates matrices in place: parameter change matrix
+//' @noRd
+//'
+// [[Rcpp::export]]
+void Calc_Change_Cons(const MatrixXd& Lin_Sys, const VectorXd& Lin_Res, const  VectorXd& beta_0, const int& nthreads, const int& totalnum, const int& der_iden, const double& dbeta_cap, const double& dose_abs_max, const double& lr, const double& abs_max, const vector<double>& Ll, const vector<double>& Lld, const vector<double>& Lldd, vector<double>& dbeta,const StringVector&   tform, const double& dint, const double& dslp, IntegerVector KeepConstant, bool debugging){
+    //
+    int kept_covs = totalnum - sum(KeepConstant);
+    //
+    VectorXd beta_1(kept_covs);
+    for (int ij=0;ij<totalnum;ij++){
+        if (KeepConstant[ij]==0){
+            int pij_ind = ij - sum(head(KeepConstant,ij));
+            beta_1(pij_ind) = beta_0(ij);
+        }
+    }
+    VectorXd Lin_Dif = Lin_Sys * beta_1 - Lin_Res;
+    //
+    int total_covs = kept_covs + Lin_Sys.rows();
+    //
+    NumericVector Lldd_vec(total_covs*total_covs);
+    NumericVector Lld_vec(total_covs);
+    #ifdef _OPENMP
+    #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+    #endif
+    for (int ijk=0;ijk<total_covs*(total_covs+1)/2;ijk++){
+        int ij = 0;
+        int jk = ijk;
+        while (jk>ij){
+            ij++;
+            jk-=ij;
+        }
+        if (ij < kept_covs){
+            Lldd_vec[jk * total_covs + ij]=Lldd[jk * kept_covs + ij];
+            if (ij==jk){
+                Lld_vec[ij]=Lld[ij];
+            } else {
+                Lldd_vec[ij * total_covs + jk]=Lldd_vec[jk * kept_covs + ij];
+            }
+        } else {
+            if (jk < kept_covs) {
+                Lldd_vec[jk * total_covs + ij]=Lin_Sys(ij-kept_covs,jk);
+            } else {
+                Lldd_vec[jk * total_covs + ij]=0.0;
+            }
+            if (ij==jk){
+                Lld_vec[ij]=Lin_Dif(ij-kept_covs);
+            } else {
+                Lldd_vec[ij * total_covs + jk]=Lldd_vec[jk * total_covs + ij];
+            }
+        }
+    }
+    //
+    //
+    Lldd_vec.attr("dim") = Dimension(total_covs, total_covs);
+    const Map<MatrixXd> Lldd_mat(as<Map<MatrixXd> >(Lldd_vec));
+    const Map<VectorXd> Lld_mat(as<Map<VectorXd> >(Lld_vec));
+    //
+    //
+    VectorXd Lldd_solve0 = Lldd_mat.colPivHouseholderQr().solve(-1*Lld_mat);
+    VectorXd Lldd_solve = VectorXd::Zero(totalnum);
+    for (int ij=0;ij<totalnum;ij++){
+        if (KeepConstant[ij]==0){
+            int pij_ind = ij - sum(head(KeepConstant,ij));
+            Lldd_solve(ij) = Lldd_solve0(pij_ind);
+        }
+    }
+    //
+    #ifdef _OPENMP
+    #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+    #endif
+    for (int ijk=0;ijk<totalnum;ijk++){
+        if (KeepConstant[ijk]==0){
+            int pjk_ind = ijk - sum(head(KeepConstant,ijk));
+            if (isnan(Lldd_solve(ijk))){
+                if (Lldd[pjk_ind*kept_covs+pjk_ind] != 0 ){
+                    dbeta[ijk] = -lr * Lld[pjk_ind] / Lldd[pjk_ind*kept_covs+pjk_ind];
+                } else {
+                    dbeta[ijk] = 0;
+                }
+            } else {
+                dbeta[ijk] = lr * Lldd_solve(ijk);//-lr * Lld[ijk] / Lldd[ijk*totalnum+ijk];
+            }
+            //
+            if ((tform[ijk]=="lin_quad_int")||(tform[ijk]=="lin_exp_int")||(tform[ijk]=="step_int")||(tform[ijk]=="lin_int")){ //the threshold values use different maximum deviation values
+                if (abs(dbeta[ijk])>dose_abs_max){
+                    dbeta[ijk] = dose_abs_max * sign(dbeta[ijk]);
+                }
+            }else{
+                if (abs(dbeta[ijk])>abs_max){
+                    dbeta[ijk] = abs_max * sign(dbeta[ijk]);
+                }
+            }
+        } else {
+            dbeta[ijk]=0;
+        }
+    }
+    return;
+}
+
 //' Utility function to calculate the change to make each iteration
+//'
 //' \code{Calc_Change} Called to update the parameter changes, Uses log-likelihoods and control parameters, Applies newton steps and change limitations    
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: parameter change matrix
+//' @noRd
+//'
 // [[Rcpp::export]]
 void Calc_Change(const int& double_step, const int& nthreads, const int& totalnum, const int& der_iden, const double& dbeta_cap, const double& dose_abs_max, const double& lr, const double& abs_max, const vector<double>& Ll, const vector<double>& Lld, const vector<double>& Lldd, vector<double>& dbeta, const bool change_all,const StringVector&   tform, const double& dint, const double& dslp, IntegerVector KeepConstant, bool debugging){
     if (double_step==1){
         int kept_covs = totalnum - sum(KeepConstant);
         NumericVector Lldd_vec(kept_covs * kept_covs);
         NumericVector Lld_vec(kept_covs);
+        #ifdef _OPENMP
         #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+        #endif
         for (int ijk=0;ijk<kept_covs*(kept_covs+1)/2;ijk++){
             int ij = 0;
             int jk = ijk;
@@ -3123,7 +3396,9 @@ void Calc_Change(const int& double_step, const int& nthreads, const int& totalnu
             }
         }
         //
+        #ifdef _OPENMP
         #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+        #endif
         for (int ijk=0;ijk<totalnum;ijk++){
             if (change_all){
                 if (KeepConstant[ijk]==0){
@@ -3166,7 +3441,9 @@ void Calc_Change(const int& double_step, const int& nthreads, const int& totalnu
         }
     } else {
         int kept_covs = totalnum - sum(KeepConstant);
+        #ifdef _OPENMP
         #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+        #endif
         for (int ijk=0;ijk<totalnum;ijk++){
             if (change_all){
                 if (KeepConstant[ijk]==0){
@@ -3208,10 +3485,13 @@ void Calc_Change(const int& double_step, const int& nthreads, const int& totalnu
 }
 
 //' Utility function to calculate the change to make each iteration, with basic model
+//'
 //' \code{Calc_Change_Basic} Called to update the parameter changes, Uses log-likelihoods and control parameters, Applies newton steps and change limitations    
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: parameter change matrix
+//' @noRd
+//'
 // [[Rcpp::export]]
 void Calc_Change_Basic(const int& double_step, const int& nthreads, const int& totalnum, const int& der_iden, const double& dbeta_cap, const double& lr, const double& abs_max, const vector<double>& Ll, const vector<double>& Lld, const vector<double>& Lldd, vector<double>& dbeta, const bool change_all, IntegerVector KeepConstant, bool debugging){
     if (double_step==1){
@@ -3219,7 +3499,9 @@ void Calc_Change_Basic(const int& double_step, const int& nthreads, const int& t
         int kept_covs = totalnum - sum(KeepConstant);
         NumericVector Lldd_vec(kept_covs * kept_covs);
         NumericVector Lld_vec(kept_covs);
+        #ifdef _OPENMP
         #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+        #endif
         for (int ijk=0;ijk<kept_covs*(kept_covs+1)/2;ijk++){
             int ij = 0;
             int jk = ijk;
@@ -3246,7 +3528,9 @@ void Calc_Change_Basic(const int& double_step, const int& nthreads, const int& t
             }
         }
         //
+        #ifdef _OPENMP
         #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+        #endif
         for (int ijk=0;ijk<totalnum;ijk++){
             if (change_all){
                 if (KeepConstant[ijk]==0){
@@ -3262,7 +3546,6 @@ void Calc_Change_Basic(const int& double_step, const int& nthreads, const int& t
                         dbeta[ijk] = lr * Lldd_solve(ijk);//-lr * Lld[ijk] / Lldd[ijk*totalnum+ijk];
                     }
                     //
-//                    dbeta[ijk] = lr * Lldd_solve(ijk);
                     //
                     if (abs(dbeta[ijk])>abs_max){
                         dbeta[ijk] = abs_max * sign(dbeta[ijk]);
@@ -3280,7 +3563,9 @@ void Calc_Change_Basic(const int& double_step, const int& nthreads, const int& t
         }
     } else {
         int kept_covs = totalnum - sum(KeepConstant);
+        #ifdef _OPENMP
         #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+        #endif
         for (int ijk=0;ijk<totalnum;ijk++){
             if (change_all){
                 if (KeepConstant[ijk]==0){
@@ -3319,13 +3604,18 @@ void Calc_Change_Basic(const int& double_step, const int& nthreads, const int& t
 }
 
 //' Utility function to perform null model equivalent of Calculate_Sides
+//'
 //' \code{Calculate_Null_Sides} Called to update repeated sum calculations, Uses list of event rows, Performs calculation of counts in each group
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: risk storage matrices
+//' @noRd
+//'
 // [[Rcpp::export]]
 void Calculate_Null_Sides(const IntegerMatrix& RiskFail, const vector<string>&  RiskGroup, const int& ntime, const MatrixXd& R, MatrixXd& Rls1, MatrixXd& Lls1,const int& nthreads){
+    #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+    #endif
     for (int j=0;j<ntime;j++){
         double Rs1 = 0;
         //
@@ -3354,16 +3644,21 @@ void Calculate_Null_Sides(const IntegerMatrix& RiskFail, const vector<string>&  
 
 
 //' Utility function to perform null model equivalent of Calc_LogLik
+//'
 //' \code{Calc_Null_LogLik} Called to update log-likelihoods, Uses list of event rows and repeated sums, Sums the log-likelihood contribution from each event time
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: Log-likelihood vectors/matrix
+//' @noRd
+//'
 // [[Rcpp::export]]
 void Calc_Null_LogLik(const int& nthreads,const IntegerMatrix& RiskFail, const vector<string>&  RiskGroup, const int& ntime, const MatrixXd& R, const MatrixXd& Rls1,const MatrixXd& Lls1, vector<double>& Ll, string ties_method){
+	#ifdef _OPENMP
     #pragma omp declare reduction(vec_double_plus : std::vector<double> : \
         std::transform(omp_out.begin(), omp_out.end(), omp_in.begin(), omp_out.begin(), std::plus<double>())) \
         initializer(omp_priv = omp_orig)
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads) reduction(vec_double_plus:Ll)
+    #endif
     for (int j=0;j<ntime;j++){
         double Rs1 = Rls1(j,0);
         int dj = RiskFail(j,1)-RiskFail(j,0)+1;
@@ -3393,13 +3688,18 @@ void Calc_Null_LogLik(const int& nthreads,const IntegerMatrix& RiskFail, const v
 }
 
 //' Utility function to perform null model equivalent of Calculate_Sides with strata
+//'
 //' \code{Calculate_Null_Sides_STRATA} Called to update repeated sum calculations, Uses list of event rows, Performs calculation of counts in each group
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: risk storage matrices
+//' @noRd
+//'
 // [[Rcpp::export]]
 void Calculate_Null_Sides_STRATA(const IntegerMatrix& RiskFail, const StringMatrix& RiskGroup, const int& ntime, const MatrixXd& R, MatrixXd& Rls1, MatrixXd& Lls1, NumericVector& STRATA_vals,const int& nthreads){
+	#ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads) collapse(2)
+    #endif
     for (int j=0;j<ntime;j++){
         for (int s_ij=0;s_ij<STRATA_vals.size();s_ij++){
             double Rs1 = 0;
@@ -3433,16 +3733,21 @@ void Calculate_Null_Sides_STRATA(const IntegerMatrix& RiskFail, const StringMatr
 
 
 //' Utility function to perform null model equivalent of Calc_LogLik
+//'
 //' \code{Calc_Null_LogLik_STRATA} Called to update log-likelihoods, Uses list of event rows and repeated sums, Sums the log-likelihood contribution from each event time
 //' @inheritParams CPP_template
 //'
 //' @return Updates matrices in place: Log-likelihood vectors/matrix
+//' @noRd
+//'
 // [[Rcpp::export]]
 void Calc_Null_LogLik_STRATA(const int& nthreads,const IntegerMatrix& RiskFail, const StringMatrix& RiskGroup, const int& ntime, const MatrixXd& R, const MatrixXd& Rls1,const MatrixXd& Lls1, NumericVector& STRATA_vals, vector<double>& Ll, string ties_method){
+	#ifdef _OPENMP
     #pragma omp declare reduction(vec_double_plus : std::vector<double> : \
         std::transform(omp_out.begin(), omp_out.end(), omp_in.begin(), omp_out.begin(), std::plus<double>())) \
         initializer(omp_priv = omp_orig)
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads) reduction(vec_double_plus:Ll) collapse(2)
+    #endif
     for (int s_ij=0;s_ij<STRATA_vals.size();s_ij++){
         for (int j=0;j<ntime;j++){
             double Rs1 =  Rls1(j,s_ij);

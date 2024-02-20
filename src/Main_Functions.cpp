@@ -1,5 +1,7 @@
 #include <RcppEigen.h>
+#ifdef _OPENMP
 #include <omp.h>
+#endif
 #include "Main_Functions.h"
 #include "Calc_Repeated.h"
 #include "Omnibus_Pieces.h"
@@ -46,11 +48,14 @@ void visit_lambda(const Mat& m, const Func& f)
 }
 
 //' checks if the model is viable
+//'
 //' \code{Check_Risk} Calculates risks and checks for negative values
 //'
 //' @inheritParams CPP_template
 //'
 //' @return True for viable point, False for negative error
+//' @noRd
+//'
 // [[Rcpp::export]]
 bool Check_Risk( IntegerVector Term_n, StringVector tform, NumericVector a_n,NumericMatrix x_all,IntegerVector dfc,int fir,string modelform, bool verbose, bool debugging, IntegerVector KeepConstant, int term_tot, int nthreads, const double gmix_theta, const IntegerVector gmix_term){
     ;
@@ -191,13 +196,16 @@ bool Check_Risk( IntegerVector Term_n, StringVector tform, NumericVector a_n,Num
 }
 
 //' Primary Cox PH regression with multiple starting points and optional combinations of null, stratification, competing risks, multiplicative log-linear model, and no derivative calculation.
+//'
 //' \code{LogLik_Cox_PH_Omnibus} Performs the calls to calculation functions, Structures the Cox PH regression, With verbose option prints out time stamps and intermediate sums of terms and derivatives
 //'
 //' @inheritParams CPP_template
 //'
 //' @return List of final results: Log-likelihood of optimum, first derivative of log-likelihood, second derivative matrix, parameter list, standard deviation estimate, AIC, model information
+//' @noRd
+//'
 // [[Rcpp::export]]
-List LogLik_Cox_PH_Omnibus( IntegerVector Term_n, StringVector tform, NumericMatrix a_ns,NumericMatrix x_all,IntegerVector dfc,int fir, int der_iden,string modelform, double lr, NumericVector maxiters, int guesses, int halfmax, double epsilon, double dbeta_cap, double abs_max,double dose_abs_max, double deriv_epsilon, NumericMatrix df_groups, NumericVector tu, int double_step ,bool change_all, bool verbose, bool debugging, IntegerVector KeepConstant, int term_tot, string ties_method, int nthreads, NumericVector& STRATA_vals, const VectorXd cens_weight, const double cens_thres, bool strata_bool, bool basic_bool, bool null_bool, bool CR_bool, bool single_bool, const double gmix_theta, const IntegerVector gmix_term){
+List LogLik_Cox_PH_Omnibus( IntegerVector Term_n, StringVector tform, NumericMatrix a_ns,NumericMatrix x_all,IntegerVector dfc,int fir, int der_iden,string modelform, double lr, NumericVector maxiters, int guesses, int halfmax, double epsilon, double dbeta_cap, double abs_max,double dose_abs_max, double deriv_epsilon, NumericMatrix df_groups, NumericVector tu, int double_step ,bool change_all, bool verbose, bool debugging, IntegerVector KeepConstant, int term_tot, string ties_method, int nthreads, NumericVector& STRATA_vals, const VectorXd cens_weight, const double cens_thres, bool strata_bool, bool basic_bool, bool null_bool, bool CR_bool, bool single_bool, bool constraint_bool, const double gmix_theta, const IntegerVector gmix_term, const MatrixXd Lin_Sys, const VectorXd Lin_Res){
     ;
     //
     List temp_list = List::create(_["Status"]="TEMP"); //used as a dummy return value for code checking
@@ -395,7 +403,7 @@ List LogLik_Cox_PH_Omnibus( IntegerVector Term_n, StringVector tform, NumericMat
 		    Calc_Null_LogLik( nthreads, RiskFail, RiskGroup, ntime, R, Rls1, Lls1, Ll, ties_method);
 	    }
 		//
-		List res_list = List::create(_["LogLik"]=wrap(Ll[0]),_["AIC"]=-2*Ll[0]);
+		List res_list = List::create(_["LogLik"]=wrap(Ll[0]),_["AIC"]=-2*Ll[0],_["BIC"]=-2*Ll[0]);
 		// returns a list of results
 		return res_list;
 	}
@@ -430,7 +438,6 @@ List LogLik_Cox_PH_Omnibus( IntegerVector Term_n, StringVector tform, NumericMat
     NumericMatrix beta_fin(a_ns.rows(), a_ns.cols());
     NumericVector LL_fin(a_ns.rows());
     //
-        //
     double Ll_abs_best = 10;
     vector<double> beta_abs_best(totalnum,0.0);
     int guess_abs_best =-1;
@@ -500,7 +507,11 @@ List LogLik_Cox_PH_Omnibus( IntegerVector Term_n, StringVector tform, NumericMat
             if (basic_bool){
                 Calc_Change_Basic( double_step, nthreads, totalnum, der_iden, dbeta_cap, lr, abs_max, Ll, Lld, Lldd, dbeta, change_all, KeepConstant, debugging);
             } else {
-                Calc_Change( double_step, nthreads, totalnum, der_iden, dbeta_cap, dose_abs_max, lr, abs_max, Ll, Lld, Lldd, dbeta, change_all, tform, dint,dslp, KeepConstant, debugging);
+                if (constraint_bool){
+                    Calc_Change_Cons( Lin_Sys, Lin_Res, beta_0, nthreads, totalnum, der_iden, dbeta_cap, dose_abs_max, lr, abs_max, Ll, Lld, Lldd, dbeta, tform, dint,dslp, KeepConstant, debugging);
+                } else {
+                    Calc_Change( double_step, nthreads, totalnum, der_iden, dbeta_cap, dose_abs_max, lr, abs_max, Ll, Lld, Lldd, dbeta, change_all, tform, dint,dslp, KeepConstant, debugging);
+                }
                 Intercept_Bound(nthreads, totalnum, beta_0, dbeta, dfc, df0, KeepConstant, debugging, tform);
             }
             if (verbose){
@@ -535,8 +546,10 @@ List LogLik_Cox_PH_Omnibus( IntegerVector Term_n, StringVector tform, NumericMat
 
                 Cox_Term_Risk_Calc(modelform, tform, Term_n, totalnum, fir, dfc, term_tot, T0, Td0, Tdd0, Te, R, Rd, Rdd, Dose, nonDose, beta_0, df0, dint,  dslp,  TTerm,  nonDose_LIN, nonDose_PLIN, nonDose_LOGLIN, RdR, RddR,  nthreads, debugging, KeepConstant, verbose, basic_bool, single_bool, start, gmix_theta, gmix_term);
                 if (R.minCoeff()<=0){
+                	#ifdef _OPENMP
                     #pragma omp parallel for num_threads(nthreads)
-                        for (int ijk=0;ijk<totalnum;ijk++){
+                    #endif
+                    for (int ijk=0;ijk<totalnum;ijk++){
                         int tij = Term_n[ijk];
                         if (TTerm.col(tij).minCoeff()<=0){
                             dbeta[ijk] = dbeta[ijk] / 2.0;
@@ -554,19 +567,25 @@ List LogLik_Cox_PH_Omnibus( IntegerVector Term_n, StringVector tform, NumericMat
                     //
                     if (change_all){ //If every covariate is to be changed
                         if (Ll[ind0] <= Ll_abs_best){//if a better point wasn't found, takes a half-step
+                        	#ifdef _OPENMP
                             #pragma omp parallel for num_threads(nthreads)
+                            #endif
                             for (int ijk=0;ijk<totalnum;ijk++){
                                 dbeta[ijk] = dbeta[ijk] * 0.5; //
                             }
                         } else{//If improved, updates the best vector
+                        	#ifdef _OPENMP
                             #pragma omp parallel for num_threads(nthreads)
+                            #endif
                             for (int ijk=0;ijk<totalnum;ijk++){
                                 beta_best[ijk] = beta_c[ijk];
                             }
                         }
                     } else {//For validation, the step is always carried over
                         //used if a single parameter is being changed to trick program
+                    	#ifdef _OPENMP
                         #pragma omp parallel for num_threads(nthreads)
+                        #endif
                         for (int ijk=0;ijk<totalnum;ijk++){
                             beta_best[ijk] = beta_c[ijk];
                         }
@@ -578,7 +597,9 @@ List LogLik_Cox_PH_Omnibus( IntegerVector Term_n, StringVector tform, NumericMat
                         gibtime = system_clock::to_time_t(system_clock::now());
                         Rcout << "C++ Note: Current Time, " << ctime(&gibtime) << endl;
                     }
+                    #ifdef _OPENMP
                     #pragma omp parallel for num_threads(nthreads)
+                    #endif
                     for (int ijk=0;ijk<totalnum;ijk++){//totalnum*(totalnum+1)/2
                         beta_0[ijk] = beta_c[ijk];
                     }
@@ -723,7 +744,11 @@ List LogLik_Cox_PH_Omnibus( IntegerVector Term_n, StringVector tform, NumericMat
         if (basic_bool){
             Calc_Change_Basic( double_step, nthreads, totalnum, der_iden, dbeta_cap, lr, abs_max, Ll, Lld, Lldd, dbeta, change_all, KeepConstant, debugging);
         } else {
-            Calc_Change( double_step, nthreads, totalnum, der_iden, dbeta_cap, dose_abs_max, lr, abs_max, Ll, Lld, Lldd, dbeta, change_all, tform, dint,dslp, KeepConstant, debugging);
+            if (constraint_bool){
+                Calc_Change_Cons( Lin_Sys, Lin_Res, beta_0, nthreads, totalnum, der_iden, dbeta_cap, dose_abs_max, lr, abs_max, Ll, Lld, Lldd, dbeta, tform, dint,dslp, KeepConstant, debugging);
+            } else {
+                Calc_Change( double_step, nthreads, totalnum, der_iden, dbeta_cap, dose_abs_max, lr, abs_max, Ll, Lld, Lldd, dbeta, change_all, tform, dint,dslp, KeepConstant, debugging);
+            }
             Intercept_Bound(nthreads, totalnum, beta_0, dbeta, dfc, df0, KeepConstant, debugging, tform);
         }
         if (verbose){
@@ -757,8 +782,10 @@ List LogLik_Cox_PH_Omnibus( IntegerVector Term_n, StringVector tform, NumericMat
 
             Cox_Term_Risk_Calc(modelform, tform, Term_n, totalnum, fir, dfc, term_tot, T0, Td0, Tdd0, Te, R, Rd, Rdd, Dose, nonDose, beta_0, df0, dint,  dslp,  TTerm,  nonDose_LIN, nonDose_PLIN, nonDose_LOGLIN, RdR, RddR,  nthreads, debugging, KeepConstant, verbose, basic_bool, single_bool, start, gmix_theta, gmix_term);
             if (R.minCoeff()<=0){
+            	#ifdef _OPENMP
                 #pragma omp parallel for num_threads(nthreads)
-                    for (int ijk=0;ijk<totalnum;ijk++){
+                #endif
+                for (int ijk=0;ijk<totalnum;ijk++){
                     int tij = Term_n[ijk];
                     if (TTerm.col(tij).minCoeff()<=0){
                         dbeta[ijk] = dbeta[ijk] / 2.0;
@@ -776,19 +803,25 @@ List LogLik_Cox_PH_Omnibus( IntegerVector Term_n, StringVector tform, NumericMat
                 //
                 if (change_all){ //If every covariate is to be changed
                     if (Ll[ind0] <= Ll_abs_best){//takes a half-step if needed
-                        #pragma omp parallel for num_threads(nthreads)
+                        #ifdef _OPENMP
+				        #pragma omp parallel for num_threads(nthreads)
+				        #endif
                         for (int ijk=0;ijk<totalnum;ijk++){
                             dbeta[ijk] = dbeta[ijk] * 0.5; //
                         }
                     } else{//If improved, updates the best vector
-                        #pragma omp parallel for num_threads(nthreads)
+                        #ifdef _OPENMP
+				        #pragma omp parallel for num_threads(nthreads)
+				        #endif
                         for (int ijk=0;ijk<totalnum;ijk++){
                             beta_best[ijk] = beta_c[ijk];
                         }
                     }
                 } else {//For validation, the step is always carried over
                     //used if a single parameter is being changed
-                    #pragma omp parallel for num_threads(nthreads)
+                    #ifdef _OPENMP
+		            #pragma omp parallel for num_threads(nthreads)
+		            #endif
                     for (int ijk=0;ijk<totalnum;ijk++){
                         beta_best[ijk] = beta_c[ijk];
                     }
@@ -800,7 +833,9 @@ List LogLik_Cox_PH_Omnibus( IntegerVector Term_n, StringVector tform, NumericMat
                     gibtime = system_clock::to_time_t(system_clock::now());
                     Rcout << "C++ Note: Current Time, " << ctime(&gibtime) << endl;
                 }
+                #ifdef _OPENMP
                 #pragma omp parallel for num_threads(nthreads)
+                #endif
                 for (int ijk=0;ijk<totalnum;ijk++){//totalnum*(totalnum+1)/2
                     beta_0[ijk] = beta_c[ijk];
                 }
@@ -862,6 +897,7 @@ List LogLik_Cox_PH_Omnibus( IntegerVector Term_n, StringVector tform, NumericMat
     }
     //
     if (verbose){
+        Rcout << "C++ Note: Exiting Regression" << endl;
         Rcout << "C++ Note: df501 " << Ll_abs_best << endl;
         Rcout << "C++ Note: df504 ";//prints parameter values
         for (int ij=0;ij<totalnum;ij++){
@@ -873,7 +909,7 @@ List LogLik_Cox_PH_Omnibus( IntegerVector Term_n, StringVector tform, NumericMat
     List res_list;
     //
     if (single_bool){
-        res_list = List::create(_["LogLik"]=wrap(Ll[0]),_["beta_0"]=wrap(beta_0) ,_["AIC"]=2*(totalnum-accumulate(KeepConstant.begin(),KeepConstant.end(), 0.0))-2*Ll[0]);
+        res_list = List::create(_["LogLik"]=wrap(Ll[0]),_["beta_0"]=wrap(beta_0) ,_["AIC"]=2*(totalnum-accumulate(KeepConstant.begin(),KeepConstant.end(), 0.0))-2*Ll[0],_["BIC"]=(totalnum-accumulate(KeepConstant.begin(),KeepConstant.end(), 0.0))*log(df0.rows())-2*Ll[0]);
         // returns a list of results
         return res_list;
     }
@@ -884,7 +920,9 @@ List LogLik_Cox_PH_Omnibus( IntegerVector Term_n, StringVector tform, NumericMat
     List control_list = List::create(_["Iteration"]=iteration, _["Maximum Step"]=abs_max, _["Derivative Limiting"]=Lld_worst); //stores the total number of iterations used
     //
     NumericVector Lldd_vec(reqrdnum * reqrdnum);
+    #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+    #endif
     for (int ijk=0;ijk<reqrdnum*(reqrdnum+1)/2;ijk++){
         int ij = 0;
         int jk = ijk;
@@ -909,22 +947,25 @@ List LogLik_Cox_PH_Omnibus( IntegerVector Term_n, StringVector tform, NumericMat
     //
     //
     if (basic_bool){
-        res_list = List::create(_["LogLik"]=wrap(Ll[0]),_["First_Der"]=wrap(Lld),_["Second_Der"]=Lldd_vec,_["beta_0"]=wrap(beta_0) ,_["Standard_Deviation"]=wrap(stdev) ,_["AIC"]=2*(totalnum-accumulate(KeepConstant.begin(),KeepConstant.end(), 0.0))-2*Ll[0],_["Control_List"]=control_list,_["Convgerged"]=convgd);
+        res_list = List::create(_["LogLik"]=wrap(Ll[0]),_["First_Der"]=wrap(Lld),_["Second_Der"]=Lldd_vec,_["beta_0"]=wrap(beta_0) ,_["Standard_Deviation"]=wrap(stdev) ,_["AIC"]=2*(totalnum-accumulate(KeepConstant.begin(),KeepConstant.end(), 0.0))-2*Ll[0],_["BIC"]=(totalnum-accumulate(KeepConstant.begin(),KeepConstant.end(), 0.0))*log(df0.rows())-2*Ll[0],_["Control_List"]=control_list,_["Convgerged"]=convgd);
     } else {
-        res_list = List::create(_["LogLik"]=wrap(Ll[0]),_["First_Der"]=wrap(Lld),_["Second_Der"]=Lldd_vec,_["beta_0"]=wrap(beta_0) ,_["Standard_Deviation"]=wrap(stdev) ,_["AIC"]=2*(totalnum-accumulate(KeepConstant.begin(),KeepConstant.end(), 0.0))-2*Ll[0],_["Parameter_Lists"]=para_list,_["Control_List"]=control_list,_["Convgerged"]=convgd);
+        res_list = List::create(_["LogLik"]=wrap(Ll[0]),_["First_Der"]=wrap(Lld),_["Second_Der"]=Lldd_vec,_["beta_0"]=wrap(beta_0) ,_["Standard_Deviation"]=wrap(stdev) ,_["AIC"]=2*(totalnum-accumulate(KeepConstant.begin(),KeepConstant.end(), 0.0))-2*Ll[0],_["BIC"]=(totalnum-accumulate(KeepConstant.begin(),KeepConstant.end(), 0.0))*log(df0.rows())-2*Ll[0],_["Parameter_Lists"]=para_list,_["Control_List"]=control_list,_["Convgerged"]=convgd);
     }
     // returns a list of results
     return res_list;
 }
 
 //' Primary poisson regression with multiple starting points and optional combinations of stratification and no derivative calculation.
+//'
 //' \code{LogLik_Pois_Omnibus} Performs the calls to calculation functions, Structures the poisson regression, With verbose option prints out time stamps and intermediate sums of terms and derivatives
 //'
 //' @inheritParams CPP_template
 //'
 //' @return List of final results: Log-likelihood of optimum, first derivative of log-likelihood, second derivative matrix, parameter list, standard deviation estimate, AIC, model information
+//' @noRd
+//'
 // [[Rcpp::export]]
-List LogLik_Pois_Omnibus(MatrixXd PyrC, IntegerVector Term_n, StringVector tform, NumericMatrix a_ns,NumericMatrix x_all,IntegerVector dfc,int fir, int der_iden,string modelform, double lr, NumericVector maxiters, int guesses, int halfmax, double epsilon, double dbeta_cap, double abs_max,double dose_abs_max, double deriv_epsilon, int double_step ,bool change_all, bool verbose, bool debugging, IntegerVector KeepConstant, int term_tot, int nthreads, const MatrixXd& dfs, bool strata_bool, bool single_bool, const double gmix_theta, const IntegerVector gmix_term){
+List LogLik_Pois_Omnibus(MatrixXd PyrC, IntegerVector Term_n, StringVector tform, NumericMatrix a_ns,NumericMatrix x_all,IntegerVector dfc,int fir, int der_iden,string modelform, double lr, NumericVector maxiters, int guesses, int halfmax, double epsilon, double dbeta_cap, double abs_max,double dose_abs_max, double deriv_epsilon, int double_step ,bool change_all, bool verbose, bool debugging, IntegerVector KeepConstant, int term_tot, int nthreads, const MatrixXd& dfs, bool strata_bool, bool single_bool, bool constraint_bool, const double gmix_theta, const IntegerVector gmix_term, const MatrixXd Lin_Sys, const VectorXd Lin_Res){
     ;
     //
     List temp_list = List::create(_["Status"]="FAILED"); //used as a dummy return value for code checking
@@ -1174,7 +1215,11 @@ List LogLik_Pois_Omnibus(MatrixXd PyrC, IntegerVector Term_n, StringVector tform
             beta_best = beta_c;//
             //
             // calculates the initial change in parameter
-            Calc_Change( double_step, nthreads, totalnum, der_iden, dbeta_cap, dose_abs_max, lr, abs_max, Ll, Lld, Lldd, dbeta, change_all, tform, dint,dslp, KeepConstant, debugging);
+            if (constraint_bool){
+                Calc_Change_Cons( Lin_Sys, Lin_Res, beta_0, nthreads, totalnum, der_iden, dbeta_cap, dose_abs_max, lr, abs_max, Ll, Lld, Lldd, dbeta, tform, dint,dslp, KeepConstant, debugging);
+            } else {
+                Calc_Change( double_step, nthreads, totalnum, der_iden, dbeta_cap, dose_abs_max, lr, abs_max, Ll, Lld, Lldd, dbeta, change_all, tform, dint,dslp, KeepConstant, debugging);
+            }
             Intercept_Bound(nthreads, totalnum, beta_0, dbeta, dfc, df0, KeepConstant, debugging, tform);
             if (verbose){
                 Rcout << "C++ Note: Starting Halves" <<endl;//prints the final changes for validation
@@ -1231,7 +1276,9 @@ List LogLik_Pois_Omnibus(MatrixXd PyrC, IntegerVector Term_n, StringVector tform
                 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
                 Pois_Term_Risk_Calc(modelform, tform, Term_n, totalnum, fir, dfc, term_tot, T0, Td0, Tdd0, Te, R, Rd, Rdd, Dose, nonDose, beta_0, df0, dint,  dslp,  TTerm,  nonDose_LIN, nonDose_PLIN, nonDose_LOGLIN, RdR, RddR, s_weights,  nthreads, debugging, KeepConstant, verbose, strata_bool, single_bool, start, gmix_theta, gmix_term);
                 if (R.minCoeff()<=0){
-                    #pragma omp parallel for num_threads(nthreads)
+                    #ifdef _OPENMP
+		            #pragma omp parallel for num_threads(nthreads)
+		            #endif
                     for (int ijk=0;ijk<totalnum;ijk++){
                         int tij = Term_n[ijk];
                         if (TTerm.col(tij).minCoeff()<=0){
@@ -1251,19 +1298,25 @@ List LogLik_Pois_Omnibus(MatrixXd PyrC, IntegerVector Term_n, StringVector tform
                     //
                     if (change_all){ //If every covariate is to be changed
                         if (Ll[ind0] <= Ll_abs_best){//takes a half-step if needed
-                            #pragma omp parallel for num_threads(nthreads)
+                            #ifdef _OPENMP
+						    #pragma omp parallel for num_threads(nthreads)
+						    #endif
                             for (int ijk=0;ijk<totalnum;ijk++){
                                 dbeta[ijk] = dbeta[ijk] * 0.5; //
                             }
                         } else{//If improved, updates the best vector
-                            #pragma omp parallel for num_threads(nthreads)
+                            #ifdef _OPENMP
+							#pragma omp parallel for num_threads(nthreads)
+							#endif
                             for (int ijk=0;ijk<totalnum;ijk++){
                                 beta_best[ijk] = beta_c[ijk];
                             }
                         }
                     } else {//For validation, the step is always carried over
                         //used if a single parameter is being changed
-                        #pragma omp parallel for num_threads(nthreads)
+                        #ifdef _OPENMP
+				        #pragma omp parallel for num_threads(nthreads)
+				        #endif
                         for (int ijk=0;ijk<totalnum;ijk++){
                             beta_best[ijk] = beta_c[ijk];
                         }
@@ -1275,7 +1328,9 @@ List LogLik_Pois_Omnibus(MatrixXd PyrC, IntegerVector Term_n, StringVector tform
                         gibtime = system_clock::to_time_t(system_clock::now());
                         Rcout << "C++ Note: Current Time, " << ctime(&gibtime) << endl;
                     }
-                    #pragma omp parallel for num_threads(nthreads)
+                    #ifdef _OPENMP
+		            #pragma omp parallel for num_threads(nthreads)
+		            #endif
                     for (int ijk=0;ijk<totalnum;ijk++){//totalnum*(totalnum+1)/2
                         beta_0[ijk] = beta_c[ijk];
                     }
@@ -1545,7 +1600,11 @@ List LogLik_Pois_Omnibus(MatrixXd PyrC, IntegerVector Term_n, StringVector tform
         beta_best = beta_c;//
         //
         // calculates the initial change in parameter
-        Calc_Change( double_step, nthreads, totalnum, der_iden, dbeta_cap, dose_abs_max, lr, abs_max, Ll, Lld, Lldd, dbeta, change_all, tform, dint,dslp, KeepConstant, debugging);
+        if (constraint_bool){
+            Calc_Change_Cons( Lin_Sys, Lin_Res, beta_0, nthreads, totalnum, der_iden, dbeta_cap, dose_abs_max, lr, abs_max, Ll, Lld, Lldd, dbeta, tform, dint,dslp, KeepConstant, debugging);
+        } else {
+            Calc_Change( double_step, nthreads, totalnum, der_iden, dbeta_cap, dose_abs_max, lr, abs_max, Ll, Lld, Lldd, dbeta, change_all, tform, dint,dslp, KeepConstant, debugging);
+        }
         Intercept_Bound(nthreads, totalnum, beta_0, dbeta, dfc, df0, KeepConstant, debugging, tform);
         if (verbose){
             Rcout << "C++ Note: Starting Halves" <<endl;//prints the final changes for validation
@@ -1602,7 +1661,9 @@ List LogLik_Pois_Omnibus(MatrixXd PyrC, IntegerVector Term_n, StringVector tform
 
             Pois_Term_Risk_Calc(modelform, tform, Term_n, totalnum, fir, dfc, term_tot, T0, Td0, Tdd0, Te, R, Rd, Rdd, Dose, nonDose, beta_0, df0, dint,  dslp,  TTerm,  nonDose_LIN, nonDose_PLIN, nonDose_LOGLIN, RdR, RddR, s_weights,  nthreads, debugging, KeepConstant, verbose, strata_bool, single_bool, start, gmix_theta, gmix_term);
             if (R.minCoeff()<=0){
+                #ifdef _OPENMP
                 #pragma omp parallel for num_threads(nthreads)
+                #endif
                 for (int ijk=0;ijk<totalnum;ijk++){
                     int tij = Term_n[ijk];
                     if (TTerm.col(tij).minCoeff()<=0){
@@ -1622,19 +1683,25 @@ List LogLik_Pois_Omnibus(MatrixXd PyrC, IntegerVector Term_n, StringVector tform
                 //
                 if (change_all){ //If every covariate is to be changed
                     if (Ll[ind0] <= Ll_abs_best){//takes a half-step if needed
-                        #pragma omp parallel for num_threads(nthreads)
+                        #ifdef _OPENMP
+				        #pragma omp parallel for num_threads(nthreads)
+				        #endif
                         for (int ijk=0;ijk<totalnum;ijk++){
                             dbeta[ijk] = dbeta[ijk] * 0.5; //
                         }
                     } else{//If improved, updates the best vector
-                        #pragma omp parallel for num_threads(nthreads)
+                        #ifdef _OPENMP
+				        #pragma omp parallel for num_threads(nthreads)
+				        #endif
                         for (int ijk=0;ijk<totalnum;ijk++){
                             beta_best[ijk] = beta_c[ijk];
                         }
                     }
                 } else {//For validation, the step is always carried over
                     //used if a single parameter is being changed
-                    #pragma omp parallel for num_threads(nthreads)
+                    #ifdef _OPENMP
+		            #pragma omp parallel for num_threads(nthreads)
+		            #endif
                     for (int ijk=0;ijk<totalnum;ijk++){
                         beta_best[ijk] = beta_c[ijk];
                     }
@@ -1646,7 +1713,9 @@ List LogLik_Pois_Omnibus(MatrixXd PyrC, IntegerVector Term_n, StringVector tform
                     gibtime = system_clock::to_time_t(system_clock::now());
                     Rcout << "C++ Note: Current Time, " << ctime(&gibtime) << endl;
                 }
+                #ifdef _OPENMP
                 #pragma omp parallel for num_threads(nthreads)
+                #endif
                 for (int ijk=0;ijk<totalnum;ijk++){//totalnum*(totalnum+1)/2
                     beta_0[ijk] = beta_c[ijk];
                 }
@@ -1819,7 +1888,7 @@ List LogLik_Pois_Omnibus(MatrixXd PyrC, IntegerVector Term_n, StringVector tform
     List res_list;
     //
     if (single_bool){
-        res_list = List::create(_["LogLik"]=wrap(Ll[0]),_["beta_0"]=wrap(beta_0) ,_["AIC"]=2*(totalnum-accumulate(KeepConstant.begin(),KeepConstant.end(), 0.0))+dev);
+        res_list = List::create(_["LogLik"]=wrap(Ll[0]),_["beta_0"]=wrap(beta_0) ,_["AIC"]=2*(totalnum-accumulate(KeepConstant.begin(),KeepConstant.end(), 0.0))+dev,_["BIC"]=(totalnum-accumulate(KeepConstant.begin(),KeepConstant.end(), 0.0))*log(df0.rows())-2*Ll[0]);
         // returns a list of results
         return res_list;
     }
@@ -1827,7 +1896,9 @@ List LogLik_Pois_Omnibus(MatrixXd PyrC, IntegerVector Term_n, StringVector tform
     List control_list = List::create(_["Iteration"]=iteration, _["Maximum Step"]=abs_max, _["Derivative Limiting"]=Lld_worst); //stores the total number of iterations used
     //
     NumericVector Lldd_vec(reqrdnum * reqrdnum);
+    #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+    #endif
     for (int ijk=0;ijk<reqrdnum*(reqrdnum+1)/2;ijk++){
         int ij = 0;
         int jk = ijk;
@@ -1851,7 +1922,7 @@ List LogLik_Pois_Omnibus(MatrixXd PyrC, IntegerVector Term_n, StringVector tform
     }
     //
     //
-    res_list = List::create(_["LogLik"]=wrap(Ll[0]),_["First_Der"]=wrap(Lld),_["Second_Der"]=Lldd_vec,_["beta_0"]=wrap(beta_0) ,_["Standard_Deviation"]=wrap(stdev) ,_["AIC"]=2*(totalnum-accumulate(KeepConstant.begin(),KeepConstant.end(), 0.0))+dev,_["Deviation"]=dev,_["Parameter_Lists"]=para_list,_["Control_List"]=control_list,_["Converged"]=convgd);
+    res_list = List::create(_["LogLik"]=wrap(Ll[0]),_["First_Der"]=wrap(Lld),_["Second_Der"]=Lldd_vec,_["beta_0"]=wrap(beta_0) ,_["Standard_Deviation"]=wrap(stdev) ,_["AIC"]=2*(totalnum-accumulate(KeepConstant.begin(),KeepConstant.end(), 0.0))+dev,_["BIC"]=(totalnum-accumulate(KeepConstant.begin(),KeepConstant.end(), 0.0))*log(df0.rows())-2*Ll[0],_["Deviation"]=dev,_["Parameter_Lists"]=para_list,_["Control_List"]=control_list,_["Converged"]=convgd);
     // returns a list of results
     return res_list;
 }

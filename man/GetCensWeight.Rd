@@ -2,8 +2,7 @@
 % Please edit documentation in R/PlotTypes.R
 \name{GetCensWeight}
 \alias{GetCensWeight}
-\title{Calculates and returns data for time by hazard and survival to estimate censoring rate
-\code{GetCensWeight} uses user provided data, time/event columns, vectors specifying the model, and options generate an estimate of the censoring rate, plots, and returns the data}
+\title{Calculates and returns data for time by hazard and survival to estimate censoring rate}
 \usage{
 GetCensWeight(
   df,
@@ -42,15 +41,15 @@ GetCensWeight(
 
 \item{a_n}{list of initial parameter values, used to determine number of parameters}
 
-\item{modelform}{string specifying the model type}
+\item{modelform}{string specifying the model type: M, ME, A, PA, PAE, GMIX, GMIX-R, GMIX-E}
 
 \item{fir}{term number for the initial term, used for models of the form T0*f(Ti) in which the order matters}
 
-\item{control}{list of parameters controlling the convergence}
+\item{control}{list of parameters controlling the convergence, see Def_Control() for options or vignette("starting_description")}
 
-\item{plot_options}{list of parameters controlling the plot options}
+\item{plot_options}{list of parameters controlling the plot options, see RunCoxPlots() for different options}
 
-\item{model_control}{controls which alternative model options are used}
+\item{model_control}{controls which alternative model options are used, see Def_model_control() for options and vignette("Alt_Run_opt") for further details}
 
 \item{Strat_Col}{column to stratify by if needed}
 }
@@ -58,14 +57,13 @@ GetCensWeight(
 saves the plots in the current directory and returns a data.table of time and corresponding hazard, cumulative hazard, and survival
 }
 \description{
-Calculates and returns data for time by hazard and survival to estimate censoring rate
 \code{GetCensWeight} uses user provided data, time/event columns, vectors specifying the model, and options generate an estimate of the censoring rate, plots, and returns the data
 }
 \examples{
 library(data.table)
 ## basic example code reproduced from the starting-description vignette
 
-df <- data.table("UserID"=c(112, 114, 213, 214, 115, 116, 117),
+df <- data.table::data.table("UserID"=c(112, 114, 213, 214, 115, 116, 117),
            "Starting_Age"=c(18,  20,  18,  19,  21,  20,  18),
              "Ending_Age"=c(30,  45,  57,  47,  36,  60,  55),
           "Cancer_Status"=c(0,   0,   1,   0,   1,   0,   0),
@@ -102,3 +100,4 @@ t_c <- df$t1
 cens_weight <- approx(t_ref, surv_ref, t_c,rule=2)$y
 
 }
+\concept{Plotting Functions}

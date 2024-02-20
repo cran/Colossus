@@ -2,12 +2,11 @@
 % Please edit documentation in R/Poisson_Regression.R
 \name{RunPoissonRegression_Single}
 \alias{RunPoissonRegression_Single}
-\title{Performs poisson regression with no derivative calculations
-\code{RunPoissonRegression_Single} uses user provided data, person-year/event columns, vectors specifying the model, and returns the results}
+\title{Performs poisson regression with no derivative calculations}
 \usage{
 RunPoissonRegression_Single(
   df,
-  pyr,
+  pyr0,
   event0,
   names,
   Term_n,
@@ -22,7 +21,7 @@ RunPoissonRegression_Single(
 \arguments{
 \item{df}{a data.table containing the columns of interest}
 
-\item{pyr}{column used for person-years per row}
+\item{pyr0}{column used for person-years per row}
 
 \item{event0}{column used for event status}
 
@@ -34,11 +33,11 @@ RunPoissonRegression_Single(
 
 \item{a_n}{list of initial parameter values, used to determine number of parameters}
 
-\item{modelform}{string specifying the model type}
+\item{modelform}{string specifying the model type: M, ME, A, PA, PAE, GMIX, GMIX-R, GMIX-E}
 
 \item{fir}{term number for the initial term, used for models of the form T0*f(Ti) in which the order matters}
 
-\item{control}{list of parameters controlling the convergence}
+\item{control}{list of parameters controlling the convergence, see Def_Control() for options or vignette("starting_description")}
 
 \item{keep_constant}{binary values to denote which parameters to change}
 }
@@ -46,14 +45,13 @@ RunPoissonRegression_Single(
 returns a list of the final results
 }
 \description{
-Performs poisson regression with no derivative calculations
 \code{RunPoissonRegression_Single} uses user provided data, person-year/event columns, vectors specifying the model, and returns the results
 }
 \examples{
 library(data.table)
 ## basic example code reproduced from the starting-description vignette
 
-df <- data.table("UserID"=c(112, 114, 213, 214, 115, 116, 117),
+df <- data.table::data.table("UserID"=c(112, 114, 213, 214, 115, 116, 117),
            "Starting_Age"=c(18,  20,  18,  19,  21,  20,  18),
              "Ending_Age"=c(30,  45,  57,  47,  36,  60,  55),
           "Cancer_Status"=c(0,   0,   1,   0,   1,   0,   0),
@@ -81,3 +79,14 @@ control <- list("Ncores"=2,'lr' = 0.75,'maxiter' = 5,'halfmax' = 5,
 
 e <- RunPoissonRegression_Single(df, pyr, event, names, Term_n, tform, a_n, modelform, fir, control)
 }
+\seealso{
+Other Poisson Wrapper Functions: 
+\code{\link{RunPoissonEventAssignment}()},
+\code{\link{RunPoissonRegression}()},
+\code{\link{RunPoissonRegression_Guesses_CPP}()},
+\code{\link{RunPoissonRegression_Joint_Omnibus}()},
+\code{\link{RunPoissonRegression_Omnibus}()},
+\code{\link{RunPoissonRegression_STRATA}()},
+\code{\link{RunPoissonRegression_Tier_Guesses}()}
+}
+\concept{Poisson Wrapper Functions}

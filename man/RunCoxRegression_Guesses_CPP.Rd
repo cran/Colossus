@@ -2,8 +2,7 @@
 % Please edit documentation in R/Cox_Regression.R
 \name{RunCoxRegression_Guesses_CPP}
 \alias{RunCoxRegression_Guesses_CPP}
-\title{Performs basic Cox Proportional Hazards regression, Allows for multiple starting guesses on c++ side
-\code{RunCoxRegression_Guesses_CPP} uses user provided data, time/event columns, vectors specifying the model, and options to control the convergence and starting positions. Has additional options to starting with several initial guesses}
+\title{Performs basic Cox Proportional Hazards regression, Allows for multiple starting guesses on c++ side}
 \usage{
 RunCoxRegression_Guesses_CPP(
   df,
@@ -44,19 +43,19 @@ RunCoxRegression_Guesses_CPP(
 
 \item{a_n}{list of initial parameter values, used to determine number of parameters}
 
-\item{modelform}{string specifying the model type}
+\item{modelform}{string specifying the model type: M, ME, A, PA, PAE, GMIX, GMIX-R, GMIX-E}
 
 \item{fir}{term number for the initial term, used for models of the form T0*f(Ti) in which the order matters}
 
-\item{der_iden}{number for the subterm to test derivative at, only used for testing runs with a single varying parameter}
+\item{der_iden}{number for the subterm to test derivative at, only used for testing runs with a single varying parameter, should be smaller than total number of parameters}
 
-\item{control}{list of parameters controlling the convergence}
+\item{control}{list of parameters controlling the convergence, see Def_Control() for options or vignette("starting_description")}
 
-\item{guesses_control}{list of parameters to control how the guessing works}
+\item{guesses_control}{list of parameters to control how the guessing works, see Def_Control_Guess() for options or vignette("Alt_Distrib_Starts")}
 
 \item{Strat_Col}{column to stratify by if needed}
 
-\item{model_control}{controls which alternative model options are used}
+\item{model_control}{controls which alternative model options are used, see Def_model_control() for options and vignette("Alt_Run_opt") for further details}
 
 \item{cens_weight}{list of weights for censoring rate}
 }
@@ -64,14 +63,13 @@ RunCoxRegression_Guesses_CPP(
 returns a list of the final results
 }
 \description{
-Performs basic Cox Proportional Hazards regression, Allows for multiple starting guesses on c++ side
 \code{RunCoxRegression_Guesses_CPP} uses user provided data, time/event columns, vectors specifying the model, and options to control the convergence and starting positions. Has additional options to starting with several initial guesses
 }
 \examples{
 library(data.table)
 ## basic example code reproduced from the starting-description vignette
 
-df <- data.table("UserID"=c(112, 114, 213, 214, 115, 116, 117),
+df <- data.table::data.table("UserID"=c(112, 114, 213, 214, 115, 116, 117),
            "Starting_Age"=c(18,  20,  18,  19,  21,  20,  18),
              "Ending_Age"=c(30,  45,  57,  47,  36,  60,  55),
           "Cancer_Status"=c(0,   0,   1,   0,   1,   0,   0),
@@ -105,3 +103,16 @@ e <- RunCoxRegression_Guesses_CPP(df, time1, time2, event, names, Term_n,
                               tform, keep_constant, a_n, modelform, fir,
                               der_iden, control,guesses_control,Strat_Col)
 }
+\seealso{
+Other Cox Wrapper Functions: 
+\code{\link{RunCoxEventAssignment}()},
+\code{\link{RunCoxNull}()},
+\code{\link{RunCoxRegression}()},
+\code{\link{RunCoxRegression_Basic}()},
+\code{\link{RunCoxRegression_CR}()},
+\code{\link{RunCoxRegression_Omnibus}()},
+\code{\link{RunCoxRegression_STRATA}()},
+\code{\link{RunCoxRegression_Single}()},
+\code{\link{RunCoxRegression_Tier_Guesses}()}
+}
+\concept{Cox Wrapper Functions}

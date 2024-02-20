@@ -14,6 +14,35 @@
 
 <title>Colossus_Description</title>
 
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
+  }
+});
+</script>
 
 <style type="text/css">
   code{white-space: pre-wrap;}
@@ -35,26 +64,27 @@
   }
 </style>
 <style type="text/css" data-origin="pandoc">
-a.sourceLine { display: inline-block; line-height: 1.25; }
-a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
-a.sourceLine:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-code.sourceCode { white-space: pre-wrap; }
-a.sourceLine { text-indent: -1em; padding-left: 1em; }
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
-pre.numberSource a.sourceLine
-  { position: relative; left: -4em; }
-pre.numberSource a.sourceLine::before
-  { content: attr(title);
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
     position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; pointer-events: all; display: inline-block;
+    border: none; display: inline-block;
     -webkit-touch-callout: none; -webkit-user-select: none;
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
@@ -63,9 +93,9 @@ pre.numberSource a.sourceLine::before
   }
 pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
 div.sourceCode
-  {  }
+  {   }
 @media screen {
-a.sourceLine::before { text-decoration: underline; }
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; font-weight: bold; } /* Alert */
 code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
@@ -326,8 +356,9 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">library</span>(Colossus)</a>
-<a class="sourceLine" id="cb1-2" title="2"><span class="kw">library</span>(data.table)</a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">library</span>(Colossus)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="kw">library</span>(data.table)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a><span class="kw">library</span>(parallel)</span></code></pre></div>
 <div id="colossus-description" class="section level2">
 <h2>Colossus Description</h2>
 </div>
@@ -451,13 +482,13 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <p>Note that the multiplicative model is taking the product of terms, each of which is the product of subterms. The same equation may be written with subterms distributed over different terms in the multiplicative model without changing the final value. The only exception is subterms moved from or into the “first” term in the multiplicative excess model. The same equation could be expressed in ways with different computational complexity.</p>
 <p>The specific model options are passed to the code as separate variables. The model identifier (A, M, PA, PAE, GMIX) is passed as a string. Every model except the additive model has a distinction between the first and remaining terms. Colossus defaults to term 0 being the unique term, however it can be set to any used term number without producing an error.</p>
 <p>The final table is also equivalent to the following code</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1">names &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&#39;a&#39;</span>,<span class="st">&#39;b&#39;</span>,<span class="st">&#39;c&#39;</span>,<span class="st">&#39;d&#39;</span>)</a>
-<a class="sourceLine" id="cb2-2" title="2">Term_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">2</span>)</a>
-<a class="sourceLine" id="cb2-3" title="3">tform &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;loglin&quot;</span>,<span class="st">&quot;lin&quot;</span>,<span class="st">&quot;lin&quot;</span>,<span class="st">&quot;plin&quot;</span>)</a>
-<a class="sourceLine" id="cb2-4" title="4">modelform &lt;-<span class="st"> &quot;M&quot;</span></a>
-<a class="sourceLine" id="cb2-5" title="5">fir &lt;-<span class="st"> </span><span class="dv">0</span></a>
-<a class="sourceLine" id="cb2-6" title="6"></a>
-<a class="sourceLine" id="cb2-7" title="7">a_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>names &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&#39;a&#39;</span>,<span class="st">&#39;b&#39;</span>,<span class="st">&#39;c&#39;</span>,<span class="st">&#39;d&#39;</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>Term_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">2</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>tform &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;loglin&quot;</span>,<span class="st">&quot;lin&quot;</span>,<span class="st">&quot;lin&quot;</span>,<span class="st">&quot;plin&quot;</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>modelform &lt;-<span class="st"> &quot;M&quot;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>fir &lt;-<span class="st"> </span><span class="dv">0</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a>a_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>)</span></code></pre></div>
 <p><em>names</em> denotes the column names used, <em>Term_n</em> denotes the term numbers, <em>tform</em> denotes the subterm formula, <em>modelform</em> denotes the term formula, <em>fir</em> denotes the “first” term indexed from zero which defaults to 0, and <em>a_n</em> denotes the initial guesses for the parameter values. All of which are assumed to be in the same order. A function is called prior to regression that reorders the inputs in order of terms, subterm types, etc.</p>
 </div>
 <div id="survival-time-and-event-data" class="section level2">
@@ -501,30 +532,30 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </tbody>
 </table>
 <p>For a Cox Proportional Hazard we need to provide three column names: the starting age, the ending age, and if an event happened during the interval. In this case that would be “Starting_Age”, “Ending_Age”, and “Cancer_Status”. In this example we have interval data, however that may not always be the case. Colossus is designed to allow for the user to input “%trunc%” in-place of a missing side of the interval. Colossus assumes that this means that the person has the missing endpoint outside of the available data range and creates a dummy column to reference as the interval endpoint. So in code these variables would look like this:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1">df &lt;-<span class="st"> </span><span class="kw">data.table</span>(<span class="st">&quot;UserID&quot;</span>=<span class="kw">c</span>(<span class="dv">112</span>, <span class="dv">114</span>, <span class="dv">213</span>, <span class="dv">214</span>, <span class="dv">115</span>, <span class="dv">116</span>, <span class="dv">117</span>),</a>
-<a class="sourceLine" id="cb3-2" title="2">           <span class="st">&quot;Starting_Age&quot;</span>=<span class="kw">c</span>(<span class="dv">18</span>,  <span class="dv">20</span>,  <span class="dv">18</span>,  <span class="dv">19</span>,  <span class="dv">21</span>,  <span class="dv">20</span>,  <span class="dv">18</span>),</a>
-<a class="sourceLine" id="cb3-3" title="3">             <span class="st">&quot;Ending_Age&quot;</span>=<span class="kw">c</span>(<span class="dv">30</span>,  <span class="dv">45</span>,  <span class="dv">57</span>,  <span class="dv">47</span>,  <span class="dv">36</span>,  <span class="dv">60</span>,  <span class="dv">55</span>),</a>
-<a class="sourceLine" id="cb3-4" title="4">          <span class="st">&quot;Cancer_Status&quot;</span>=<span class="kw">c</span>(<span class="dv">0</span>,   <span class="dv">0</span>,   <span class="dv">1</span>,   <span class="dv">0</span>,   <span class="dv">1</span>,   <span class="dv">0</span>,   <span class="dv">0</span>),</a>
-<a class="sourceLine" id="cb3-5" title="5">                      <span class="st">&quot;a&quot;</span>=<span class="kw">c</span>(<span class="dv">0</span>,   <span class="dv">1</span>,   <span class="dv">1</span>,   <span class="dv">0</span>,   <span class="dv">1</span>,   <span class="dv">0</span>,   <span class="dv">1</span>),</a>
-<a class="sourceLine" id="cb3-6" title="6">                      <span class="st">&quot;b&quot;</span>=<span class="kw">c</span>(<span class="dv">1</span>,   <span class="fl">1.1</span>, <span class="fl">2.1</span>, <span class="dv">2</span>,   <span class="fl">0.1</span>, <span class="dv">1</span>,   <span class="fl">0.2</span>),</a>
-<a class="sourceLine" id="cb3-7" title="7">                      <span class="st">&quot;c&quot;</span>=<span class="kw">c</span>(<span class="dv">10</span>,  <span class="dv">11</span>,  <span class="dv">10</span>,  <span class="dv">11</span>,  <span class="dv">12</span>,  <span class="dv">9</span>,   <span class="dv">11</span>),</a>
-<a class="sourceLine" id="cb3-8" title="8">                      <span class="st">&quot;d&quot;</span>=<span class="kw">c</span>(<span class="dv">0</span>,   <span class="dv">0</span>,   <span class="dv">0</span>,   <span class="dv">1</span>,   <span class="dv">1</span>,   <span class="dv">1</span>,   <span class="dv">1</span>))</a>
-<a class="sourceLine" id="cb3-9" title="9"><span class="co"># For the interval case</span></a>
-<a class="sourceLine" id="cb3-10" title="10">time1 &lt;-<span class="st"> &quot;Starting_Age&quot;</span></a>
-<a class="sourceLine" id="cb3-11" title="11">time2 &lt;-<span class="st"> &quot;Ending_Age&quot;</span></a>
-<a class="sourceLine" id="cb3-12" title="12">event &lt;-<span class="st"> &quot;Cancer_Status&quot;</span></a>
-<a class="sourceLine" id="cb3-13" title="13"></a>
-<a class="sourceLine" id="cb3-14" title="14"><span class="co"># Supposing we had left truncated data the following would change</span></a>
-<a class="sourceLine" id="cb3-15" title="15">time1 &lt;-<span class="st"> &quot;Starting_Age&quot;</span></a>
-<a class="sourceLine" id="cb3-16" title="16">time2 &lt;-<span class="st"> &quot;%trunc%&quot;</span></a>
-<a class="sourceLine" id="cb3-17" title="17"></a>
-<a class="sourceLine" id="cb3-18" title="18"><span class="co"># and with right truncated data the following is used</span></a>
-<a class="sourceLine" id="cb3-19" title="19">time1 &lt;-<span class="st"> &quot;%trunc%&quot;</span></a>
-<a class="sourceLine" id="cb3-20" title="20">time2 &lt;-<span class="st"> &quot;Ending_Age&quot;</span></a>
-<a class="sourceLine" id="cb3-21" title="21"></a>
-<a class="sourceLine" id="cb3-22" title="22"><span class="co">#setting back to normal</span></a>
-<a class="sourceLine" id="cb3-23" title="23">time1 &lt;-<span class="st"> &quot;Starting_Age&quot;</span></a>
-<a class="sourceLine" id="cb3-24" title="24">time2 &lt;-<span class="st"> &quot;Ending_Age&quot;</span></a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>df &lt;-<span class="st"> </span><span class="kw">data.table</span>(<span class="st">&quot;UserID&quot;</span>=<span class="kw">c</span>(<span class="dv">112</span>, <span class="dv">114</span>, <span class="dv">213</span>, <span class="dv">214</span>, <span class="dv">115</span>, <span class="dv">116</span>, <span class="dv">117</span>),</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>           <span class="st">&quot;Starting_Age&quot;</span>=<span class="kw">c</span>(<span class="dv">18</span>,  <span class="dv">20</span>,  <span class="dv">18</span>,  <span class="dv">19</span>,  <span class="dv">21</span>,  <span class="dv">20</span>,  <span class="dv">18</span>),</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>             <span class="st">&quot;Ending_Age&quot;</span>=<span class="kw">c</span>(<span class="dv">30</span>,  <span class="dv">45</span>,  <span class="dv">57</span>,  <span class="dv">47</span>,  <span class="dv">36</span>,  <span class="dv">60</span>,  <span class="dv">55</span>),</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a>          <span class="st">&quot;Cancer_Status&quot;</span>=<span class="kw">c</span>(<span class="dv">0</span>,   <span class="dv">0</span>,   <span class="dv">1</span>,   <span class="dv">0</span>,   <span class="dv">1</span>,   <span class="dv">0</span>,   <span class="dv">0</span>),</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true"></a>                      <span class="st">&quot;a&quot;</span>=<span class="kw">c</span>(<span class="dv">0</span>,   <span class="dv">1</span>,   <span class="dv">1</span>,   <span class="dv">0</span>,   <span class="dv">1</span>,   <span class="dv">0</span>,   <span class="dv">1</span>),</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true"></a>                      <span class="st">&quot;b&quot;</span>=<span class="kw">c</span>(<span class="dv">1</span>,   <span class="fl">1.1</span>, <span class="fl">2.1</span>, <span class="dv">2</span>,   <span class="fl">0.1</span>, <span class="dv">1</span>,   <span class="fl">0.2</span>),</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true"></a>                      <span class="st">&quot;c&quot;</span>=<span class="kw">c</span>(<span class="dv">10</span>,  <span class="dv">11</span>,  <span class="dv">10</span>,  <span class="dv">11</span>,  <span class="dv">12</span>,  <span class="dv">9</span>,   <span class="dv">11</span>),</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true"></a>                      <span class="st">&quot;d&quot;</span>=<span class="kw">c</span>(<span class="dv">0</span>,   <span class="dv">0</span>,   <span class="dv">0</span>,   <span class="dv">1</span>,   <span class="dv">1</span>,   <span class="dv">1</span>,   <span class="dv">1</span>))</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true"></a><span class="co"># For the interval case</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true"></a>time1 &lt;-<span class="st"> &quot;Starting_Age&quot;</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true"></a>time2 &lt;-<span class="st"> &quot;Ending_Age&quot;</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true"></a>event &lt;-<span class="st"> &quot;Cancer_Status&quot;</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true"></a></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true"></a><span class="co"># Supposing we had left truncated data the following would change</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true"></a>time1 &lt;-<span class="st"> &quot;Starting_Age&quot;</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true"></a>time2 &lt;-<span class="st"> &quot;%trunc%&quot;</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true"></a></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true"></a><span class="co"># and with right truncated data the following is used</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true"></a>time1 &lt;-<span class="st"> &quot;%trunc%&quot;</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true"></a>time2 &lt;-<span class="st"> &quot;Ending_Age&quot;</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true"></a></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true"></a><span class="co">#setting back to normal</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true"></a>time1 &lt;-<span class="st"> &quot;Starting_Age&quot;</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true"></a>time2 &lt;-<span class="st"> &quot;Ending_Age&quot;</span></span></code></pre></div>
 <p>Suppose instead we were interested in a Poisson regression, the only difference is instead of providing interval endpoints we give a column of interval lengths. In this case we need to define a new column, but that may not be the case in general. Suppose we are now working with the following table:</p>
 <table>
 <thead>
@@ -568,9 +599,9 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </tbody>
 </table>
 <p>we would just provide the duration column and event column, or “Person_Years” and “Cancer_Status”. Which in code looks like the following:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1">df<span class="op">$</span>Person_Years &lt;-<span class="st"> </span>df<span class="op">$</span>Ending_Age <span class="op">-</span>df<span class="op">$</span>Starting_Age</a>
-<a class="sourceLine" id="cb4-2" title="2">pyr &lt;-<span class="st"> &quot;Person_Years&quot;</span></a>
-<a class="sourceLine" id="cb4-3" title="3">event &lt;-<span class="st"> &quot;Cancer_Status&quot;</span></a></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a>df<span class="op">$</span>Person_Years &lt;-<span class="st"> </span>df<span class="op">$</span>Ending_Age <span class="op">-</span>df<span class="op">$</span>Starting_Age</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a>pyr &lt;-<span class="st"> &quot;Person_Years&quot;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a>event &lt;-<span class="st"> &quot;Cancer_Status&quot;</span></span></code></pre></div>
 </div>
 <div id="control-and-verbosity" class="section level2">
 <h2>Control and Verbosity</h2>
@@ -685,123 +716,129 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </tbody>
 </table>
 <p>Going back to our example, the code may look like the following:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1">keep_constant &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>)</a>
-<a class="sourceLine" id="cb5-2" title="2">der_iden &lt;-<span class="st"> </span><span class="dv">0</span></a>
-<a class="sourceLine" id="cb5-3" title="3"></a>
-<a class="sourceLine" id="cb5-4" title="4">control=<span class="kw">list</span>(<span class="st">&quot;Ncores&quot;</span>=<span class="dv">2</span>,<span class="st">&#39;lr&#39;</span> =<span class="st"> </span><span class="fl">0.75</span>,<span class="st">&#39;maxiter&#39;</span> =<span class="st"> </span><span class="dv">100</span>,<span class="st">&#39;halfmax&#39;</span> =<span class="st"> </span><span class="dv">5</span>,<span class="st">&#39;epsilon&#39;</span> =<span class="st"> </span><span class="fl">1e-9</span>,</a>
-<a class="sourceLine" id="cb5-5" title="5">             <span class="st">&#39;dbeta_max&#39;</span> =<span class="st"> </span><span class="fl">0.5</span>,<span class="st">&#39;deriv_epsilon&#39;</span> =<span class="st"> </span><span class="fl">1e-9</span>, <span class="st">&#39;abs_max&#39;</span>=<span class="fl">1.0</span>,<span class="st">&#39;change_all&#39;</span>=<span class="ot">TRUE</span>,</a>
-<a class="sourceLine" id="cb5-6" title="6">             <span class="st">&#39;dose_abs_max&#39;</span>=<span class="fl">100.0</span>,<span class="st">&#39;verbose&#39;</span>=<span class="ot">FALSE</span>, <span class="st">&#39;ties&#39;</span>=<span class="st">&#39;breslow&#39;</span>,<span class="st">&#39;double_step&#39;</span>=<span class="dv">1</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a>keep_constant &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a>der_iden &lt;-<span class="st"> </span><span class="dv">0</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a>control=<span class="kw">list</span>(<span class="st">&quot;Ncores&quot;</span>=<span class="dv">2</span>,<span class="st">&#39;lr&#39;</span> =<span class="st"> </span><span class="fl">0.75</span>,<span class="st">&#39;maxiter&#39;</span> =<span class="st"> </span><span class="dv">100</span>,<span class="st">&#39;halfmax&#39;</span> =<span class="st"> </span><span class="dv">5</span>,<span class="st">&#39;epsilon&#39;</span> =<span class="st"> </span><span class="fl">1e-9</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a>             <span class="st">&#39;dbeta_max&#39;</span> =<span class="st"> </span><span class="fl">0.5</span>,<span class="st">&#39;deriv_epsilon&#39;</span> =<span class="st"> </span><span class="fl">1e-9</span>, <span class="st">&#39;abs_max&#39;</span>=<span class="fl">1.0</span>,<span class="st">&#39;change_all&#39;</span>=<span class="ot">TRUE</span>,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a>             <span class="st">&#39;dose_abs_max&#39;</span>=<span class="fl">100.0</span>,<span class="st">&#39;verbose&#39;</span>=<span class="ot">FALSE</span>, <span class="st">&#39;ties&#39;</span>=<span class="st">&#39;breslow&#39;</span>,<span class="st">&#39;double_step&#39;</span>=<span class="dv">1</span>)</span></code></pre></div>
 <p>In this example, no parameters are held constant, 100 iterations with 5 half-steps are used, a regression is performed with matrix step solutions, and breslow’s method for tied event times is used. There are no errors for unused control parameters being used, they will simply be ignored. Every commonly required control parameter has a default value which is automatically used if not declared. This includes an optional list of model control options. These are used for nonstandard model options not covered in this vignette.</p>
 </div>
 <div id="running-the-regression-and-output" class="section level2">
 <h2>Running the Regression and Output</h2>
 <p>Finally the user calls the regression function they need. The names used throughout this vignette are the defaults assumed. Both the Cox PH regression and Poisson regression are called directly and return a list of results. Colossus contains a suite of additional checks it runs on the inputs prior to starting and calculations, which are designed to output explicit details on any issues. Printing error details may require the verbose option to be TRUE. In code the functions are called as follows:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1"><span class="co"># assuming the table of covariates is stored in a data.table &quot;df&quot;</span></a>
-<a class="sourceLine" id="cb6-2" title="2"></a>
-<a class="sourceLine" id="cb6-3" title="3">e &lt;-<span class="st"> </span><span class="kw">RunCoxRegression</span>(df, time1, time2, event, names, Term_n, tform, keep_constant,</a>
-<a class="sourceLine" id="cb6-4" title="4">                      a_n, modelform, fir, der_iden, control)</a>
-<a class="sourceLine" id="cb6-5" title="5"><span class="kw">print</span>(e)</a>
-<a class="sourceLine" id="cb6-6" title="6"><span class="co">#&gt; $LogLik</span></a>
-<a class="sourceLine" id="cb6-7" title="7"><span class="co">#&gt; [1] -0.6753644</span></a>
-<a class="sourceLine" id="cb6-8" title="8"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-9" title="9"><span class="co">#&gt; $First_Der</span></a>
-<a class="sourceLine" id="cb6-10" title="10"><span class="co">#&gt; [1] -2.220446e-16 -7.187040e-05  7.361232e-05  1.919948e-04</span></a>
-<a class="sourceLine" id="cb6-11" title="11"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-12" title="12"><span class="co">#&gt; $Second_Der</span></a>
-<a class="sourceLine" id="cb6-13" title="13"><span class="co">#&gt;              [,1]         [,2]          [,3]          [,4]</span></a>
-<a class="sourceLine" id="cb6-14" title="14"><span class="co">#&gt; [1,] 2.220446e-16 2.710505e-20  1.734723e-18  3.559233e-18</span></a>
-<a class="sourceLine" id="cb6-15" title="15"><span class="co">#&gt; [2,] 2.710505e-20 1.742209e-08  7.238366e-07  2.311365e-07</span></a>
-<a class="sourceLine" id="cb6-16" title="16"><span class="co">#&gt; [3,] 1.734723e-18 7.238366e-07 -1.501037e-06 -2.356033e-07</span></a>
-<a class="sourceLine" id="cb6-17" title="17"><span class="co">#&gt; [4,] 3.559233e-18 2.311365e-07 -2.356033e-07 -3.687577e-06</span></a>
-<a class="sourceLine" id="cb6-18" title="18"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-19" title="19"><span class="co">#&gt; $beta_0</span></a>
-<a class="sourceLine" id="cb6-20" title="20"><span class="co">#&gt; [1]  42.97183  98.72266  96.82311 101.10000</span></a>
-<a class="sourceLine" id="cb6-21" title="21"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-22" title="22"><span class="co">#&gt; $Standard_Deviation</span></a>
-<a class="sourceLine" id="cb6-23" title="23"><span class="co">#&gt; [1]      NaN      NaN 240.8255 520.7003</span></a>
-<a class="sourceLine" id="cb6-24" title="24"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-25" title="25"><span class="co">#&gt; $AIC</span></a>
-<a class="sourceLine" id="cb6-26" title="26"><span class="co">#&gt; [1] 9.350729</span></a>
-<a class="sourceLine" id="cb6-27" title="27"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-28" title="28"><span class="co">#&gt; $Parameter_Lists</span></a>
-<a class="sourceLine" id="cb6-29" title="29"><span class="co">#&gt; $Parameter_Lists$Term_n</span></a>
-<a class="sourceLine" id="cb6-30" title="30"><span class="co">#&gt; [1] 0 1 1 2</span></a>
-<a class="sourceLine" id="cb6-31" title="31"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-32" title="32"><span class="co">#&gt; $Parameter_Lists$tforms</span></a>
-<a class="sourceLine" id="cb6-33" title="33"><span class="co">#&gt; [1] &quot;loglin&quot; &quot;lin&quot;    &quot;lin&quot;    &quot;plin&quot;  </span></a>
-<a class="sourceLine" id="cb6-34" title="34"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-35" title="35"><span class="co">#&gt; $Parameter_Lists$names</span></a>
-<a class="sourceLine" id="cb6-36" title="36"><span class="co">#&gt; [1] &quot;a&quot; &quot;b&quot; &quot;c&quot; &quot;d&quot;</span></a>
-<a class="sourceLine" id="cb6-37" title="37"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-38" title="38"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-39" title="39"><span class="co">#&gt; $Control_List</span></a>
-<a class="sourceLine" id="cb6-40" title="40"><span class="co">#&gt; $Control_List$Iteration</span></a>
-<a class="sourceLine" id="cb6-41" title="41"><span class="co">#&gt; [1] 100</span></a>
-<a class="sourceLine" id="cb6-42" title="42"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-43" title="43"><span class="co">#&gt; $Control_List$`Maximum Step`</span></a>
-<a class="sourceLine" id="cb6-44" title="44"><span class="co">#&gt; [1] 1</span></a>
-<a class="sourceLine" id="cb6-45" title="45"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-46" title="46"><span class="co">#&gt; $Control_List$`Derivative Limiting`</span></a>
-<a class="sourceLine" id="cb6-47" title="47"><span class="co">#&gt; [1] 0.0001919948</span></a>
-<a class="sourceLine" id="cb6-48" title="48"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-49" title="49"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-50" title="50"><span class="co">#&gt; $Convgerged</span></a>
-<a class="sourceLine" id="cb6-51" title="51"><span class="co">#&gt; [1] FALSE</span></a>
-<a class="sourceLine" id="cb6-52" title="52"></a>
-<a class="sourceLine" id="cb6-53" title="53"><span class="co">#or a poisson regression</span></a>
-<a class="sourceLine" id="cb6-54" title="54">a_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>) <span class="co">#a_n is updated when either regression is called</span></a>
-<a class="sourceLine" id="cb6-55" title="55">e &lt;-<span class="st"> </span><span class="kw">RunPoissonRegression</span>(df, pyr, event, names, Term_n, tform, keep_constant, a_n,</a>
-<a class="sourceLine" id="cb6-56" title="56">                          modelform, fir, der_iden, control)</a>
-<a class="sourceLine" id="cb6-57" title="57"><span class="kw">print</span>(e)</a>
-<a class="sourceLine" id="cb6-58" title="58"><span class="co">#&gt; $LogLik</span></a>
-<a class="sourceLine" id="cb6-59" title="59"><span class="co">#&gt; [1] -44.73982</span></a>
-<a class="sourceLine" id="cb6-60" title="60"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-61" title="61"><span class="co">#&gt; $First_Der</span></a>
-<a class="sourceLine" id="cb6-62" title="62"><span class="co">#&gt; [1]   -19.67462  -290.53655 -2314.56447   -19.64770</span></a>
-<a class="sourceLine" id="cb6-63" title="63"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-64" title="64"><span class="co">#&gt; $Second_Der</span></a>
-<a class="sourceLine" id="cb6-65" title="65"><span class="co">#&gt;              [,1]      [,2]        [,3]          [,4]</span></a>
-<a class="sourceLine" id="cb6-66" title="66"><span class="co">#&gt; [1,]   -21.674624 -153.3672  -1393.0153    -4.8644043</span></a>
-<a class="sourceLine" id="cb6-67" title="67"><span class="co">#&gt; [2,]  -153.367172 -108.7036   -666.9745  -101.9254174</span></a>
-<a class="sourceLine" id="cb6-68" title="68"><span class="co">#&gt; [3,] -1393.015328 -666.9745 -21096.6437 -1058.8112374</span></a>
-<a class="sourceLine" id="cb6-69" title="69"><span class="co">#&gt; [4,]    -4.864404 -101.9254  -1058.8112    -0.5929361</span></a>
-<a class="sourceLine" id="cb6-70" title="70"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-71" title="71"><span class="co">#&gt; $beta_0</span></a>
-<a class="sourceLine" id="cb6-72" title="72"><span class="co">#&gt; [1] -0.40680015 -0.01846667 -0.07585910 -0.70133825</span></a>
-<a class="sourceLine" id="cb6-73" title="73"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-74" title="74"><span class="co">#&gt; $Standard_Deviation</span></a>
-<a class="sourceLine" id="cb6-75" title="75"><span class="co">#&gt; [1] 0.383529879 0.092209643 0.008136992 0.535536589</span></a>
-<a class="sourceLine" id="cb6-76" title="76"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-77" title="77"><span class="co">#&gt; $AIC</span></a>
-<a class="sourceLine" id="cb6-78" title="78"><span class="co">#&gt; [1] 93.47964</span></a>
-<a class="sourceLine" id="cb6-79" title="79"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-80" title="80"><span class="co">#&gt; $Deviation</span></a>
-<a class="sourceLine" id="cb6-81" title="81"><span class="co">#&gt; [1] 85.47964</span></a>
-<a class="sourceLine" id="cb6-82" title="82"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-83" title="83"><span class="co">#&gt; $Parameter_Lists</span></a>
-<a class="sourceLine" id="cb6-84" title="84"><span class="co">#&gt; $Parameter_Lists$Term_n</span></a>
-<a class="sourceLine" id="cb6-85" title="85"><span class="co">#&gt; [1] 0 1 1 2</span></a>
-<a class="sourceLine" id="cb6-86" title="86"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-87" title="87"><span class="co">#&gt; $Parameter_Lists$tforms</span></a>
-<a class="sourceLine" id="cb6-88" title="88"><span class="co">#&gt; [1] &quot;loglin&quot; &quot;lin&quot;    &quot;lin&quot;    &quot;plin&quot;  </span></a>
-<a class="sourceLine" id="cb6-89" title="89"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-90" title="90"><span class="co">#&gt; $Parameter_Lists$names</span></a>
-<a class="sourceLine" id="cb6-91" title="91"><span class="co">#&gt; [1] &quot;a&quot; &quot;b&quot; &quot;c&quot; &quot;d&quot;</span></a>
-<a class="sourceLine" id="cb6-92" title="92"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-93" title="93"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-94" title="94"><span class="co">#&gt; $Control_List</span></a>
-<a class="sourceLine" id="cb6-95" title="95"><span class="co">#&gt; $Control_List$Iteration</span></a>
-<a class="sourceLine" id="cb6-96" title="96"><span class="co">#&gt; [1] 12</span></a>
-<a class="sourceLine" id="cb6-97" title="97"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-98" title="98"><span class="co">#&gt; $Control_List$`Maximum Step`</span></a>
-<a class="sourceLine" id="cb6-99" title="99"><span class="co">#&gt; [1] 2.910383e-11</span></a>
-<a class="sourceLine" id="cb6-100" title="100"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-101" title="101"><span class="co">#&gt; $Control_List$`Derivative Limiting`</span></a>
-<a class="sourceLine" id="cb6-102" title="102"><span class="co">#&gt; [1] 2314.564</span></a>
-<a class="sourceLine" id="cb6-103" title="103"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-104" title="104"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb6-105" title="105"><span class="co">#&gt; $Converged</span></a>
-<a class="sourceLine" id="cb6-106" title="106"><span class="co">#&gt; [1] FALSE</span></a></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a><span class="co"># assuming the table of covariates is stored in a data.table &quot;df&quot;</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">RunCoxRegression</span>(df, time1, time2, event, names, Term_n, tform, keep_constant,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a>                      a_n, modelform, fir, der_iden, control)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a><span class="kw">print</span>(e)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a><span class="co">#&gt; $LogLik</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true"></a><span class="co">#&gt; [1] -0.6753644</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true"></a><span class="co">#&gt; $First_Der</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true"></a><span class="co">#&gt; [1] -2.220446e-16 -7.187040e-05  7.361232e-05  1.919948e-04</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true"></a><span class="co">#&gt; $Second_Der</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true"></a><span class="co">#&gt;              [,1]         [,2]          [,3]          [,4]</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true"></a><span class="co">#&gt; [1,] 2.220446e-16 2.710505e-20  1.734723e-18  3.559233e-18</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true"></a><span class="co">#&gt; [2,] 2.710505e-20 1.742209e-08  7.238366e-07  2.311365e-07</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true"></a><span class="co">#&gt; [3,] 1.734723e-18 7.238366e-07 -1.501037e-06 -2.356033e-07</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true"></a><span class="co">#&gt; [4,] 3.559233e-18 2.311365e-07 -2.356033e-07 -3.687577e-06</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true"></a><span class="co">#&gt; $beta_0</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true"></a><span class="co">#&gt; [1]  42.97183  98.72266  96.82311 101.10000</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true"></a><span class="co">#&gt; $Standard_Deviation</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true"></a><span class="co">#&gt; [1]      NaN      NaN 240.8255 520.7003</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true"></a><span class="co">#&gt; $AIC</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true"></a><span class="co">#&gt; [1] 9.350729</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true"></a><span class="co">#&gt; $BIC</span></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true"></a><span class="co">#&gt; [1] 9.134369</span></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true"></a><span class="co">#&gt; $Parameter_Lists</span></span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true"></a><span class="co">#&gt; $Parameter_Lists$Term_n</span></span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true"></a><span class="co">#&gt; [1] 0 1 1 2</span></span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true"></a><span class="co">#&gt; $Parameter_Lists$tforms</span></span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;loglin&quot; &quot;lin&quot;    &quot;lin&quot;    &quot;plin&quot;  </span></span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true"></a><span class="co">#&gt; $Parameter_Lists$names</span></span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;a&quot; &quot;b&quot; &quot;c&quot; &quot;d&quot;</span></span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true"></a><span class="co">#&gt; $Control_List</span></span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true"></a><span class="co">#&gt; $Control_List$Iteration</span></span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true"></a><span class="co">#&gt; [1] 100</span></span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true"></a><span class="co">#&gt; $Control_List$`Maximum Step`</span></span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true"></a><span class="co">#&gt; [1] 1</span></span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true"></a><span class="co">#&gt; $Control_List$`Derivative Limiting`</span></span>
+<span id="cb6-50"><a href="#cb6-50" aria-hidden="true"></a><span class="co">#&gt; [1] 0.0001919948</span></span>
+<span id="cb6-51"><a href="#cb6-51" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb6-52"><a href="#cb6-52" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb6-53"><a href="#cb6-53" aria-hidden="true"></a><span class="co">#&gt; $Convgerged</span></span>
+<span id="cb6-54"><a href="#cb6-54" aria-hidden="true"></a><span class="co">#&gt; [1] FALSE</span></span>
+<span id="cb6-55"><a href="#cb6-55" aria-hidden="true"></a></span>
+<span id="cb6-56"><a href="#cb6-56" aria-hidden="true"></a><span class="co">#or a poisson regression</span></span>
+<span id="cb6-57"><a href="#cb6-57" aria-hidden="true"></a>a_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>) <span class="co">#a_n is updated when either regression is called</span></span>
+<span id="cb6-58"><a href="#cb6-58" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">RunPoissonRegression</span>(df, pyr, event, names, Term_n, tform, keep_constant, a_n,</span>
+<span id="cb6-59"><a href="#cb6-59" aria-hidden="true"></a>                          modelform, fir, der_iden, control)</span>
+<span id="cb6-60"><a href="#cb6-60" aria-hidden="true"></a><span class="kw">print</span>(e)</span>
+<span id="cb6-61"><a href="#cb6-61" aria-hidden="true"></a><span class="co">#&gt; $LogLik</span></span>
+<span id="cb6-62"><a href="#cb6-62" aria-hidden="true"></a><span class="co">#&gt; [1] -44.73982</span></span>
+<span id="cb6-63"><a href="#cb6-63" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb6-64"><a href="#cb6-64" aria-hidden="true"></a><span class="co">#&gt; $First_Der</span></span>
+<span id="cb6-65"><a href="#cb6-65" aria-hidden="true"></a><span class="co">#&gt; [1]   -19.67462  -290.53655 -2314.56447   -19.64770</span></span>
+<span id="cb6-66"><a href="#cb6-66" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb6-67"><a href="#cb6-67" aria-hidden="true"></a><span class="co">#&gt; $Second_Der</span></span>
+<span id="cb6-68"><a href="#cb6-68" aria-hidden="true"></a><span class="co">#&gt;              [,1]      [,2]        [,3]          [,4]</span></span>
+<span id="cb6-69"><a href="#cb6-69" aria-hidden="true"></a><span class="co">#&gt; [1,]   -21.674624 -153.3672  -1393.0153    -4.8644043</span></span>
+<span id="cb6-70"><a href="#cb6-70" aria-hidden="true"></a><span class="co">#&gt; [2,]  -153.367172 -108.7036   -666.9745  -101.9254174</span></span>
+<span id="cb6-71"><a href="#cb6-71" aria-hidden="true"></a><span class="co">#&gt; [3,] -1393.015328 -666.9745 -21096.6437 -1058.8112374</span></span>
+<span id="cb6-72"><a href="#cb6-72" aria-hidden="true"></a><span class="co">#&gt; [4,]    -4.864404 -101.9254  -1058.8112    -0.5929361</span></span>
+<span id="cb6-73"><a href="#cb6-73" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb6-74"><a href="#cb6-74" aria-hidden="true"></a><span class="co">#&gt; $beta_0</span></span>
+<span id="cb6-75"><a href="#cb6-75" aria-hidden="true"></a><span class="co">#&gt; [1] -0.40680015 -0.01846667 -0.07585910 -0.70133825</span></span>
+<span id="cb6-76"><a href="#cb6-76" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb6-77"><a href="#cb6-77" aria-hidden="true"></a><span class="co">#&gt; $Standard_Deviation</span></span>
+<span id="cb6-78"><a href="#cb6-78" aria-hidden="true"></a><span class="co">#&gt; [1] 0.383529879 0.092209643 0.008136992 0.535536589</span></span>
+<span id="cb6-79"><a href="#cb6-79" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb6-80"><a href="#cb6-80" aria-hidden="true"></a><span class="co">#&gt; $AIC</span></span>
+<span id="cb6-81"><a href="#cb6-81" aria-hidden="true"></a><span class="co">#&gt; [1] 93.47964</span></span>
+<span id="cb6-82"><a href="#cb6-82" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb6-83"><a href="#cb6-83" aria-hidden="true"></a><span class="co">#&gt; $BIC</span></span>
+<span id="cb6-84"><a href="#cb6-84" aria-hidden="true"></a><span class="co">#&gt; [1] 97.26328</span></span>
+<span id="cb6-85"><a href="#cb6-85" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb6-86"><a href="#cb6-86" aria-hidden="true"></a><span class="co">#&gt; $Deviation</span></span>
+<span id="cb6-87"><a href="#cb6-87" aria-hidden="true"></a><span class="co">#&gt; [1] 85.47964</span></span>
+<span id="cb6-88"><a href="#cb6-88" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb6-89"><a href="#cb6-89" aria-hidden="true"></a><span class="co">#&gt; $Parameter_Lists</span></span>
+<span id="cb6-90"><a href="#cb6-90" aria-hidden="true"></a><span class="co">#&gt; $Parameter_Lists$Term_n</span></span>
+<span id="cb6-91"><a href="#cb6-91" aria-hidden="true"></a><span class="co">#&gt; [1] 0 1 1 2</span></span>
+<span id="cb6-92"><a href="#cb6-92" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb6-93"><a href="#cb6-93" aria-hidden="true"></a><span class="co">#&gt; $Parameter_Lists$tforms</span></span>
+<span id="cb6-94"><a href="#cb6-94" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;loglin&quot; &quot;lin&quot;    &quot;lin&quot;    &quot;plin&quot;  </span></span>
+<span id="cb6-95"><a href="#cb6-95" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb6-96"><a href="#cb6-96" aria-hidden="true"></a><span class="co">#&gt; $Parameter_Lists$names</span></span>
+<span id="cb6-97"><a href="#cb6-97" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;a&quot; &quot;b&quot; &quot;c&quot; &quot;d&quot;</span></span>
+<span id="cb6-98"><a href="#cb6-98" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb6-99"><a href="#cb6-99" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb6-100"><a href="#cb6-100" aria-hidden="true"></a><span class="co">#&gt; $Control_List</span></span>
+<span id="cb6-101"><a href="#cb6-101" aria-hidden="true"></a><span class="co">#&gt; $Control_List$Iteration</span></span>
+<span id="cb6-102"><a href="#cb6-102" aria-hidden="true"></a><span class="co">#&gt; [1] 12</span></span>
+<span id="cb6-103"><a href="#cb6-103" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb6-104"><a href="#cb6-104" aria-hidden="true"></a><span class="co">#&gt; $Control_List$`Maximum Step`</span></span>
+<span id="cb6-105"><a href="#cb6-105" aria-hidden="true"></a><span class="co">#&gt; [1] 2.910383e-11</span></span>
+<span id="cb6-106"><a href="#cb6-106" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb6-107"><a href="#cb6-107" aria-hidden="true"></a><span class="co">#&gt; $Control_List$`Derivative Limiting`</span></span>
+<span id="cb6-108"><a href="#cb6-108" aria-hidden="true"></a><span class="co">#&gt; [1] 2314.564</span></span>
+<span id="cb6-109"><a href="#cb6-109" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb6-110"><a href="#cb6-110" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb6-111"><a href="#cb6-111" aria-hidden="true"></a><span class="co">#&gt; $Converged</span></span>
+<span id="cb6-112"><a href="#cb6-112" aria-hidden="true"></a><span class="co">#&gt; [1] FALSE</span></span></code></pre></div>
 <p>The following are output:</p>
 <table>
 <colgroup>

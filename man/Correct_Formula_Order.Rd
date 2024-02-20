@@ -2,8 +2,7 @@
 % Please edit documentation in R/Utility.R
 \name{Correct_Formula_Order}
 \alias{Correct_Formula_Order}
-\title{Corrects the order of terms/formula/etc
-\code{Correct_Formula_Order} checks the order of formulas given and corrects any ordering issues}
+\title{Corrects the order of terms/formula/etc}
 \usage{
 Correct_Formula_Order(
   Term_n,
@@ -12,6 +11,8 @@ Correct_Formula_Order(
   a_n,
   names,
   der_iden = 0,
+  Cons_Mat = matrix(c(0)),
+  Cons_Vec = c(0),
   verbose = FALSE
 )
 }
@@ -26,15 +27,18 @@ Correct_Formula_Order(
 
 \item{names}{columns for elements of the model, used to identify data columns}
 
-\item{der_iden}{number for the subterm to test derivative at, only used for testing runs with a single varying parameter}
+\item{der_iden}{number for the subterm to test derivative at, only used for testing runs with a single varying parameter, should be smaller than total number of parameters}
 
-\item{verbose}{boolean to control if additional information is printed to the console}
+\item{Cons_Mat}{Matrix containing coefficients for system of linear constraints, formatted as matrix}
+
+\item{Cons_Vec}{Vector containing constants for system of linear constraints, formatted as vector}
+
+\item{verbose}{boolean to control if additional information is printed to the console, also accepts 0/1 integer}
 }
 \value{
 returns the corrected lists
 }
 \description{
-Corrects the order of terms/formula/etc
 \code{Correct_Formula_Order} checks the order of formulas given and corrects any ordering issues
 }
 \examples{
@@ -46,7 +50,9 @@ tform <- c("loglin",'quad_slope','lin', "lin_int", "lin_slope")
 keep_constant <- c(0,0,0,1,0)
 a_n <- c(1,2,3,4,5)
 names <- c("a","a","a","a","a")
-val <- Correct_Formula_Order(Term_n, tform, keep_constant, a_n, names)
+val <- Correct_Formula_Order(Term_n, tform, keep_constant,
+                             a_n, names, Cons_Mat=matrix(c(0)),
+                             Cons_Vec=c(0))
 Term_n <- val$Term_n
 tform <- val$tform
 keep_constant <- val$keep_constant
@@ -55,3 +61,21 @@ der_iden <- val$der_iden
 names <- val$names
 
 }
+\seealso{
+Other Data Cleaning Functions: 
+\code{\link{Check_Dupe_Columns}()},
+\code{\link{Check_Trunc}()},
+\code{\link{Date_Shift}()},
+\code{\link{Def_Control}()},
+\code{\link{Def_Control_Guess}()},
+\code{\link{Def_model_control}()},
+\code{\link{Def_modelform_fix}()},
+\code{\link{Joint_Multiple_Events}()},
+\code{\link{Replace_Missing}()},
+\code{\link{Time_Since}()},
+\code{\link{factorize}()},
+\code{\link{factorize_par}()},
+\code{\link{gen_time_dep}()},
+\code{\link{interact_them}()}
+}
+\concept{Data Cleaning Functions}

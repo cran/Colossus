@@ -2,8 +2,7 @@
 % Please edit documentation in R/Utility.R
 \name{Check_Dupe_Columns}
 \alias{Check_Dupe_Columns}
-\title{checks for duplicated column names
-\code{Check_Dupe_Columns} checks for duplicated columns, columns with the same values, and columns with 1 value. Currently not updated for multi-terms}
+\title{checks for duplicated column names}
 \usage{
 Check_Dupe_Columns(df, cols, term_n, verbose = FALSE, factor_check = FALSE)
 }
@@ -14,7 +13,7 @@ Check_Dupe_Columns(df, cols, term_n, verbose = FALSE, factor_check = FALSE)
 
 \item{term_n}{term numbers}
 
-\item{verbose}{boolean to control if additional information is printed to the console}
+\item{verbose}{boolean to control if additional information is printed to the console, also accepts 0/1 integer}
 
 \item{factor_check}{a boolean used to skip comparing columns of the form ?_? with the same initial string, which is used for factored columns}
 }
@@ -22,7 +21,6 @@ Check_Dupe_Columns(df, cols, term_n, verbose = FALSE, factor_check = FALSE)
 returns the usable columns
 }
 \description{
-checks for duplicated column names
 \code{Check_Dupe_Columns} checks for duplicated columns, columns with the same values, and columns with 1 value. Currently not updated for multi-terms
 }
 \examples{
@@ -30,9 +28,27 @@ library(data.table)
 a <- c(0,1,2,3,4,5,6)
 b <- c(1,2,3,4,5,6,7)
 c <- c(0,1,2,1,0,1,0)
-df <- data.table("a"=a,"b"=b,"c"=c)
+df <- data.table::data.table("a"=a,"b"=b,"c"=c)
 cols <- c("a","b","c")
 term_n <- c(0,0,1)
 unique_cols <- Check_Dupe_Columns(df, cols, term_n)
 
 }
+\seealso{
+Other Data Cleaning Functions: 
+\code{\link{Check_Trunc}()},
+\code{\link{Correct_Formula_Order}()},
+\code{\link{Date_Shift}()},
+\code{\link{Def_Control}()},
+\code{\link{Def_Control_Guess}()},
+\code{\link{Def_model_control}()},
+\code{\link{Def_modelform_fix}()},
+\code{\link{Joint_Multiple_Events}()},
+\code{\link{Replace_Missing}()},
+\code{\link{Time_Since}()},
+\code{\link{factorize}()},
+\code{\link{factorize_par}()},
+\code{\link{gen_time_dep}()},
+\code{\link{interact_them}()}
+}
+\concept{Data Cleaning Functions}

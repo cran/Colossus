@@ -1,5 +1,7 @@
 #include <RcppEigen.h>
+#ifdef _OPENMP
 #include <omp.h>
+#endif
 #include "R_Interface.h"
 #include "Main_Functions.h"
 #include "Plot_Extensions.h"
@@ -46,12 +48,15 @@ void visit_lambda(const Mat& m, const Func& f)
 }
 
 //' Interface between R code and the Cox PH omnibus regression function
+//'
 //' \code{cox_ph_Omnibus_transition} Called directly from R, Defines the control variables and calls the regression function
 //' @inheritParams CPP_template
 //'
 //' @return LogLik_Cox_PH output : Log-likelihood of optimum, first derivative of log-likelihood, second derivative matrix, parameter list, standard deviation estimate, AIC, model information
+//' @noRd
+//'
 // [[Rcpp::export]]
-List cox_ph_Omnibus_transition(IntegerVector Term_n, StringVector tform, NumericMatrix a_ns,IntegerVector dfc,NumericMatrix x_all, int fir, int der_iden,string modelform, List Control, NumericMatrix df_groups, NumericVector tu, IntegerVector KeepConstant, int term_tot, NumericVector STRATA_vals, NumericVector cens_vec, List model_control){
+List cox_ph_Omnibus_transition(IntegerVector Term_n, StringVector tform, NumericMatrix a_ns,IntegerVector dfc,NumericMatrix x_all, int fir, int der_iden,string modelform, List Control, NumericMatrix df_groups, NumericVector tu, IntegerVector KeepConstant, int term_tot, NumericVector STRATA_vals, NumericVector cens_vec, List model_control, NumericMatrix Cons_Mat, NumericVector Cons_Vec){
     bool change_all = Control["change_all"];
     int double_step = Control["double_step"];
     bool verbose = Control["verbose"];
@@ -73,26 +78,33 @@ List cox_ph_Omnibus_transition(IntegerVector Term_n, StringVector tform, Numeric
 	double gmix_theta = model_control["gmix_theta"];
 	IntegerVector gmix_term = model_control["gmix_term"];
 	//
+	const Map<MatrixXd> Lin_Sys(as<Map<MatrixXd> >(Cons_Mat));
+	const Map<VectorXd> Lin_Res(as<Map<VectorXd> >(Cons_Vec));
+	//
 	bool strata_bool = model_control["strata"];
 	bool basic_bool  = model_control["basic"];
 	bool null_bool   = model_control["null"];
 	bool CR_bool     = model_control["CR"];
 	bool single_bool = model_control["single"];
+	bool constraint_bool = model_control["constraint"];
     //
     // Performs regression
     //----------------------------------------------------------------------------------------------------------------//
-    List res = LogLik_Cox_PH_Omnibus(Term_n, tform, a_ns, x_all, dfc,fir, der_iden,modelform, lr, maxiters, guesses, halfmax, epsilon, dbeta_cap, abs_max,dose_abs_max, deriv_epsilon, df_groups, tu, double_step, change_all,verbose, debugging, KeepConstant, term_tot, ties_method, nthreads, STRATA_vals, cens_weight, cens_thres, strata_bool, basic_bool, null_bool, CR_bool, single_bool, gmix_theta, gmix_term);
+    List res = LogLik_Cox_PH_Omnibus(Term_n, tform, a_ns, x_all, dfc,fir, der_iden,modelform, lr, maxiters, guesses, halfmax, epsilon, dbeta_cap, abs_max,dose_abs_max, deriv_epsilon, df_groups, tu, double_step, change_all,verbose, debugging, KeepConstant, term_tot, ties_method, nthreads, STRATA_vals, cens_weight, cens_thres, strata_bool, basic_bool, null_bool, CR_bool, single_bool, constraint_bool, gmix_theta, gmix_term, Lin_Sys, Lin_Res);
     //----------------------------------------------------------------------------------------------------------------//
     return res;
 }
 
 //' Interface between R code and the poisson omnibus regression function
+//'
 //' \code{pois_Omnibus_transition} Called directly from R, Defines the control variables and calls the regression function
 //' @inheritParams CPP_template
 //'
 //' @return LogLik_Cox_PH output : Log-likelihood of optimum, first derivative of log-likelihood, second derivative matrix, parameter list, standard deviation estimate, AIC, model information
+//' @noRd
+//'
 // [[Rcpp::export]]
-List pois_Omnibus_transition(NumericMatrix dfe, IntegerVector Term_n, StringVector tform, NumericMatrix a_ns,IntegerVector dfc,NumericMatrix x_all, int fir, int der_iden,string modelform, List Control, IntegerVector KeepConstant, int term_tot, NumericMatrix df0, List model_control){
+List pois_Omnibus_transition(NumericMatrix dfe, IntegerVector Term_n, StringVector tform, NumericMatrix a_ns,IntegerVector dfc,NumericMatrix x_all, int fir, int der_iden,string modelform, List Control, IntegerVector KeepConstant, int term_tot, NumericMatrix df0, List model_control, NumericMatrix Cons_Mat, NumericVector Cons_Vec){
     //
     const Map<MatrixXd> PyrC(as<Map<MatrixXd> >(dfe));
     const Map<MatrixXd> dfs(as<Map<MatrixXd> >(df0));
@@ -115,22 +127,28 @@ List pois_Omnibus_transition(NumericMatrix dfe, IntegerVector Term_n, StringVect
     double gmix_theta = model_control["gmix_theta"];
 	IntegerVector gmix_term = model_control["gmix_term"];
 	//
+	const Map<MatrixXd> Lin_Sys(as<Map<MatrixXd> >(Cons_Mat));
+	const Map<VectorXd> Lin_Res(as<Map<VectorXd> >(Cons_Vec));
+	//
 	bool strata_bool = model_control["strata"];
 	bool single_bool = model_control["single"];
+	bool constraint_bool = model_control["constraint"];
     //
     // Performs regression
     //----------------------------------------------------------------------------------------------------------------//
-    List res = LogLik_Pois_Omnibus(PyrC, Term_n, tform, a_ns, x_all, dfc,fir, der_iden,modelform, lr, maxiters, guesses, halfmax, epsilon, dbeta_cap, abs_max,dose_abs_max, deriv_epsilon, double_step, change_all,verbose, debugging, KeepConstant, term_tot, nthreads, dfs, strata_bool, single_bool, gmix_theta, gmix_term);
-    //LogLik_Pois_Omnibus(MatrixXd PyrC, IntegerVector Term_n, StringVector tform, NumericMatrix a_ns,NumericMatrix x_all,IntegerVector dfc,int fir, int der_iden,string modelform, double lr, NumericVector maxiters, int guesses, int halfmax, double epsilon, double dbeta_cap, double abs_max,double dose_abs_max, double deriv_epsilon, int double_step ,bool change_all, bool verbose, bool debugging, IntegerVector KeepConstant, int term_tot, int nthreads, const MatrixXd& dfs, bool strata_bool, bool single_bool);
+    List res = LogLik_Pois_Omnibus(PyrC, Term_n, tform, a_ns, x_all, dfc,fir, der_iden,modelform, lr, maxiters, guesses, halfmax, epsilon, dbeta_cap, abs_max,dose_abs_max, deriv_epsilon, double_step, change_all,verbose, debugging, KeepConstant, term_tot, nthreads, dfs, strata_bool, single_bool, constraint_bool, gmix_theta, gmix_term, Lin_Sys, Lin_Res);
     //----------------------------------------------------------------------------------------------------------------//
     return res;
 }
 
 //' Interface between R code and the plotting omnibus function
+//'
 //' \code{Plot_Omnibus_transition} Called directly from R, Defines the control variables and calls the plotting functions
 //' @inheritParams CPP_template
 //'
 //' @return LogLik_Cox_PH output : Log-likelihood of optimum, first derivative of log-likelihood, second derivative matrix, parameter list, standard deviation estimate, AIC, model information
+//' @noRd
+//'
 // [[Rcpp::export]]
 List Plot_Omnibus_transition(IntegerVector Term_n, StringVector tform, NumericVector a_n,IntegerVector dfc,NumericMatrix x_all, int fir, int der_iden,string modelform, List Control, NumericMatrix df_groups, NumericVector tu, IntegerVector KeepConstant, int term_tot, NumericVector STRATA_vals, NumericVector cens_vec, List model_control){
     bool verbose = Control["verbose"];
@@ -167,11 +185,42 @@ List Plot_Omnibus_transition(IntegerVector Term_n, StringVector tform, NumericVe
     return res;
 }
 
+//' Interface between R code and the event assignment omnibus function
+//'
+//' \code{Assigned_Event_transition} Called directly from R, Defines the control variables and calls the assigning functions
+//' @inheritParams CPP_template
+//'
+//' @return list of assigned/predicted background/excess events
+//' @noRd
+//'
+// [[Rcpp::export]]
+List Assigned_Event_transition(NumericMatrix dfe,IntegerVector Term_n, StringVector tform, NumericVector a_n,IntegerVector dfc,NumericMatrix x_all, int fir, int der_iden,string modelform, List Control, NumericMatrix df_groups, NumericVector tu, IntegerVector KeepConstant, int term_tot, List model_control){
+    bool verbose = Control["verbose"];
+    bool debugging = FALSE;
+    string ties_method =Control["ties"];
+    int nthreads = Control["Ncores"];
+    //
+	double gmix_theta = model_control["gmix_theta"];
+	IntegerVector gmix_term = model_control["gmix_term"];
+	//
+    const Map<MatrixXd> PyrC(as<Map<MatrixXd> >(dfe));
+    //
+    // Performs regression
+    List res;
+    //----------------------------------------------------------------------------------------------------------------//
+    res = Assign_Events( Term_n, tform, a_n, x_all, dfc, PyrC, df_groups,  tu, fir, modelform, verbose, debugging, KeepConstant, term_tot, nthreads, gmix_theta, gmix_term);
+    //----------------------------------------------------------------------------------------------------------------//
+    return res;
+}
+
 //' Generates csv file with time-dependent columns
+//'
 //' \code{Write_Time_Dep} Called directly from R, Defines a new matrix which interpolates time-dependent values on a grid
 //' @inheritParams CPP_template
 //'
 //' @return saves a dataframe to be used with time-dependent covariate analysis
+//' @noRd
+//'
 // [[Rcpp::export]]
 void Write_Time_Dep(const NumericMatrix df0_Times, const NumericMatrix df0_dep, const NumericMatrix df0_const, const NumericVector df0_event,double dt, string filename, StringVector tform_tdep, NumericVector tu, bool iscox, int nthreads){
     const Map<MatrixXd> df_Times(as<Map<MatrixXd> >(df0_Times));
@@ -220,7 +269,9 @@ void Write_Time_Dep(const NumericMatrix df0_Times, const NumericMatrix df0_dep, 
                 }
             }
             True_Rows = serial_1 - serial_0 + 1;
+            #ifdef _OPENMP
             #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+            #endif
             for (int i_inner=serial_0;i_inner<serial_1+1;i_inner++){
                 VectorXd dep_temp = VectorXd::Zero(df_dep.cols()/2);
                 double t0 = tu[i_inner]- dt/2;
@@ -302,7 +353,9 @@ void Write_Time_Dep(const NumericMatrix df0_Times, const NumericMatrix df0_dep, 
             }
         } else {
             True_Rows = ceil( (df_Times.coeff(i_row,1) - df_Times.coeff(i_row,0))/dt);
+            #ifdef _OPENMP
             #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+            #endif
             for (int i_inner=0;i_inner<True_Rows;i_inner++){
                 VectorXd dep_temp = VectorXd::Zero(df_dep.cols()/2);
                 double ratio = (i_inner+0.5)/True_Rows;
@@ -370,16 +423,21 @@ void Write_Time_Dep(const NumericMatrix df0_Times, const NumericMatrix df0_dep, 
 }
 
 //' Generates factored columns in parallel
+//'
 //' \code{Gen_Fac_Par} Called directly from R, returns a matrix with factored columns
 //' @inheritParams CPP_template
 //'
 //' @return saves a dataframe to be used with time-dependent covariate analysis
+//' @noRd
+//'
 // [[Rcpp::export]]
 NumericMatrix Gen_Fac_Par(const NumericMatrix df0, const NumericVector vals, const NumericVector cols, const int nthreads){
     const Map<MatrixXd> df(as<Map<MatrixXd> >(df0));
     MatrixXd Mat_Fac = MatrixXd::Zero(df.rows(), vals.size());
     //
+    #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+    #endif
     for (int ijk=0;ijk<vals.size();ijk++){
         double col_c = cols[ijk];
         double val_c = vals[ijk];
@@ -399,10 +457,13 @@ NumericMatrix Gen_Fac_Par(const NumericMatrix df0, const NumericVector vals, con
 }
 
 //' Interface between R code and the risk check
+//'
 //' \code{cox_ph_transition_single} Called directly from R, Defines the control variables and calls the function which only calculates the log-likelihood
 //' @inheritParams CPP_template
 //'
 //' @return LogLik_Cox_PH output : Log-likelihood of optimum, first derivative of log-likelihood, second derivative matrix, parameter list, standard deviation estimate, AIC, model information
+//' @noRd
+//'
 // [[Rcpp::export]]
 bool risk_check_transition(IntegerVector Term_n, StringVector tform, NumericVector a_n,IntegerVector dfc,NumericMatrix x_all, int fir,string modelform, List Control, List model_control, IntegerVector KeepConstant, int term_tot){
     bool verbose = Control["verbose"];
@@ -420,10 +481,13 @@ bool risk_check_transition(IntegerVector Term_n, StringVector tform, NumericVect
 
 
 //' Generates weightings for stratified poisson regression
+//'
 //' \code{Gen_Strat_Weight} Called from within c++, assigns vector of weights
 //' @inheritParams CPP_template
 //'
 //' @return assigns weight in place and returns nothing
+//' @noRd
+//'
 // [[Rcpp::export]]
 void Gen_Strat_Weight(string modelform, const MatrixXd& dfs, const MatrixXd& PyrC, VectorXd& s_weights, const int nthreads, const StringVector& tform, const IntegerVector& Term_n, const int& term_tot){
     ArrayXd Pyrs   = dfs.transpose() * PyrC.col(0);
@@ -433,15 +497,15 @@ void Gen_Strat_Weight(string modelform, const MatrixXd& dfs, const MatrixXd& Pyr
     //
     s_weights = dfs * weight.matrix();
     //
-    Rcout << s_weights.minCoeff() << endl;
-    //
     vector<double> plin_count(term_tot,0);
     vector<double> loglin_count(term_tot,0);
     vector<double> dose_count(term_tot,0);
+    #ifdef _OPENMP
     #pragma omp declare reduction(vec_double_plus : std::vector<double> : \
             std::transform(omp_out.begin(), omp_out.end(), omp_in.begin(), omp_out.begin(), std::plus<double>())) \
             initializer(omp_priv = omp_orig)
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads) reduction(vec_double_plus:dose_count,plin_count,loglin_count)
+    #endif
     for (int ij=0;ij<(Term_n.size());ij++){
         int tn = Term_n[ij];
         if (as< string>(tform[ij])=="loglin") {

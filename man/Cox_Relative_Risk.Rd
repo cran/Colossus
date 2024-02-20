@@ -2,9 +2,7 @@
 % Please edit documentation in R/Cox_Regression.R
 \name{Cox_Relative_Risk}
 \alias{Cox_Relative_Risk}
-\title{Calculates hazard ratios for a reference vector
-\code{RunCoxRegression} uses user provided data,  vectors specifying the model,
-and options to calculate relative risk for every row in the provided data}
+\title{Calculates hazard ratios for a reference vector}
 \usage{
 Cox_Relative_Risk(
   df,
@@ -41,19 +39,18 @@ Cox_Relative_Risk(
 
 \item{a_n}{list of initial parameter values, used to determine number of parameters}
 
-\item{modelform}{string specifying the model type}
+\item{modelform}{string specifying the model type: M, ME, A, PA, PAE, GMIX, GMIX-R, GMIX-E}
 
 \item{fir}{term number for the initial term, used for models of the form T0*f(Ti) in which the order matters}
 
-\item{control}{list of parameters controlling the convergence}
+\item{control}{list of parameters controlling the convergence, see Def_Control() for options or vignette("starting_description")}
 
-\item{model_control}{controls which alternative model options are used}
+\item{model_control}{controls which alternative model options are used, see Def_model_control() for options and vignette("Alt_Run_opt") for further details}
 }
 \value{
 returns a list of the final results
 }
 \description{
-Calculates hazard ratios for a reference vector
 \code{RunCoxRegression} uses user provided data,  vectors specifying the model,
 and options to calculate relative risk for every row in the provided data
 }
@@ -61,7 +58,7 @@ and options to calculate relative risk for every row in the provided data
 library(data.table)
 ## basic example code reproduced from the starting-description vignette
 
-df <- data.table("UserID"=c(112, 114, 213, 214, 115, 116, 117),
+df <- data.table::data.table("UserID"=c(112, 114, 213, 214, 115, 116, 117),
            "Starting_Age"=c(18,  20,  18,  19,  21,  20,  18),
              "Ending_Age"=c(30,  45,  57,  47,  36,  60,  55),
           "Cancer_Status"=c(0,   0,   1,   0,   1,   0,   0),
@@ -91,3 +88,8 @@ e <- Cox_Relative_Risk(df, time1, time2, event, names, Term_n, tform,
      keep_constant, a_n, modelform, fir, control)
 
 }
+\seealso{
+Other Plotting Wrapper Functions: 
+\code{\link{RunCoxPlots}()}
+}
+\concept{Plotting Wrapper Functions}

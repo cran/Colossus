@@ -6,3 +6,18 @@
 
 * Preparing package for submission
 * Incomplete functions moved to experimental branch
+
+# Colossus 0.9.5
+
+* Checking against standards for submission to ROpenSci
+* checks from pkgcheck
+* checks from autotest
+* srr standards
+
+# Colossus 0.9.6
+
+* removed explicit srr requirements
+
+# Colossus 0.9.7
+
+* Additional joint poisson model capability added

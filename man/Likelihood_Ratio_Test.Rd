@@ -2,21 +2,19 @@
 % Please edit documentation in R/Utility.R
 \name{Likelihood_Ratio_Test}
 \alias{Likelihood_Ratio_Test}
-\title{Defines the likelihood ratio test
-\code{Likelihood_Ratio_Test} uses two models and calculates the ratio}
+\title{Defines the likelihood ratio test}
 \usage{
 Likelihood_Ratio_Test(alternative_model, null_model)
 }
 \arguments{
-\item{alternative_model}{the new model of interest}
+\item{alternative_model}{the new model of interest in list form}
 
-\item{null_model}{a model to compare against}
+\item{null_model}{a model to compare against, in list form}
 }
 \value{
 returns the score statistic
 }
 \description{
-Defines the likelihood ratio test
 \code{Likelihood_Ratio_Test} uses two models and calculates the ratio
 }
 \examples{

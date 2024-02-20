@@ -2,8 +2,7 @@
 % Please edit documentation in R/Utility.R
 \name{gen_time_dep}
 \alias{gen_time_dep}
-\title{Applies time dependence to parameters
-\code{gen_time_dep} generates a new dataframe with time dependent covariates by applying a grid in time}
+\title{Applies time dependence to parameters}
 \usage{
 gen_time_dep(
   df,
@@ -29,7 +28,7 @@ gen_time_dep(
 
 \item{event0}{column used for event status}
 
-\item{iscox}{boolean if rows not at event times should be kept}
+\item{iscox}{boolean if rows not at event times should be kept, rows are removed if true}
 
 \item{dt}{spacing in time for new rows}
 
@@ -43,13 +42,12 @@ gen_time_dep(
 
 \item{tform}{list of string function identifiers, used for linear/step}
 
-\item{nthreads}{number of threads to use}
+\item{nthreads}{number of threads to use, do not use more threads than available on your machine}
 }
 \value{
 returns the updated dataframe
 }
 \description{
-Applies time dependence to parameters
 \code{gen_time_dep} generates a new dataframe with time dependent covariates by applying a grid in time
 }
 \examples{
@@ -58,7 +56,7 @@ library(data.table)
 a <- c(20,20,5,10,15)
 b <- c(1,2,1,1,2)
 c <- c(0,0,1,1,1)
-df <- data.table("a"=a,"b"=b,"c"=c)
+df <- data.table::data.table("a"=a,"b"=b,"c"=c)
 time1 <- "\%trunc\%"
 time2 <- "a"
 event <- "c"
@@ -74,3 +72,21 @@ df_new <- gen_time_dep(df,time1,time2,event,TRUE,0.01,c("grt"),c(),
 file.remove('test_new.csv')
 
 }
+\seealso{
+Other Data Cleaning Functions: 
+\code{\link{Check_Dupe_Columns}()},
+\code{\link{Check_Trunc}()},
+\code{\link{Correct_Formula_Order}()},
+\code{\link{Date_Shift}()},
+\code{\link{Def_Control}()},
+\code{\link{Def_Control_Guess}()},
+\code{\link{Def_model_control}()},
+\code{\link{Def_modelform_fix}()},
+\code{\link{Joint_Multiple_Events}()},
+\code{\link{Replace_Missing}()},
+\code{\link{Time_Since}()},
+\code{\link{factorize}()},
+\code{\link{factorize_par}()},
+\code{\link{interact_them}()}
+}
+\concept{Data Cleaning Functions}

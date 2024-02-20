@@ -2,14 +2,11 @@
 % Please edit documentation in R/Poisson_Regression.R
 \name{RunPoissonRegression_Omnibus}
 \alias{RunPoissonRegression_Omnibus}
-\title{Performs basic Poisson regression using the omnibus function
-\code{RunPoissonRegression_Omnibus} uses user provided data, time/event columns,
-vectors specifying the model, and options to control the convergence and starting positions.
-Has additional options to starting with several initial guesses}
+\title{Performs basic Poisson regression using the omnibus function}
 \usage{
 RunPoissonRegression_Omnibus(
   df,
-  pyr = "pyr",
+  pyr0 = "pyr",
   event0 = "event",
   names = c("CONST"),
   Term_n = c(0),
@@ -21,13 +18,15 @@ RunPoissonRegression_Omnibus(
   der_iden = 0,
   control = list(),
   Strat_Col = "null",
-  model_control = list()
+  model_control = list(),
+  Cons_Mat = as.matrix(c(0)),
+  Cons_Vec = c(0)
 )
 }
 \arguments{
 \item{df}{a data.table containing the columns of interest}
 
-\item{pyr}{column used for person-years per row}
+\item{pyr0}{column used for person-years per row}
 
 \item{event0}{column used for event status}
 
@@ -41,23 +40,26 @@ RunPoissonRegression_Omnibus(
 
 \item{a_n}{list of initial parameter values, used to determine number of parameters}
 
-\item{modelform}{string specifying the model type}
+\item{modelform}{string specifying the model type: M, ME, A, PA, PAE, GMIX, GMIX-R, GMIX-E}
 
 \item{fir}{term number for the initial term, used for models of the form T0*f(Ti) in which the order matters}
 
-\item{der_iden}{number for the subterm to test derivative at, only used for testing runs with a single varying parameter}
+\item{der_iden}{number for the subterm to test derivative at, only used for testing runs with a single varying parameter, should be smaller than total number of parameters}
 
-\item{control}{list of parameters controlling the convergence}
+\item{control}{list of parameters controlling the convergence, see Def_Control() for options or vignette("starting_description")}
 
 \item{Strat_Col}{column to stratify by if needed}
 
-\item{model_control}{controls which alternative model options are used}
+\item{model_control}{controls which alternative model options are used, see Def_model_control() for options and vignette("Alt_Run_opt") for further details}
+
+\item{Cons_Mat}{Matrix containing coefficients for system of linear constraints, formatted as matrix}
+
+\item{Cons_Vec}{Vector containing constants for system of linear constraints, formatted as vector}
 }
 \value{
 returns a list of the final results
 }
 \description{
-Performs basic Poisson regression using the omnibus function
 \code{RunPoissonRegression_Omnibus} uses user provided data, time/event columns,
 vectors specifying the model, and options to control the convergence and starting positions.
 Has additional options to starting with several initial guesses
@@ -66,7 +68,7 @@ Has additional options to starting with several initial guesses
 library(data.table)
 ## basic example code reproduced from the starting-description vignette
 
-df <- data.table("UserID"=c(112, 114, 213, 214, 115, 116, 117),
+df <- data.table::data.table("UserID"=c(112, 114, 213, 214, 115, 116, 117),
            "Starting_Age"=c(18,  20,  18,  19,  21,  20,  18),
              "Ending_Age"=c(30,  45,  57,  47,  36,  60,  55),
           "Cancer_Status"=c(0,   0,   1,   0,   1,   0,   0),
@@ -98,3 +100,14 @@ Strat_Col <- 'e'
 e <- RunPoissonRegression_Omnibus(df, pyr, event, names, Term_n, tform, keep_constant,
                                   a_n, modelform, fir, der_iden, control,Strat_Col)
 }
+\seealso{
+Other Poisson Wrapper Functions: 
+\code{\link{RunPoissonEventAssignment}()},
+\code{\link{RunPoissonRegression}()},
+\code{\link{RunPoissonRegression_Guesses_CPP}()},
+\code{\link{RunPoissonRegression_Joint_Omnibus}()},
+\code{\link{RunPoissonRegression_STRATA}()},
+\code{\link{RunPoissonRegression_Single}()},
+\code{\link{RunPoissonRegression_Tier_Guesses}()}
+}
+\concept{Poisson Wrapper Functions}
