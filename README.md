@@ -13,7 +13,10 @@ Additional plotting capabilities are available.
 
 Please consult the GitHub for details on libraries required for your OS.
 Note that Colossus requires OpenMP support to perform parallel
-calculations.
+calculations. During the configuration stage of installation, text
+starting with “CONFIG NOTE” will denote what OS/Compiler are detected
+and if OpenMP support is configured. Currently OpenMP support is not
+configured for linux and MacOS operating systems compiling with clang.
 
 ## Example
 
@@ -103,6 +106,6 @@ print(e)
 #> [1] 0.0001919948
 #> 
 #> 
-#> $Convgerged
+#> $Converged
 #> [1] FALSE
 ```

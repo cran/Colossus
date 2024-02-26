@@ -1,14 +1,14 @@
-497faebcb7784eb2a964d4f1cc838882 *DESCRIPTION
+d3b12ea97e6536ff5e781a5ab36d2631 *DESCRIPTION
 602c81dfab10778e7b671439b0bfede0 *NAMESPACE
-85663499935569bc0c5e49b23aec3aaf *NEWS.md
+7b3f000dc9f0a0e1412a5504c1df45f8 *NEWS.md
 859ab86c8b9b1a1dd1b37c183b63d6f4 *R/Cox_Regression.R
 038f4cc0df40302281cd1ff363622693 *R/PlotTypes.R
 337c9b81dc3cad7b56b1d44888421c4a *R/Poisson_Regression.R
 d2fc25afadff1145abdd6cc334ad5dfc *R/RcppExports.R
 4852db6b6b2d40be07f8be9ef4170b3c *R/Utility.R
 93e59cd3003d5394a2d56f8991b33772 *R/utils-roxygen.R
-212c8a59b50287dc0941d78a53fb463c *README.md
-47006d5fe439865878603dcf12f3d091 *build/vignette.rds
+aaac82f37578ec9f29d1b32fbb35db7a *README.md
+773e19e25caebbabbcb629d9a15fd315 *build/vignette.rds
 38ba0348cef0ac8408c22acb51d50d83 *cleanup
 64726fb8cb6e37288c195da116ec2ec3 *cleanup.win
 e890112877abbbe5071b3bd3fb711d7a *configure
@@ -32,7 +32,7 @@ b6757f9ab0f06c1a9a7e26325837ddbd *inst/doc/Time_Dep_Cov.html
 d3482aac99ceea1973f7d72843ea8bcb *inst/doc/dose_formula_inputs.html
 3ecda250f7883058e7eb6edbd275254e *inst/doc/starting-description.R
 7669932021deb60522ce6a6f7de08a1b *inst/doc/starting-description.Rmd
-5e60219bf2424338b52fde24e2d05ca4 *inst/doc/starting-description.html
+76f58c9b9985f1e429450117073ec93d *inst/doc/starting-description.html
 7abc6b1c6d349fc293e92552e2367588 *man/Check_Dupe_Columns.Rd
 dd4dc392b6c4aaa6aa83e77e1744c245 *man/Check_Trunc.Rd
 ef3bb2e5479e4370f8745a12b7352aec *man/Correct_Formula_Order.Rd
@@ -76,7 +76,7 @@ cad5248ce2cd25e38c529dc834db7547 *man/interact_them.Rd
 0e6dc102908585615bac57837a89b28f *src/Calc_Repeated.cpp
 7ee6dabe204f571dccc0ff635ee979a0 *src/Calc_Repeated.h
 62e402dd7a9a38a2d192195059a01c39 *src/Colossus_types.h
-744cb0725b71db0f7b8decaf5da4ce29 *src/Main_Functions.cpp
+025cc311424001194c441f190febd73b *src/Main_Functions.cpp
 1e8ccd85b6bbd3584d5e9bccb1cc31ee *src/Main_Functions.h
 11e427e887ae1ae6cb9668daee422c8f *src/Makevars.in
 5ff35622a482ea173d49f4fbc64c9c2e *src/Makevars.win.in
@@ -113,7 +113,7 @@ efa665a6c2e63e7518be7796a14c612f *tests/testthat/test-joint.R
 de67e7c3198b07f20ea851ad765a5880 *tests/testthat/test-omnibus.R
 8b6b0a0e61f4d2cfbafcff6d1ef6d559 *tools/config.R
 38ac37bc72560d175fd527894cf53735 *tools/config/cleanup.R
-05f253dd29649afd4b0f5f0369fbcb4c *tools/config/configure.R
+09b1f387ba679ed5dada2f24f7fbd40f *tools/config/configure.R
 afe007c8769777a3c4e792f817334cf5 *vignettes/Alt_Distrib_Starts.Rmd
 f51455ed4fee7885c04d656fba233869 *vignettes/Alt_Run_opt.Rmd
 c4ae3b11d91c5322e8b020ca0fa753c4 *vignettes/Plotting_And_Analysis.Rmd

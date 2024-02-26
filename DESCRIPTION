@@ -2,7 +2,7 @@ Package: Colossus
 Type: Package
 Title: "Risk Model Regression and Analysis with Complex Non-Linear
         Models"
-Version: 1.0.0
+Version: 1.0.1
 Authors@R: c(
     person("Eric", "Giunta", email="egiunta@ksu.edu", role=c("aut", "cre"), comment = c(ORCID = "0000-0002-1577-766X")),
     person("Amir", "Bahadori", role=c("ctb"), comment = c(ORCID = "0000-0002-4589-105X")),
@@ -25,13 +25,14 @@ LinkingTo: Rcpp, RcppEigen, testthat
 SystemRequirements: make
 RoxygenNote: 7.3.1
 Encoding: UTF-8
-Suggests: knitr, rmarkdown, testthat, xml2, pandoc, spelling
+Suggests: knitr, rmarkdown, testthat, xml2, pandoc, spelling, callr,
+        stringr, processx
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Language: en-US
 Biarch: TRUE
 NeedsCompilation: yes
-Packaged: 2024-02-19 18:55:35 UTC; user
+Packaged: 2024-02-26 15:50:52 UTC; user
 Author: Eric Giunta [aut, cre] (<https://orcid.org/0000-0002-1577-766X>),
   Amir Bahadori [ctb] (<https://orcid.org/0000-0002-4589-105X>),
   Dan Andresen [ctb],
@@ -45,4 +46,4 @@ Author: Eric Giunta [aut, cre] (<https://orcid.org/0000-0002-1577-766X>),
   NRC [fnd]
 Maintainer: Eric Giunta <egiunta@ksu.edu>
 Repository: CRAN
-Date/Publication: 2024-02-20 10:12:48 UTC
+Date/Publication: 2024-02-26 20:30:02 UTC
