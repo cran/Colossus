@@ -222,7 +222,7 @@ Correct_Formula_Order <- function(Term_n, tform, keep_constant, a_n, names,der_i
     if (der_iden %in% (seq_len(length(tform))-1)){
         #pass
     } else {
-        message("Error: der_iden should be within 0:(length(Term_n)-1)")
+        message("Error: der_iden should be within 0:(length(tform)-1)")
         stop()
     }
     if (is.matrix(Cons_Mat)){
@@ -234,6 +234,30 @@ Correct_Formula_Order <- function(Term_n, tform, keep_constant, a_n, names,der_i
         }
     }
     #
+    if (min(keep_constant)<0){
+        message(paste("Error: keep_constant expects 0/1 values, minimum value was ",min(keep_constant),sep=""))
+        stop()
+    }
+    if (max(keep_constant)>1){
+        message(paste("Error: keep_constant expects 0/1 values, maximum value was ",max(keep_constant),sep=""))
+        stop()
+    }
+    if (any(keep_constant != round(keep_constant))){
+        message(paste("Error: keep_constant expects 0/1 values, atleast one value was noninteger",sep=""))
+        stop()
+    }
+    if (any(Term_n != round(Term_n))){
+        message(paste("Error: Term_n expects integer values, atleast one value was noninteger",sep=""))
+        stop()
+    }
+    if (min(Term_n)!=0){
+        message(paste("Warning: Term_n expects nonnegative integer values and a minimum of 0, minimum value was ",min(Term_n),". Minimum value set to 0, others shifted by ",-1*min(Term_n),sep=""))
+        Term_n <- Term_n - min(Term_n)
+    }
+    if (length(sort(unique(Term_n))) != length(min(Term_n):max(Term_n))){
+        message(paste("Error: Term_n expects no missing integer values. Term numbers range from ",min(Term_n)," to ",max(Term_n)," but Term_n has ", length(unique(Term_n)), " unique values instead of ",length(min(Term_n):max(Term_n)),sep=""))
+        stop()
+    }
     if (length(keep_constant)<length(names)){
         keep_constant <- c(keep_constant, rep(0.0,length(names)-length(keep_constant)))
     } else if (length(keep_constant)>length(names)){
@@ -283,6 +307,16 @@ Correct_Formula_Order <- function(Term_n, tform, keep_constant, a_n, names,der_i
         message("Error: Atleast one parameter must be free")
         stop()
     }
+    tform_order <- c("loglin", "lin", "plin", "loglin_slope", "loglin_top",
+                     "lin_slope", "lin_int", "quad_slope", "step_slope",
+                     "step_int", "lin_quad_slope", "lin_quad_int", "lin_exp_slope",
+                     "lin_exp_int", "lin_exp_exp_slope")
+    tform_iden <- match(tform,tform_order)
+    if (any(is.na(tform_iden))){
+        message("Error: Missing tform items:")
+        message(paste("missing ", tform[is.na(tform_iden)]," ",sep=""))
+        stop()
+    }
     if (((typeof(a_n)=="list")&&(length(a_n)==1))||(typeof(a_n)!="list")){
         #
         if (typeof(a_n)=="list"){
@@ -301,11 +335,6 @@ Correct_Formula_Order <- function(Term_n, tform, keep_constant, a_n, names,der_i
         df <- data.table::data.table("Term_n"=Term_n, "tform"=tform, "keep_constant"=keep_constant,
                          "a_n"=a_n, "names"=names, "iden_const"=rep(0,length(names)),"current_order"=1:length(tform),"constraint_order"=col_to_cons)
         df$iden_const[[der_iden+1]] <- 1
-        tform_order <- c("loglin", "lin", "plin", "loglin_slope", "loglin_top",
-                         "lin_slope", "lin_int", "quad_slope", "step_slope",
-                         "step_int", "lin_quad_slope", "lin_quad_int", "lin_exp_slope",
-                         "lin_exp_int", "lin_exp_exp_slope")
-        tform_iden <- match(tform,tform_order)
         df$tform_order <- tform_iden
         keycol <-c("Term_n","names","tform_order")
         data.table::setorderv(df, keycol)
@@ -339,11 +368,6 @@ Correct_Formula_Order <- function(Term_n, tform, keep_constant, a_n, names,der_i
         for (i in seq_len(length(a_n))){
             df[[paste("a_",i,sep="")]] <- a_n[[i]]
         }
-        tform_order <- c("loglin", "lin", "plin", "loglin_slope", "loglin_top",
-                         "lin_slope", "lin_int", "quad_slope", "step_slope",
-                         "step_int", "lin_quad_slope", "lin_quad_int", "lin_exp_slope",
-                         "lin_exp_int", "lin_exp_exp_slope")
-        tform_iden <- match(tform,tform_order)
         df$tform_order <- tform_iden
         keycol <-c("Term_n","names","tform_order")
         data.table::setorderv(df, keycol)
@@ -1586,4 +1610,104 @@ Joint_Multiple_Events <- function(df, events, name_list, Term_n_list=list(), tfo
         }
     }
     return (list('df'=df0,'names'=names,'Term_n'=Term_n,'tform'=tform,'keep_constant'=keep_constant,'a_n'=a_n))
+}
+
+#' Checks system OS
+#'
+#' \code{get_os} checks the system OS, part of configuration script
+#'
+#' @return returns a string representation of OS
+get_os <- function(){
+  sysinf <- Sys.info()
+  if (!is.null(sysinf)){
+    os <- sysinf['sysname']
+    if (os == 'Darwin')
+      os <- "osx"
+  } else { ## mystery machine
+    os <- .Platform$OS.type
+    if (grepl("^darwin", R.version$os))
+      os <- "osx"
+    if (grepl("linux-gnu", R.version$os))
+      os <- "linux"
+  }
+  tolower(os)
+}
+
+#' Checks default c++ compiler
+#'
+#' \code{gcc_version} Checks default c++ compiler, part of configuration script
+#'
+#' @return returns a string representation of gcc, clang, or c++ output
+gcc_version <- function() {
+  out <- tryCatch(run("c++", "-v", stderr_to_stdout = TRUE),
+                  error = function(cnd) list(stdout = ""))
+  out0 <- str_match(out$stdout, "gcc version")[1]
+  if (!is.na(out0)){
+  	out <- "gcc"
+  } else {
+    out0 <- str_match(out$stdout, "clang version")[1]
+    if (!is.na(out0)){
+      out <- "clang"
+    } else {
+      out <- out$stdout
+    }
+  }
+  out
+}
+
+#' Checks how R was compiled
+#'
+#' \code{Rcomp_version} Checks how R was compiled, part of configuration script
+#'
+#' @return returns a string representation of gcc, clang, or R CMD config CC output
+Rcomp_version <- function() {
+  out <- rcmd("config","CC")
+  out0 <- str_match(out$stdout, "clang")[1]
+  if (!is.na(out0)){
+  	out <- "clang"
+  } else {
+    out0 <- str_match(out$stdout, "gcc")[1]
+    if (!is.na(out0)){
+      out <- "gcc"
+    } else {
+      out <- out$stdout
+    }
+  }
+  out
+}
+
+#' Checks default R c++ compiler
+#'
+#' \code{Rcpp_version} checks ~/.R/Makevars script for default compilers set, part of configuration script
+#'
+#' @return returns a string representation of gcc, clang, or head ~/.R/Makevars
+Rcpp_version <- function() {
+  out <- tryCatch(run("head", "~/.R/Makevars", stderr_to_stdout = TRUE),
+                  error = function(cnd) list(stdout = ""))
+  out0 <- str_match(out$stdout, "clang")[1]
+  if (!is.na(out0)){
+  	out <- "clang"
+  } else {
+    out0 <- str_match(out$stdout, "gcc")[1]
+    if (!is.na(out0)){
+      out <- "gcc"
+    } else {
+      out <- out$stdout
+    }
+  }
+  out
+}
+
+#' Checks OS, compilers, and OMP
+#'
+#' \code{System_Version} checks OS, default R c++ compiler, and if OMP is enabled
+#'
+#' @return returns a list of results
+#' @export
+System_Version <- function() {
+  os <- get_os()
+  gcc <- gcc_version()
+  Rcomp <- Rcomp_version()
+  OMP <- OMP_Check()
+  list("Operating System"=os,"Default c++"=gcc, "R Compiler"=Rcomp, "OpenMP Enabled"=OMP)
 }

@@ -6,6 +6,9 @@ breslow
 breslow's
 Calc
 codecov
+config
+CMD
+CONFIG
 csv
 Cullings
 datatable
@@ -23,6 +26,7 @@ Eigen
 eigen
 EPS
 func
+gcc
 GitHub
 GMIX
 halfmax
@@ -37,12 +41,15 @@ Kotaro
 ksu
 LEXP
 lin
+linux
 LogLik
 loglin
 LogLinear
 LQ
 lr
 Mabuchi
+MacOS
+Makevars
 maxiter
 meier
 Meier
@@ -54,6 +61,8 @@ NCRP
 NL
 nonDose
 NSSC
+OpenMP
+OMP
 Ozasa
 PAE
 pkgcheck
