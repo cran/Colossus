@@ -4,6 +4,7 @@
 #endif
 #include "Omnibus_Pieces.h"
 #include "Calc_Repeated.h"
+#include "Subterms_Risk.h"
 #include "Colossus_types.h"
 #include <fstream>
 #include <sstream>
@@ -757,4 +758,3 @@ void Pois_Dev_LL_Calc(const int& reqrdnum, const int& totalnum, const int& fir, 
     }
     return;
 }
-

@@ -251,7 +251,9 @@ test_that("Coxph Martingale no error", {
     der_iden <- 0
     control=list("Ncores"=2,'lr' = 0.75,'maxiter' = -1,'halfmax' = 5,'epsilon' = 1e-9,'dbeta_max' = 0.5,'deriv_epsilon' = 1e-9, 'abs_max'=1.0,'change_all'=TRUE,'dose_abs_max'=100.0,'verbose'=TRUE, 'ties'='breslow','double_step'=1)
     plot_options=list("type"=c("SURV",paste(tempfile(),"run",sep="")),"Martingale"=TRUE,"cov_cols"="d","surv_curv"=FALSE,"strat_haz"=FALSE, "smooth_haz"=FALSE, "studyID"="Not_In",'verbose'=TRUE)
-    expect_no_error(RunCoxPlots(df, time1, time2, event, names, Term_n, tform, keep_constant, a_n, modelform, fir, control, plot_options))
+    if (system.file(package='ggplot2')!=""){
+        expect_no_error(RunCoxPlots(df, time1, time2, event, names, Term_n, tform, keep_constant, a_n, modelform, fir, control, plot_options))
+    }
 })
 
 test_that("Coxph loglin_M CENSOR Default various_fixes", {
@@ -298,7 +300,9 @@ test_that("Coxph risk plotting above discrete step number limit", {
     der_iden <- 0
     control=list("Ncores"=2,'lr' = 0.75,'maxiter' = -1,'halfmax' = 5,'epsilon' = 1e-9,'dbeta_max' = 0.5,'deriv_epsilon' = 1e-9, 'abs_max'=1.0,'change_all'=TRUE,'dose_abs_max'=100.0,'verbose'=TRUE, 'ties'='breslow','double_step'=1)
     plot_options=list("type"=c("RISK",paste(tempfile(),"run",sep="")),"studyID"="a",'verbose'=TRUE)
-    expect_no_error(RunCoxPlots(df, time1, time2, event, names, Term_n, tform, keep_constant, a_n, modelform, fir, control, plot_options))
+    if (system.file(package='ggplot2')!=""){
+        expect_no_error(RunCoxPlots(df, time1, time2, event, names, Term_n, tform, keep_constant, a_n, modelform, fir, control, plot_options))
+    }
 })
 
 test_that("Various CoxRegressionOmnibus options", {
@@ -558,18 +562,20 @@ test_that("Coxph Martingale combinations", {
     control=list("Ncores"=2,'lr' = 0.75,'maxiter' = -1,'halfmax' = 5,'epsilon' = 1e-9,'dbeta_max' = 0.5,'deriv_epsilon' = 1e-9, 'abs_max'=1.0,'change_all'=TRUE,'dose_abs_max'=100.0,'verbose'=TRUE, 'ties'='breslow','double_step'=1)
     plot_options=list("type"=c("SURV",paste(tempfile(),"run",sep="")),"Martingale"=TRUE,"cov_cols"="d","surv_curv"=FALSE,"strat_haz"=FALSE, "smooth_haz"=FALSE, "studyID"="Not_In",'verbose'=TRUE)
     keep_constant <- c(1)
-    expect_error(RunCoxPlots(df, time1, time2, event, names, Term_n, tform, keep_constant, a_n, modelform, fir, control, plot_options))
-    names <- c("d","CONST")
-    Term_n <- c(0,0)
-    tform <- c("loglin", "loglin")
-    keep_constant <- c(0,0)
-    a_n <- c(-0.1,0.1)
-    expect_no_error(RunCoxPlots(df, time1, time2, event, names, Term_n, tform, keep_constant, a_n, modelform, fir, control, plot_options))
-    plot_options=list("type"=c("SURV",paste(tempfile(),"run",sep="")),"Martingale"=TRUE,"cov_cols"="Not_In","surv_curv"=FALSE,"strat_haz"=FALSE, "smooth_haz"=FALSE, "studyID"="Not_In",'verbose'=TRUE)
-    expect_error(RunCoxPlots(df, time1, time2, event, names, Term_n, tform, keep_constant, a_n, modelform, fir, control, plot_options))
-    plot_options=list("type"=c("SURV",paste(tempfile(),"run",sep="")),"Martingale"=TRUE,"cov_cols"="d","surv_curv"=FALSE,"strat_haz"=FALSE, "smooth_haz"=FALSE, "studyID"="Not_In",'verbose'=TRUE)
-    df$c <- rep(0,nrow(df))
-    expect_error(RunCoxPlots(df, time1, time2, event, names, Term_n, tform, keep_constant, a_n, modelform, fir, control, plot_options))
+    if (system.file(package='ggplot2')!=""){
+        expect_error(RunCoxPlots(df, time1, time2, event, names, Term_n, tform, keep_constant, a_n, modelform, fir, control, plot_options))
+        names <- c("d","CONST")
+        Term_n <- c(0,0)
+        tform <- c("loglin", "loglin")
+        keep_constant <- c(0,0)
+        a_n <- c(-0.1,0.1)
+        expect_no_error(RunCoxPlots(df, time1, time2, event, names, Term_n, tform, keep_constant, a_n, modelform, fir, control, plot_options))
+        plot_options=list("type"=c("SURV",paste(tempfile(),"run",sep="")),"Martingale"=TRUE,"cov_cols"="Not_In","surv_curv"=FALSE,"strat_haz"=FALSE, "smooth_haz"=FALSE, "studyID"="Not_In",'verbose'=TRUE)
+        expect_error(RunCoxPlots(df, time1, time2, event, names, Term_n, tform, keep_constant, a_n, modelform, fir, control, plot_options))
+        plot_options=list("type"=c("SURV",paste(tempfile(),"run",sep="")),"Martingale"=TRUE,"cov_cols"="d","surv_curv"=FALSE,"strat_haz"=FALSE, "smooth_haz"=FALSE, "studyID"="Not_In",'verbose'=TRUE)
+        df$c <- rep(0,nrow(df))
+        expect_error(RunCoxPlots(df, time1, time2, event, names, Term_n, tform, keep_constant, a_n, modelform, fir, control, plot_options))
+    }
 })
 
 test_that("Cox_tier_guess combinations", {
@@ -715,3 +721,74 @@ test_that("Iteract formula operation error", {
     expect_error(interact_them(df,interactions,new_names,FALSE))
 })
 
+test_that("gmix omnibus use", {
+    fname <- 'll_comp_0.csv'
+    colTypes=c("double","double","double","integer","integer")
+    df <- fread(fname,nThread=min(c(detectCores(),2)),data.table=TRUE,header=TRUE,colClasses=colTypes,verbose=FALSE,fill=TRUE)
+    set.seed(3742)
+    df$rand <- floor(runif(nrow(df), min=0, max=5))
+
+    time1 <- "t0"
+    time2 <- "t1"
+    df$censor <- (df$lung==0)
+    #
+    event <- "lung"
+    control=list("Ncores"=2,'lr' = 0.75,'maxiters' = c(1,1),'halfmax' = 2,'epsilon' = 1e-6,'dbeta_max' = 0.5,'deriv_epsilon' = 1e-6, 'abs_max'=1.0,'change_all'=TRUE,'dose_abs_max'=100.0,'verbose'=FALSE, 'ties'='breslow','double_step'=1)
+
+    verbose <- FALSE
+
+    model_list <- c('GMIX-R','GMIX-E','GMIX')
+    names <- c("dose","fac","dose","fac","rand")
+    Term_n <- c(0,0,1,1,2)
+    tform <- c("loglin","loglin","plin","plin","loglin")
+    keep_constant <- c(0,0,0,0,0)
+    a_n <- c(-0.1,0.1,0.2,0.3,-0.5)
+    df_order <- data.table("Term_n"=Term_n, "tform"=tform, "keep_constant"=keep_constant, "a_n"=a_n, "names"=names, "order"=1:5)
+
+    count <- 0
+    der_iden <- 0
+    cens_weight <- c(0)
+    for (model_i in 1:3){
+        modelform <- model_list[model_i]
+        if (modelform=='GMIX'){
+            for (fir in c(0,1,2)){
+                for (term_i in 0:3){
+                    model_control=list('strata'=FALSE, 'basic'=FALSE, 'single'=FALSE, 'CR'=FALSE)
+                    if (fir==0){
+                        model_control$gmix_term <- c(0,term_i%%2, floor(term_i/2))
+                    } else if (fir==1){
+                        model_control$gmix_term <- c(term_i%%2,0, floor(term_i/2))
+                    }  else if (fir==2){
+                        model_control$gmix_term <- c(term_i%%2, floor(term_i/2),1)
+                    }
+                    #
+                    df_order$order <- sample(df_order$order)
+                    setorderv(df_order, c("order"))
+                    Term_n <- df_order$Term_n
+                    tform <- df_order$tform
+                    keep_constant <- df_order$keep_constant
+                    a_n <- df_order$a_n
+                    names <- df_order$names
+                    #
+                    control=list("Ncores"=2,'lr' = 0.75,'maxiters' = c(1,1),'halfmax' = 2,'epsilon' = 1e-6,'dbeta_max' = 0.5,'deriv_epsilon' = 1e-6, 'abs_max'=1.0,'change_all'=TRUE,'dose_abs_max'=100.0,'verbose'=FALSE, 'ties'='breslow','double_step'=1)
+                    expect_no_error(RunCoxRegression_Omnibus(df, time1, time2, event, names, Term_n=Term_n, tform=tform, keep_constant=keep_constant, a_n=a_n, modelform=modelform, fir=fir, der_iden=der_iden, control=control,Strat_Col="rand", model_control=model_control, cens_weight=cens_weight))
+                }
+            }
+        } else {
+            for (fir in c(0,1,2)){
+                model_control=list('strata'=FALSE, 'basic'=FALSE, 'single'=FALSE, 'CR'=FALSE)
+                #
+                df_order$order <- sample(df_order$order)
+                setorderv(df_order, c("order"))
+                Term_n <- df_order$Term_n
+                tform <- df_order$tform
+                keep_constant <- df_order$keep_constant
+                a_n <- df_order$a_n
+                names <- df_order$names
+                #
+                control=list("Ncores"=2,'lr' = 0.75,'maxiters' = c(1,1),'halfmax' = 2,'epsilon' = 1e-6,'dbeta_max' = 0.5,'deriv_epsilon' = 1e-6, 'abs_max'=1.0,'change_all'=TRUE,'dose_abs_max'=100.0,'verbose'=FALSE, 'ties'='breslow','double_step'=1)
+                expect_no_error(RunCoxRegression_Omnibus(df, time1, time2, event, names, Term_n=Term_n, tform=tform, keep_constant=keep_constant, a_n=a_n, modelform=modelform, fir=fir, der_iden=der_iden, control=control,Strat_Col="rand", model_control=model_control, cens_weight=cens_weight))
+            }
+        }
+    }
+})
