@@ -7,7 +7,7 @@
 Def_Control(control)
 }
 \arguments{
-\item{control}{list of parameters controlling the convergence, see Def_Control() for options or vignette("starting_description")}
+\item{control}{list of parameters controlling the convergence, see Def_Control() for options or vignette("Control_Options")}
 }
 \value{
 returns a filled list
@@ -17,7 +17,7 @@ returns a filled list
 }
 \examples{
 library(data.table)
-control <- list("Ncores"=2,'lr' = 0.75,'maxiter' = 5, 'ties'='breslow','double_step'=1)
+control <- list("ncores"=2,'lr' = 0.75,'maxiter' = 5, 'ties'='breslow','double_step'=1)
 control <- Def_Control(control)
 
 }
@@ -25,6 +25,7 @@ control <- Def_Control(control)
 Other Data Cleaning Functions: 
 \code{\link{Check_Dupe_Columns}()},
 \code{\link{Check_Trunc}()},
+\code{\link{Check_Verbose}()},
 \code{\link{Correct_Formula_Order}()},
 \code{\link{Date_Shift}()},
 \code{\link{Def_Control_Guess}()},

@@ -4,16 +4,16 @@
 \alias{Replace_Missing}
 \title{Automatically assigns missing values in listed columns}
 \usage{
-Replace_Missing(df, name_list, MSV, verbose = FALSE)
+Replace_Missing(df, name_list, msv, verbose = FALSE)
 }
 \arguments{
 \item{df}{a data.table containing the columns of interest}
 
 \item{name_list}{vector of string column names to check}
 
-\item{MSV}{value to replace na with, same used for every column used}
+\item{msv}{value to replace na with, same used for every column used}
 
-\item{verbose}{boolean to control if additional information is printed to the console, also accepts 0/1 integer}
+\item{verbose}{integer valued 0-4 controlling what information is printed to the terminal. Each level includes the lower levels. 0: silent, 1: errors printed, 2: warnings printed, 3: notes printed, 4: debug information printed. Errors are situations that stop the regression, warnings are situations that assume default values that the user might not have intended, notes provide information on regression progress, and debug prints out C++ progress and intermediate results. The default level is 2 and True/False is converted to 3/0.}
 }
 \value{
 returns a filled datatable
@@ -35,6 +35,7 @@ df <- Replace_Missing(df, c("Starting_Age","Ending_Age"), 70)
 Other Data Cleaning Functions: 
 \code{\link{Check_Dupe_Columns}()},
 \code{\link{Check_Trunc}()},
+\code{\link{Check_Verbose}()},
 \code{\link{Correct_Formula_Order}()},
 \code{\link{Date_Shift}()},
 \code{\link{Def_Control}()},

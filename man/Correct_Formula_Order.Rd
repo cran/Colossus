@@ -5,55 +5,58 @@
 \title{Corrects the order of terms/formula/etc}
 \usage{
 Correct_Formula_Order(
-  Term_n,
+  term_n,
   tform,
   keep_constant,
   a_n,
   names,
   der_iden = 0,
-  Cons_Mat = matrix(c(0)),
-  Cons_Vec = c(0),
-  verbose = FALSE
+  cons_mat = matrix(c(0)),
+  cons_vec = c(0),
+  verbose = FALSE,
+  model_control = list(para_number = 0)
 )
 }
 \arguments{
-\item{Term_n}{term numbers for each element of the model}
+\item{term_n}{term numbers for each element of the model}
 
 \item{tform}{list of string function identifiers, used for linear/step}
 
 \item{keep_constant}{binary values to denote which parameters to change}
 
-\item{a_n}{list of initial parameter values, used to determine number of parameters}
+\item{a_n}{list of initial parameter values, used to determine number of parameters. May be either a list of vectors or a single vector.}
 
 \item{names}{columns for elements of the model, used to identify data columns}
 
-\item{der_iden}{number for the subterm to test derivative at, only used for testing runs with a single varying parameter, should be smaller than total number of parameters}
+\item{der_iden}{number for the subterm to test derivative at, only used for testing runs with a single varying parameter, should be smaller than total number of parameters. indexed starting at 0}
 
-\item{Cons_Mat}{Matrix containing coefficients for system of linear constraints, formatted as matrix}
+\item{cons_mat}{Matrix containing coefficients for system of linear constraints, formatted as matrix}
 
-\item{Cons_Vec}{Vector containing constants for system of linear constraints, formatted as vector}
+\item{cons_vec}{Vector containing constants for system of linear constraints, formatted as vector}
 
-\item{verbose}{boolean to control if additional information is printed to the console, also accepts 0/1 integer}
+\item{verbose}{integer valued 0-4 controlling what information is printed to the terminal. Each level includes the lower levels. 0: silent, 1: errors printed, 2: warnings printed, 3: notes printed, 4: debug information printed. Errors are situations that stop the regression, warnings are situations that assume default values that the user might not have intended, notes provide information on regression progress, and debug prints out C++ progress and intermediate results. The default level is 2 and True/False is converted to 3/0.}
+
+\item{model_control}{controls which alternative model options are used, see Def_model_control() for options and vignette("Control_Options") for further details}
 }
 \value{
 returns the corrected lists
 }
 \description{
-\code{Correct_Formula_Order} checks the order of formulas given and corrects any ordering issues
+\code{Correct_Formula_Order} checks the order of formulas given and corrects any ordering issues, orders alphabetically, by term number, etc.
 }
 \examples{
 library(data.table)
 ## basic example code reproduced from the starting-description vignette
 
-Term_n <- c(0,1,1,0,0)
+term_n <- c(0,1,1,0,0)
 tform <- c("loglin",'quad_slope','lin', "lin_int", "lin_slope")
 keep_constant <- c(0,0,0,1,0)
 a_n <- c(1,2,3,4,5)
 names <- c("a","a","a","a","a")
-val <- Correct_Formula_Order(Term_n, tform, keep_constant,
-                             a_n, names, Cons_Mat=matrix(c(0)),
-                             Cons_Vec=c(0))
-Term_n <- val$Term_n
+val <- Correct_Formula_Order(term_n, tform, keep_constant,
+                             a_n, names, cons_mat=matrix(c(0)),
+                             cons_vec=c(0))
+term_n <- val$term_n
 tform <- val$tform
 keep_constant <- val$keep_constant
 a_n <- val$a_n
@@ -65,6 +68,7 @@ names <- val$names
 Other Data Cleaning Functions: 
 \code{\link{Check_Dupe_Columns}()},
 \code{\link{Check_Trunc}()},
+\code{\link{Check_Verbose}()},
 \code{\link{Date_Shift}()},
 \code{\link{Def_Control}()},
 \code{\link{Def_Control_Guess}()},

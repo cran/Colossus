@@ -8,7 +8,7 @@ Gather_Guesses_CPP(
   df,
   dfc,
   names,
-  Term_n,
+  term_n,
   tform,
   keep_constant,
   a_n,
@@ -28,13 +28,13 @@ Gather_Guesses_CPP(
 
 \item{names}{columns for elements of the model, used to identify data columns}
 
-\item{Term_n}{term numbers for each element of the model}
+\item{term_n}{term numbers for each element of the model}
 
 \item{tform}{list of string function identifiers, used for linear/step}
 
 \item{keep_constant}{binary values to denote which parameters to change}
 
-\item{a_n}{list of initial parameter values, used to determine number of parameters}
+\item{a_n}{list of initial parameter values, used to determine number of parameters. May be either a list of vectors or a single vector.}
 
 \item{x_all}{covariate matrix}
 
@@ -44,11 +44,11 @@ Gather_Guesses_CPP(
 
 \item{fir}{term number for the initial term, used for models of the form T0*f(Ti) in which the order matters}
 
-\item{control}{list of parameters controlling the convergence, see Def_Control() for options or vignette("starting_description")}
+\item{control}{list of parameters controlling the convergence, see Def_Control() for options or vignette("Control_Options")}
 
-\item{guesses_control}{list of parameters to control how the guessing works, see Def_Control_Guess() for options or vignette("Alt_Distrib_Starts")}
+\item{guesses_control}{list of parameters to control how the guessing works, see Def_Control_Guess() for options or vignette("Control_Options")}
 
-\item{model_control}{controls which alternative model options are used, see Def_model_control() for options and vignette("Alt_Run_opt") for further details}
+\item{model_control}{controls which alternative model options are used, see Def_model_control() for options and vignette("Control_Options") for further details}
 }
 \value{
 returns a list of the final results
@@ -67,7 +67,7 @@ time1 <- "a"
 time2 <- "b"
 event <- "c"
 names <- c("d")
-Term_n <- c(0)
+term_n <- c(0)
 tform <- c("loglin")
 keep_constant <- c(0)
 a_n <- c(-0.1)
@@ -75,18 +75,18 @@ a_n_default <- a_n
 modelform <- "M"
 fir <- 0
 der_iden <- 0
-control=list("Ncores"=2,'lr' = 0.75,'maxiter' = -1,'halfmax' = 5,'epsilon' = 1e-9,
-            'dbeta_max' = 0.5,'deriv_epsilon' = 1e-9, 'abs_max'=1.0,'change_all'=TRUE,
+control <- list("ncores"=2,'lr' = 0.75,'maxiter' = -1,'halfmax' = 5,'epsilon' = 1e-9,
+            'deriv_epsilon' = 1e-9, 'abs_max'=1.0,'change_all'=TRUE,
             'dose_abs_max'=100.0,'verbose'=FALSE, 'ties'='breslow','double_step'=1)
 guesses_control <- list()
 model_control <- list()
 all_names <- unique(names(df))
 dfc <- match(names,all_names)
-term_tot <- max(Term_n)+1
+term_tot <- max(term_n)+1
 x_all <- as.matrix(df[,all_names, with = FALSE])
 control <- Def_Control(control)
 guesses_control <- Def_Control_Guess(guesses_control, a_n)
 model_control <- Def_model_control(model_control)
-Gather_Guesses_CPP(df, dfc, names, Term_n, tform, keep_constant, a_n, x_all, a_n_default,
+Gather_Guesses_CPP(df, dfc, names, term_n, tform, keep_constant, a_n, x_all, a_n_default,
                    modelform, fir, control, guesses_control)
 }

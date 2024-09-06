@@ -9,7 +9,7 @@ RunPoissonRegression_Omnibus(
   pyr0 = "pyr",
   event0 = "event",
   names = c("CONST"),
-  Term_n = c(0),
+  term_n = c(0),
   tform = "loglin",
   keep_constant = c(0),
   a_n = c(0),
@@ -17,10 +17,10 @@ RunPoissonRegression_Omnibus(
   fir = 0,
   der_iden = 0,
   control = list(),
-  Strat_Col = "null",
+  strat_col = "null",
   model_control = list(),
-  Cons_Mat = as.matrix(c(0)),
-  Cons_Vec = c(0)
+  cons_mat = as.matrix(c(0)),
+  cons_vec = c(0)
 )
 }
 \arguments{
@@ -32,29 +32,29 @@ RunPoissonRegression_Omnibus(
 
 \item{names}{columns for elements of the model, used to identify data columns}
 
-\item{Term_n}{term numbers for each element of the model}
+\item{term_n}{term numbers for each element of the model}
 
 \item{tform}{list of string function identifiers, used for linear/step}
 
 \item{keep_constant}{binary values to denote which parameters to change}
 
-\item{a_n}{list of initial parameter values, used to determine number of parameters}
+\item{a_n}{list of initial parameter values, used to determine number of parameters. May be either a list of vectors or a single vector.}
 
 \item{modelform}{string specifying the model type: M, ME, A, PA, PAE, GMIX, GMIX-R, GMIX-E}
 
 \item{fir}{term number for the initial term, used for models of the form T0*f(Ti) in which the order matters}
 
-\item{der_iden}{number for the subterm to test derivative at, only used for testing runs with a single varying parameter, should be smaller than total number of parameters}
+\item{der_iden}{number for the subterm to test derivative at, only used for testing runs with a single varying parameter, should be smaller than total number of parameters. indexed starting at 0}
 
-\item{control}{list of parameters controlling the convergence, see Def_Control() for options or vignette("starting_description")}
+\item{control}{list of parameters controlling the convergence, see Def_Control() for options or vignette("Control_Options")}
 
-\item{Strat_Col}{column to stratify by if needed}
+\item{strat_col}{column to stratify by if needed}
 
-\item{model_control}{controls which alternative model options are used, see Def_model_control() for options and vignette("Alt_Run_opt") for further details}
+\item{model_control}{controls which alternative model options are used, see Def_model_control() for options and vignette("Control_Options") for further details}
 
-\item{Cons_Mat}{Matrix containing coefficients for system of linear constraints, formatted as matrix}
+\item{cons_mat}{Matrix containing coefficients for system of linear constraints, formatted as matrix}
 
-\item{Cons_Vec}{Vector containing constants for system of linear constraints, formatted as vector}
+\item{cons_vec}{Vector containing constants for system of linear constraints, formatted as vector}
 }
 \value{
 returns a list of the final results
@@ -82,7 +82,7 @@ pyr <- "Ending_Age"
 event <- "Cancer_Status"
 names <- c('a','b','c','d')
 a_n <- c(1.1, -0.1, 0.2, 0.5) #used to test at a specific point
-Term_n <- c(0,1,1,2)
+term_n <- c(0,1,1,2)
 tform <- c("loglin","lin","lin","plin")
 modelform <- "M"
 fir <- 0
@@ -90,22 +90,24 @@ fir <- 0
 keep_constant <- c(0,0,0,0)
 der_iden <- 0
 
-control <- list("Ncores"=2,'lr' = 0.75,'maxiter' = 5,'halfmax' = 5,'epsilon' = 1e-3,
-   'dbeta_max' = 0.5,'deriv_epsilon' = 1e-3, 'abs_max'=1.0,'change_all'=TRUE,
+control <- list("ncores"=2,'lr' = 0.75,'maxiter' = 5,'halfmax' = 5,'epsilon' = 1e-3,
+   'deriv_epsilon' = 1e-3, 'abs_max'=1.0,'change_all'=TRUE,
    'dose_abs_max'=100.0,'verbose'=FALSE, 'ties'='breslow','double_step'=1)
 guesses_control <- list("maxiter"=10,"guesses"=10,"lin_min"=0.001,"lin_max"=1,
     "loglin_min"=-1,"loglin_max"=1, "lin_method"="uniform","loglin_method"="uniform",
      strata=FALSE)
-Strat_Col <- 'e'
-e <- RunPoissonRegression_Omnibus(df, pyr, event, names, Term_n, tform, keep_constant,
-                                  a_n, modelform, fir, der_iden, control,Strat_Col)
+strat_col <- 'e'
+e <- RunPoissonRegression_Omnibus(df, pyr, event, names, term_n, tform, keep_constant,
+                                  a_n, modelform, fir, der_iden, control,strat_col)
 }
 \seealso{
 Other Poisson Wrapper Functions: 
 \code{\link{RunPoissonEventAssignment}()},
+\code{\link{RunPoissonEventAssignment_bound}()},
 \code{\link{RunPoissonRegression}()},
 \code{\link{RunPoissonRegression_Guesses_CPP}()},
 \code{\link{RunPoissonRegression_Joint_Omnibus}()},
+\code{\link{RunPoissonRegression_Residual}()},
 \code{\link{RunPoissonRegression_STRATA}()},
 \code{\link{RunPoissonRegression_Single}()},
 \code{\link{RunPoissonRegression_Tier_Guesses}()}

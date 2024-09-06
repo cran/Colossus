@@ -4,16 +4,16 @@
 \alias{Check_Dupe_Columns}
 \title{checks for duplicated column names}
 \usage{
-Check_Dupe_Columns(df, cols, term_n, verbose = FALSE, factor_check = FALSE)
+Check_Dupe_Columns(df, cols, term_n, verbose = 0, factor_check = FALSE)
 }
 \arguments{
 \item{df}{a data.table containing the columns of interest}
 
 \item{cols}{columns to check}
 
-\item{term_n}{term numbers}
+\item{term_n}{term numbers for each element of the model}
 
-\item{verbose}{boolean to control if additional information is printed to the console, also accepts 0/1 integer}
+\item{verbose}{integer valued 0-4 controlling what information is printed to the terminal. Each level includes the lower levels. 0: silent, 1: errors printed, 2: warnings printed, 3: notes printed, 4: debug information printed. Errors are situations that stop the regression, warnings are situations that assume default values that the user might not have intended, notes provide information on regression progress, and debug prints out C++ progress and intermediate results. The default level is 2 and True/False is converted to 3/0.}
 
 \item{factor_check}{a boolean used to skip comparing columns of the form ?_? with the same initial string, which is used for factored columns}
 }
@@ -21,7 +21,7 @@ Check_Dupe_Columns(df, cols, term_n, verbose = FALSE, factor_check = FALSE)
 returns the usable columns
 }
 \description{
-\code{Check_Dupe_Columns} checks for duplicated columns, columns with the same values, and columns with 1 value. Currently not updated for multi-terms
+\code{Check_Dupe_Columns} checks for duplicated columns, columns with the same values, and columns with single value. Currently not updated for multi-terms
 }
 \examples{
 library(data.table)
@@ -37,6 +37,7 @@ unique_cols <- Check_Dupe_Columns(df, cols, term_n)
 \seealso{
 Other Data Cleaning Functions: 
 \code{\link{Check_Trunc}()},
+\code{\link{Check_Verbose}()},
 \code{\link{Correct_Formula_Order}()},
 \code{\link{Date_Shift}()},
 \code{\link{Def_Control}()},

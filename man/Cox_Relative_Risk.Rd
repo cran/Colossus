@@ -10,7 +10,7 @@ Cox_Relative_Risk(
   time2,
   event0,
   names,
-  Term_n,
+  term_n,
   tform,
   keep_constant,
   a_n,
@@ -31,21 +31,21 @@ Cox_Relative_Risk(
 
 \item{names}{columns for elements of the model, used to identify data columns}
 
-\item{Term_n}{term numbers for each element of the model}
+\item{term_n}{term numbers for each element of the model}
 
 \item{tform}{list of string function identifiers, used for linear/step}
 
 \item{keep_constant}{binary values to denote which parameters to change}
 
-\item{a_n}{list of initial parameter values, used to determine number of parameters}
+\item{a_n}{list of initial parameter values, used to determine number of parameters. May be either a list of vectors or a single vector.}
 
 \item{modelform}{string specifying the model type: M, ME, A, PA, PAE, GMIX, GMIX-R, GMIX-E}
 
 \item{fir}{term number for the initial term, used for models of the form T0*f(Ti) in which the order matters}
 
-\item{control}{list of parameters controlling the convergence, see Def_Control() for options or vignette("starting_description")}
+\item{control}{list of parameters controlling the convergence, see Def_Control() for options or vignette("Control_Options")}
 
-\item{model_control}{controls which alternative model options are used, see Def_model_control() for options and vignette("Alt_Run_opt") for further details}
+\item{model_control}{controls which alternative model options are used, see Def_model_control() for options and vignette("Control_Options") for further details}
 }
 \value{
 returns a list of the final results
@@ -71,7 +71,7 @@ time1 <- "Starting_Age"
 time2 <- "Ending_Age"
 event <- "Cancer_Status"
 names <- c('a','b','c','d')
-Term_n <- c(0,1,1,2)
+term_n <- c(0,1,1,2)
 fir <- 0
 tform <- c("loglin","lin","lin","plin")
 modelform <- "M"
@@ -79,12 +79,12 @@ a_n <- c(1.1, 0.1, 0.2, 0.5) #used to test at a specific point
 
 keep_constant <- c(0,0,0,0)
 
-control <- list("Ncores"=2,'lr' = 0.75,'maxiter' = 5,'halfmax' = 5,
+control <- list("ncores"=2,'lr' = 0.75,'maxiter' = 5,'halfmax' = 5,
    'epsilon' = 1e-3,
-   'dbeta_max' = 0.5,'deriv_epsilon' = 1e-3, 'abs_max'=1.0,'change_all'=TRUE,
+   'deriv_epsilon' = 1e-3, 'abs_max'=1.0,'change_all'=TRUE,
    'dose_abs_max'=100.0,'verbose'=FALSE, 'ties'='breslow','double_step'=1)
 
-e <- Cox_Relative_Risk(df, time1, time2, event, names, Term_n, tform,
+e <- Cox_Relative_Risk(df, time1, time2, event, names, term_n, tform,
      keep_constant, a_n, modelform, fir, control)
 
 }

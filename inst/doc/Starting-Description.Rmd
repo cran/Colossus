@@ -1,8 +1,8 @@
 ---
-title: "Colossus_Description"
+title: "Colossus Description"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Colossus_Description}
+  %\VignetteIndexEntry{Colossus Description}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -119,7 +119,7 @@ The final table is also equivalent to the following code
 
 ```{r}
 names <- c('a','b','c','d')
-Term_n <- c(0,1,1,2)
+term_n <- c(0,1,1,2)
 tform <- c("loglin","lin","lin","plin")
 modelform <- "M"
 fir <- 0
@@ -127,7 +127,7 @@ fir <- 0
 a_n <- c(0.1, 0.1, 0.1, 0.1)
 ```
 
-*names* denotes the column names used, *Term_n* denotes the term numbers, *tform* denotes the subterm formula, *modelform* denotes the term formula, *fir* denotes the "first" term indexed from zero which defaults to 0, and *a_n* denotes the initial guesses for the parameter values. All of which are assumed to be in the same order. A function is called prior to regression that reorders the inputs in order of terms, subterm types, etc.
+*names* denotes the column names used, *term_n* denotes the term numbers, *tform* denotes the subterm formula, *modelform* denotes the term formula, *fir* denotes the "first" term indexed from zero which defaults to 0, and *a_n* denotes the initial guesses for the parameter values. All of which are assumed to be in the same order. A function is called prior to regression that reorders the inputs in order of terms, subterm types, etc.
 
 ## Survival Time and Event Data
 
@@ -215,7 +215,7 @@ The additional information parameters currently supported are as follows:
 | :---------: | :----------: |
 | verbose | TRUE/FALSE flag to print updates on parameter value and which section of the code is active |
 | change_all | TRUE/FALSE flag to choose if the user wants a regression or to calculate log-likelihoods on a grid changing only one parameter at a time |
-| Ncores | Number of physical cores assigned, cannot be greater than the number of cores available |
+| ncores | Number of physical cores assigned, cannot be greater than the number of cores available |
 
 The previous options are all contained within a list of parameters, however there are additional standalone parameters which control the convergence and information. They are as follows:
 
@@ -229,7 +229,7 @@ Going back to our example, the code may look like the following:
 keep_constant <- c(0,0,0,0)
 der_iden <- 0
 
-control=list("Ncores"=2,'lr' = 0.75,'maxiter' = 100,'halfmax' = 5,'epsilon' = 1e-9,
+control=list("ncores"=2,'lr' = 0.75,'maxiter' = 100,'halfmax' = 5,'epsilon' = 1e-9,
              'dbeta_max' = 0.5,'deriv_epsilon' = 1e-9, 'abs_max'=1.0,'change_all'=TRUE,
              'dose_abs_max'=100.0,'verbose'=FALSE, 'ties'='breslow','double_step'=1)
 ```
@@ -243,13 +243,13 @@ Finally the user calls the regression function they need. The names used through
 ```{r}
 # assuming the table of covariates is stored in a data.table "df"
 
-e <- RunCoxRegression(df, time1, time2, event, names, Term_n, tform, keep_constant,
+e <- RunCoxRegression(df, time1, time2, event, names, term_n, tform, keep_constant,
                       a_n, modelform, fir, der_iden, control)
 print(e)
 
 #or a poisson regression
 a_n <- c(0.1, 0.1, 0.1, 0.1) #a_n is updated when either regression is called
-e <- RunPoissonRegression(df, pyr, event, names, Term_n, tform, keep_constant, a_n,
+e <- RunPoissonRegression(df, pyr, event, names, term_n, tform, keep_constant, a_n,
                           modelform, fir, der_iden, control)
 print(e)
 ```

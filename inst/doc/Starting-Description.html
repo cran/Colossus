@@ -12,7 +12,7 @@
 
 
 
-<title>Colossus_Description</title>
+<title>Colossus Description</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -352,7 +352,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<h1 class="title toc-ignore">Colossus_Description</h1>
+<h1 class="title toc-ignore">Colossus Description</h1>
 
 
 
@@ -483,13 +483,13 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <p>The specific model options are passed to the code as separate variables. The model identifier (A, M, PA, PAE, GMIX) is passed as a string. Every model except the additive model has a distinction between the first and remaining terms. Colossus defaults to term 0 being the unique term, however it can be set to any used term number without producing an error.</p>
 <p>The final table is also equivalent to the following code</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>names &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&#39;a&#39;</span>,<span class="st">&#39;b&#39;</span>,<span class="st">&#39;c&#39;</span>,<span class="st">&#39;d&#39;</span>)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>Term_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">2</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>term_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">2</span>)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>tform &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;loglin&quot;</span>,<span class="st">&quot;lin&quot;</span>,<span class="st">&quot;lin&quot;</span>,<span class="st">&quot;plin&quot;</span>)</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>modelform &lt;-<span class="st"> &quot;M&quot;</span></span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>fir &lt;-<span class="st"> </span><span class="dv">0</span></span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a></span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a>a_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>)</span></code></pre></div>
-<p><em>names</em> denotes the column names used, <em>Term_n</em> denotes the term numbers, <em>tform</em> denotes the subterm formula, <em>modelform</em> denotes the term formula, <em>fir</em> denotes the “first” term indexed from zero which defaults to 0, and <em>a_n</em> denotes the initial guesses for the parameter values. All of which are assumed to be in the same order. A function is called prior to regression that reorders the inputs in order of terms, subterm types, etc.</p>
+<p><em>names</em> denotes the column names used, <em>term_n</em> denotes the term numbers, <em>tform</em> denotes the subterm formula, <em>modelform</em> denotes the term formula, <em>fir</em> denotes the “first” term indexed from zero which defaults to 0, and <em>a_n</em> denotes the initial guesses for the parameter values. All of which are assumed to be in the same order. A function is called prior to regression that reorders the inputs in order of terms, subterm types, etc.</p>
 </div>
 <div id="survival-time-and-event-data" class="section level2">
 <h2>Survival Time and Event Data</h2>
@@ -687,7 +687,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <td align="center">TRUE/FALSE flag to choose if the user wants a regression or to calculate log-likelihoods on a grid changing only one parameter at a time</td>
 </tr>
 <tr class="odd">
-<td align="center">Ncores</td>
+<td align="center">ncores</td>
 <td align="center">Number of physical cores assigned, cannot be greater than the number of cores available</td>
 </tr>
 </tbody>
@@ -719,7 +719,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a>keep_constant &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a>der_iden &lt;-<span class="st"> </span><span class="dv">0</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a>control=<span class="kw">list</span>(<span class="st">&quot;Ncores&quot;</span>=<span class="dv">2</span>,<span class="st">&#39;lr&#39;</span> =<span class="st"> </span><span class="fl">0.75</span>,<span class="st">&#39;maxiter&#39;</span> =<span class="st"> </span><span class="dv">100</span>,<span class="st">&#39;halfmax&#39;</span> =<span class="st"> </span><span class="dv">5</span>,<span class="st">&#39;epsilon&#39;</span> =<span class="st"> </span><span class="fl">1e-9</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a>control=<span class="kw">list</span>(<span class="st">&quot;ncores&quot;</span>=<span class="dv">2</span>,<span class="st">&#39;lr&#39;</span> =<span class="st"> </span><span class="fl">0.75</span>,<span class="st">&#39;maxiter&#39;</span> =<span class="st"> </span><span class="dv">100</span>,<span class="st">&#39;halfmax&#39;</span> =<span class="st"> </span><span class="dv">5</span>,<span class="st">&#39;epsilon&#39;</span> =<span class="st"> </span><span class="fl">1e-9</span>,</span>
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a>             <span class="st">&#39;dbeta_max&#39;</span> =<span class="st"> </span><span class="fl">0.5</span>,<span class="st">&#39;deriv_epsilon&#39;</span> =<span class="st"> </span><span class="fl">1e-9</span>, <span class="st">&#39;abs_max&#39;</span>=<span class="fl">1.0</span>,<span class="st">&#39;change_all&#39;</span>=<span class="ot">TRUE</span>,</span>
 <span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a>             <span class="st">&#39;dose_abs_max&#39;</span>=<span class="fl">100.0</span>,<span class="st">&#39;verbose&#39;</span>=<span class="ot">FALSE</span>, <span class="st">&#39;ties&#39;</span>=<span class="st">&#39;breslow&#39;</span>,<span class="st">&#39;double_step&#39;</span>=<span class="dv">1</span>)</span></code></pre></div>
 <p>In this example, no parameters are held constant, 100 iterations with 5 half-steps are used, a regression is performed with matrix step solutions, and breslow’s method for tied event times is used. There are no errors for unused control parameters being used, they will simply be ignored. Every commonly required control parameter has a default value which is automatically used if not declared. This includes an optional list of model control options. These are used for nonstandard model options not covered in this vignette.</p>
@@ -729,7 +729,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <p>Finally the user calls the regression function they need. The names used throughout this vignette are the defaults assumed. Both the Cox PH regression and Poisson regression are called directly and return a list of results. Colossus contains a suite of additional checks it runs on the inputs prior to starting and calculations, which are designed to output explicit details on any issues. Printing error details may require the verbose option to be TRUE. In code the functions are called as follows:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a><span class="co"># assuming the table of covariates is stored in a data.table &quot;df&quot;</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">RunCoxRegression</span>(df, time1, time2, event, names, Term_n, tform, keep_constant,</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">RunCoxRegression</span>(df, time1, time2, event, names, term_n, tform, keep_constant,</span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a>                      a_n, modelform, fir, der_iden, control)</span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a><span class="kw">print</span>(e)</span>
 <span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a><span class="co">#&gt; $LogLik</span></span>
@@ -755,10 +755,10 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb6-26"><a href="#cb6-26" aria-hidden="true"></a><span class="co">#&gt; [1] 9.350729</span></span>
 <span id="cb6-27"><a href="#cb6-27" aria-hidden="true"></a><span class="co">#&gt; </span></span>
 <span id="cb6-28"><a href="#cb6-28" aria-hidden="true"></a><span class="co">#&gt; $BIC</span></span>
-<span id="cb6-29"><a href="#cb6-29" aria-hidden="true"></a><span class="co">#&gt; [1] 9.134369</span></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true"></a><span class="co">#&gt; [1] 8.517767</span></span>
 <span id="cb6-30"><a href="#cb6-30" aria-hidden="true"></a><span class="co">#&gt; </span></span>
 <span id="cb6-31"><a href="#cb6-31" aria-hidden="true"></a><span class="co">#&gt; $Parameter_Lists</span></span>
-<span id="cb6-32"><a href="#cb6-32" aria-hidden="true"></a><span class="co">#&gt; $Parameter_Lists$Term_n</span></span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true"></a><span class="co">#&gt; $Parameter_Lists$term_n</span></span>
 <span id="cb6-33"><a href="#cb6-33" aria-hidden="true"></a><span class="co">#&gt; [1] 0 1 1 2</span></span>
 <span id="cb6-34"><a href="#cb6-34" aria-hidden="true"></a><span class="co">#&gt; </span></span>
 <span id="cb6-35"><a href="#cb6-35" aria-hidden="true"></a><span class="co">#&gt; $Parameter_Lists$tforms</span></span>
@@ -784,7 +784,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb6-55"><a href="#cb6-55" aria-hidden="true"></a></span>
 <span id="cb6-56"><a href="#cb6-56" aria-hidden="true"></a><span class="co">#or a poisson regression</span></span>
 <span id="cb6-57"><a href="#cb6-57" aria-hidden="true"></a>a_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>) <span class="co">#a_n is updated when either regression is called</span></span>
-<span id="cb6-58"><a href="#cb6-58" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">RunPoissonRegression</span>(df, pyr, event, names, Term_n, tform, keep_constant, a_n,</span>
+<span id="cb6-58"><a href="#cb6-58" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">RunPoissonRegression</span>(df, pyr, event, names, term_n, tform, keep_constant, a_n,</span>
 <span id="cb6-59"><a href="#cb6-59" aria-hidden="true"></a>                          modelform, fir, der_iden, control)</span>
 <span id="cb6-60"><a href="#cb6-60" aria-hidden="true"></a><span class="kw">print</span>(e)</span>
 <span id="cb6-61"><a href="#cb6-61" aria-hidden="true"></a><span class="co">#&gt; $LogLik</span></span>
@@ -816,7 +816,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb6-87"><a href="#cb6-87" aria-hidden="true"></a><span class="co">#&gt; [1] 85.47964</span></span>
 <span id="cb6-88"><a href="#cb6-88" aria-hidden="true"></a><span class="co">#&gt; </span></span>
 <span id="cb6-89"><a href="#cb6-89" aria-hidden="true"></a><span class="co">#&gt; $Parameter_Lists</span></span>
-<span id="cb6-90"><a href="#cb6-90" aria-hidden="true"></a><span class="co">#&gt; $Parameter_Lists$Term_n</span></span>
+<span id="cb6-90"><a href="#cb6-90" aria-hidden="true"></a><span class="co">#&gt; $Parameter_Lists$term_n</span></span>
 <span id="cb6-91"><a href="#cb6-91" aria-hidden="true"></a><span class="co">#&gt; [1] 0 1 1 2</span></span>
 <span id="cb6-92"><a href="#cb6-92" aria-hidden="true"></a><span class="co">#&gt; </span></span>
 <span id="cb6-93"><a href="#cb6-93" aria-hidden="true"></a><span class="co">#&gt; $Parameter_Lists$tforms</span></span>

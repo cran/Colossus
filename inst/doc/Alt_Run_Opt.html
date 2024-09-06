@@ -12,7 +12,7 @@
 
 
 
-<title>Alternative_Regression_Options</title>
+<title>Alternative Regression Options</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -352,7 +352,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<h1 class="title toc-ignore">Alternative_Regression_Options</h1>
+<h1 class="title toc-ignore">Alternative Regression Options</h1>
 
 
 
@@ -426,12 +426,12 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <p>In which r denotes hazard ratios, the denominator is the sum of hazard ratios of intervals containing the event time, and each term is raised to the power of 1 if the interval has an event and 0 otherwise. Different tie methods modify the denominator based on how the order of events is assumed, but the general form still stands. The goal is to compare each event interval to intervals within a similar time span. Stratification adds in an additional condition. If the user stratifies over a covariate “F” then each risk group is split into subgroups with the same value of “F”. So the goal becomes to compare event intervals to intervals with similar strata AND time. This is done to remove the influence of the stratification variables from the calculations.</p>
 <p>In code this is done by adding in an additional parameter for the stratification column and using a different function to call the regression.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>Strat_Col &lt;-<span class="st"> &quot;e&quot;</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">RunCoxRegression_STRATA</span>(df, time1, time2, event, names, Term_n, tform, keep_constant,</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">RunCoxRegression_STRATA</span>(df, time1, time2, event, names, term_n, tform, keep_constant,</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>                             a_n, modelform, fir, der_iden, control,Strat_Col)</span></code></pre></div>
 </div>
 <div id="poisson-regression" class="section level3">
 <h3>Poisson Regression</h3>
-<p>Poisson regression doesn’t have risk groups to account for, but the theory is the same. To remove the influence of stratification covariate a new term is added to account for their effects. In Colossus, this is a Log-Linear term. So the following may be the model used without stratification:</p>
+<p>Poisson regression does not have risk groups to account for, but the theory is the same. To remove the influence of stratification covariate a new term is added to account for their effects. In Colossus, this is a Log-Linear term. So the following may be the model used without stratification:</p>
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
@@ -450,7 +450,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <p>Only results associated with the non-stratified parameters are returned by default. An average event rate is calculated for every strata level, which weights the calculated risks.</p>
 <p>In code this is done by adding in a list of stratification columns and using a different function to call the regression. Colossus combines the list of stratification columns into a single interaction, so it does not matter if the user provides a list or combines them themselves.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>Strat_Col &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;e&quot;</span>)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>e &lt;-<span class="kw">RunPoissonRegression_STRATA</span>(df, pyr, event, names, Term_n, tform, keep_constant,</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>e &lt;-<span class="kw">RunPoissonRegression_STRATA</span>(df, pyr, event, names, term_n, tform, keep_constant,</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>                                a_n, modelform, fir, der_iden, control,Strat_Col)</span></code></pre></div>
 </div>
 </div>
@@ -465,17 +465,17 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <h2>Non-Derivative Calculation</h2>
 <p>Colossus uses Newton’s method to perform the regression, which can become computationally complex as the number of terms and formula increases. So Colossus contains functions to calculate only the scores for a parameter set, and skip the intensive derivative calculations. These results could be used to perform a bisection method of regression or plot the dependence of score on parameter values. Colossus in the current state does not use these functions, but they are left for the user’s convenience.</p>
 <p>The code is similar to previous examples:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">RunCoxRegression_Single</span>(df, time1, time2, event, names, Term_n, tform,</span>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">RunCoxRegression_Single</span>(df, time1, time2, event, names, term_n, tform,</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a>                             a_n, modelform, fir, control)</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">RunPoissonRegression_Single</span>(df, pyr, event, names, Term_n, tform,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">RunPoissonRegression_Single</span>(df, pyr, event, names, term_n, tform,</span>
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a>                                 a_n, modelform, fir, control)</span></code></pre></div>
 </div>
 <div id="competing-risks" class="section level2">
 <h2>Competing Risks</h2>
 <div id="grey-fine" class="section level3">
 <h3>Grey-Fine</h3>
-<p>In Cox PH there is an assumption that every individual is recorded until they have an event or they are naturally censored, and the same censoring rates are assumed to apply to every individual. These are violated when there is a competing event occurring. In sensitivity analysis there are two extremes that can be tested. Either every person with a competing event is treated as having the event of interest instead, or they are assumed to never experience the event of interest. However there are methods to find a more realistic alternative. Colossus applies the Fine-Gray model for competing risks, which instead weights the contribution of competing event intervals in future intervals by the probability they wouldn’t have been censored.</p>
+<p>In Cox PH there is an assumption that every individual is recorded until they have an event or they are naturally censored, and the same censoring rates are assumed to apply to every individual. These are violated when there is a competing event occurring. In sensitivity analysis there are two extremes that can be tested. Either every person with a competing event is treated as having the event of interest instead, or they are assumed to never experience the event of interest. However there are methods to find a more realistic alternative. Colossus applies the Fine-Gray model for competing risks, which instead weights the contribution of competing event intervals in future intervals by the probability they would not have been censored.</p>
 <p>As previously established, the risk groups are formed to measure the probability that an individual survived up to the time and experienced the event of interest, given that they did not experience an event up to that time:</p>
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
@@ -507,7 +507,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a></span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a>plot_options &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="st">&quot;name&quot;</span>=<span class="st">&quot;run_2&quot;</span>,<span class="st">&quot;verbose&quot;</span>=<span class="ot">FALSE</span>,<span class="st">&quot;studyID&quot;</span>=<span class="st">&quot;studyID&quot;</span>,<span class="st">&quot;age_unit&quot;</span>=<span class="st">&quot;years&quot;</span>)</span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a><span class="co">#modified plotting function used to get censoring weights</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a>dft &lt;-<span class="st"> </span><span class="kw">GetCensWeight</span>(df, time1, time2, event, names, Term_n, tform, keep_constant,</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a>dft &lt;-<span class="st"> </span><span class="kw">GetCensWeight</span>(df, time1, time2, event, names, term_n, tform, keep_constant,</span>
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true"></a>                     a_n, modelform, fir, control, plot_options) <span class="co">#generates a survival curve</span></span>
 <span id="cb6-8"><a href="#cb6-8" aria-hidden="true"></a>t_ref &lt;-<span class="st"> </span>dft<span class="op">$</span>t</span>
 <span id="cb6-9"><a href="#cb6-9" aria-hidden="true"></a>surv_ref &lt;-<span class="st"> </span>dft<span class="op">$</span>surv</span>
@@ -516,7 +516,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb6-12"><a href="#cb6-12" aria-hidden="true"></a><span class="co">#the surviving proportions used as censoring weight</span></span>
 <span id="cb6-13"><a href="#cb6-13" aria-hidden="true"></a>event &lt;-<span class="st"> &quot;lung&quot;</span> <span class="co">#event switched back</span></span>
 <span id="cb6-14"><a href="#cb6-14" aria-hidden="true"></a></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">RunCoxRegression_CR</span>(df, time1, time2, event, names, Term_n, tform, keep_constant,</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">RunCoxRegression_CR</span>(df, time1, time2, event, names, term_n, tform, keep_constant,</span>
 <span id="cb6-16"><a href="#cb6-16" aria-hidden="true"></a>                         a_n, modelform, fir, der_iden, control,cens_weight)</span></code></pre></div>
 </div>
 <div id="poisson-joint-analysis" class="section level3">
@@ -620,9 +620,9 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a>names_e0 &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&#39;fac&#39;</span>)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true"></a>names_e1 &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&#39;fac&#39;</span>)</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true"></a>names_shared &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&#39;t0&#39;</span>,<span class="st">&#39;t0&#39;</span>)</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true"></a>Term_n_e0 &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>)</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true"></a>Term_n_e1 &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>)</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true"></a>Term_n_shared &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true"></a>term_n_e0 &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true"></a>term_n_e1 &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true"></a>term_n_shared &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>)</span>
 <span id="cb8-7"><a href="#cb8-7" aria-hidden="true"></a>tform_e0 &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;loglin&quot;</span>)</span>
 <span id="cb8-8"><a href="#cb8-8" aria-hidden="true"></a>tform_e1 &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;loglin&quot;</span>)</span>
 <span id="cb8-9"><a href="#cb8-9" aria-hidden="true"></a>tform_shared &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;quad_slope&quot;</span>,<span class="st">&quot;loglin_top&quot;</span>)</span>
@@ -633,13 +633,13 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb8-14"><a href="#cb8-14" aria-hidden="true"></a>a_n_e1 &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.1</span>)</span>
 <span id="cb8-15"><a href="#cb8-15" aria-hidden="true"></a>a_n_shared &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.001</span>, <span class="fl">-0.02</span>)</span>
 <span id="cb8-16"><a href="#cb8-16" aria-hidden="true"></a>name_list &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="st">&#39;shared&#39;</span>=names_shared,<span class="st">&#39;e0&#39;</span>=names_e0,<span class="st">&#39;e1&#39;</span>=names_e1)</span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true"></a>Term_n_list &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="st">&#39;shared&#39;</span>=Term_n_shared,<span class="st">&#39;e0&#39;</span>=Term_n_e0,<span class="st">&#39;e1&#39;</span>=Term_n_e1)</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true"></a>term_n_list &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="st">&#39;shared&#39;</span>=term_n_shared,<span class="st">&#39;e0&#39;</span>=term_n_e0,<span class="st">&#39;e1&#39;</span>=term_n_e1)</span>
 <span id="cb8-18"><a href="#cb8-18" aria-hidden="true"></a>tform_list &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="st">&#39;shared&#39;</span>=tform_shared,<span class="st">&#39;e0&#39;</span>=tform_e0,<span class="st">&#39;e1&#39;</span>=tform_e1)</span>
 <span id="cb8-19"><a href="#cb8-19" aria-hidden="true"></a>keep_constant_list &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="st">&#39;shared&#39;</span>=keep_constant_shared,</span>
 <span id="cb8-20"><a href="#cb8-20" aria-hidden="true"></a>                           <span class="st">&#39;e0&#39;</span>=keep_constant_e0,<span class="st">&#39;e1&#39;</span>=keep_constant_e1)</span>
 <span id="cb8-21"><a href="#cb8-21" aria-hidden="true"></a>a_n_list &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="st">&#39;shared&#39;</span>=a_n_shared,<span class="st">&#39;e0&#39;</span>=a_n_e0,<span class="st">&#39;e1&#39;</span>=a_n_e1)</span></code></pre></div>
 <p>The function returns a list which contains the combined table and vectors.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true"></a><span class="kw">Joint_Multiple_Events</span>(df, events, name_list, Term_n_list,</span>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true"></a><span class="kw">Joint_Multiple_Events</span>(df, events, name_list, term_n_list,</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true"></a>                      tform_list, keep_constant_list, a_n_list)</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true"></a><span class="co">#&gt; $df</span></span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true"></a><span class="co">#&gt;        t0    t1 events    e0    e1   fac   pyr fac_e0 fac_e1</span></span>
@@ -660,7 +660,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb9-19"><a href="#cb9-19" aria-hidden="true"></a><span class="co">#&gt; $names</span></span>
 <span id="cb9-20"><a href="#cb9-20" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;t0&quot;     &quot;t0&quot;     &quot;fac_e0&quot; &quot;fac_e1&quot;</span></span>
 <span id="cb9-21"><a href="#cb9-21" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb9-22"><a href="#cb9-22" aria-hidden="true"></a><span class="co">#&gt; $Term_n</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true"></a><span class="co">#&gt; $term_n</span></span>
 <span id="cb9-23"><a href="#cb9-23" aria-hidden="true"></a><span class="co">#&gt; [1] 0 0 0 0</span></span>
 <span id="cb9-24"><a href="#cb9-24" aria-hidden="true"></a><span class="co">#&gt; </span></span>
 <span id="cb9-25"><a href="#cb9-25" aria-hidden="true"></a><span class="co">#&gt; $tform</span></span>
@@ -675,14 +675,14 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true"></a>der_iden &lt;-<span class="st"> </span><span class="dv">0</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true"></a>modelform &lt;-<span class="st"> &quot;M&quot;</span></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true"></a>fir &lt;-<span class="st"> </span><span class="dv">0</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true"></a>control &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="st">&quot;Ncores&quot;</span>=<span class="dv">2</span>,<span class="st">&#39;lr&#39;</span> =<span class="st"> </span><span class="fl">0.75</span>,<span class="st">&#39;maxiter&#39;</span> =<span class="st"> </span><span class="dv">10</span>,<span class="st">&#39;halfmax&#39;</span> =<span class="st"> </span><span class="dv">5</span>,<span class="st">&#39;epsilon&#39;</span> =<span class="st"> </span><span class="fl">1e-3</span>,</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true"></a>control &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="st">&quot;ncores&quot;</span>=<span class="dv">2</span>,<span class="st">&#39;lr&#39;</span> =<span class="st"> </span><span class="fl">0.75</span>,<span class="st">&#39;maxiter&#39;</span> =<span class="st"> </span><span class="dv">10</span>,<span class="st">&#39;halfmax&#39;</span> =<span class="st"> </span><span class="dv">5</span>,<span class="st">&#39;epsilon&#39;</span> =<span class="st"> </span><span class="fl">1e-3</span>,</span>
 <span id="cb10-5"><a href="#cb10-5" aria-hidden="true"></a>   <span class="st">&#39;dbeta_max&#39;</span> =<span class="st"> </span><span class="fl">0.5</span>,<span class="st">&#39;deriv_epsilon&#39;</span> =<span class="st"> </span><span class="fl">1e-3</span>, <span class="st">&#39;abs_max&#39;</span>=<span class="fl">1.0</span>,<span class="st">&#39;change_all&#39;</span>=<span class="ot">TRUE</span>,</span>
 <span id="cb10-6"><a href="#cb10-6" aria-hidden="true"></a>   <span class="st">&#39;dose_abs_max&#39;</span>=<span class="fl">100.0</span>,<span class="st">&#39;verbose&#39;</span>=<span class="ot">FALSE</span>, <span class="st">&#39;ties&#39;</span>=<span class="st">&#39;breslow&#39;</span>,<span class="st">&#39;double_step&#39;</span>=<span class="dv">1</span>)</span>
 <span id="cb10-7"><a href="#cb10-7" aria-hidden="true"></a>guesses_control &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="st">&quot;maxiter&quot;</span>=<span class="dv">10</span>,<span class="st">&quot;guesses&quot;</span>=<span class="dv">10</span>,<span class="st">&quot;lin_min&quot;</span>=<span class="fl">0.001</span>,<span class="st">&quot;lin_max&quot;</span>=<span class="dv">1</span>,</span>
 <span id="cb10-8"><a href="#cb10-8" aria-hidden="true"></a>    <span class="st">&quot;loglin_min&quot;</span>=<span class="op">-</span><span class="dv">1</span>,<span class="st">&quot;loglin_max&quot;</span>=<span class="dv">1</span>, <span class="st">&quot;lin_method&quot;</span>=<span class="st">&quot;uniform&quot;</span>,<span class="st">&quot;loglin_method&quot;</span>=<span class="st">&quot;uniform&quot;</span>,</span>
 <span id="cb10-9"><a href="#cb10-9" aria-hidden="true"></a>     <span class="dt">strata=</span><span class="ot">FALSE</span>)</span>
 <span id="cb10-10"><a href="#cb10-10" aria-hidden="true"></a>Strat_Col &lt;-<span class="st"> &#39;f&#39;</span></span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true"></a><span class="kw">RunPoissonRegression_Joint_Omnibus</span>(df, pyr, events, name_list, Term_n_list,</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true"></a><span class="kw">RunPoissonRegression_Joint_Omnibus</span>(df, pyr, events, name_list, term_n_list,</span>
 <span id="cb10-12"><a href="#cb10-12" aria-hidden="true"></a>                                        tform_list, keep_constant_list, a_n_list,</span>
 <span id="cb10-13"><a href="#cb10-13" aria-hidden="true"></a>                                        modelform, fir, der_iden, control,Strat_Col)</span>
 <span id="cb10-14"><a href="#cb10-14" aria-hidden="true"></a><span class="co">#&gt; $LogLik</span></span>
@@ -714,7 +714,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb10-40"><a href="#cb10-40" aria-hidden="true"></a><span class="co">#&gt; [1] 6.436015</span></span>
 <span id="cb10-41"><a href="#cb10-41" aria-hidden="true"></a><span class="co">#&gt; </span></span>
 <span id="cb10-42"><a href="#cb10-42" aria-hidden="true"></a><span class="co">#&gt; $Parameter_Lists</span></span>
-<span id="cb10-43"><a href="#cb10-43" aria-hidden="true"></a><span class="co">#&gt; $Parameter_Lists$Term_n</span></span>
+<span id="cb10-43"><a href="#cb10-43" aria-hidden="true"></a><span class="co">#&gt; $Parameter_Lists$term_n</span></span>
 <span id="cb10-44"><a href="#cb10-44" aria-hidden="true"></a><span class="co">#&gt; [1] 0 0 0 0</span></span>
 <span id="cb10-45"><a href="#cb10-45" aria-hidden="true"></a><span class="co">#&gt; </span></span>
 <span id="cb10-46"><a href="#cb10-46" aria-hidden="true"></a><span class="co">#&gt; $Parameter_Lists$tforms</span></span>

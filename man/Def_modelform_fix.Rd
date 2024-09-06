@@ -2,34 +2,34 @@
 % Please edit documentation in R/Utility.R
 \name{Def_modelform_fix}
 \alias{Def_modelform_fix}
-\title{Automatically assigns geometric-mixture values}
+\title{Automatically assigns geometric-mixture values and checks that a valid modelform is used}
 \usage{
-Def_modelform_fix(control, model_control, modelform, Term_n)
+Def_modelform_fix(control, model_control, modelform, term_n)
 }
 \arguments{
-\item{control}{list of parameters controlling the convergence, see Def_Control() for options or vignette("starting_description")}
+\item{control}{list of parameters controlling the convergence, see Def_Control() for options or vignette("Control_Options")}
 
-\item{model_control}{controls which alternative model options are used, see Def_model_control() for options and vignette("Alt_Run_opt") for further details}
+\item{model_control}{controls which alternative model options are used, see Def_model_control() for options and vignette("Control_Options") for further details}
 
 \item{modelform}{string specifying the model type: M, ME, A, PA, PAE, GMIX, GMIX-R, GMIX-E}
 
-\item{Term_n}{term numbers for each element of the model}
+\item{term_n}{term numbers for each element of the model}
 }
 \value{
 returns a filled list
 }
 \description{
-\code{Def_model_control} checks and assigns default values
+\code{Def_model_control} checks and assigns default values for modelform options
 }
 \examples{
 library(data.table)
-control <- list("Ncores"=2,'lr' = 0.75,'maxiter' = 5, 'ties'='breslow','double_step'=1)
+control <- list("ncores"=2,'lr' = 0.75,'maxiter' = 5, 'ties'='breslow','double_step'=1)
 control <- Def_Control(control)
 model_control <- list("single"=TRUE)
 model_control <- Def_model_control(model_control)
-Term_n <- c(0,1,1)
+term_n <- c(0,1,1)
 modelform <- 'a'
-val <- Def_modelform_fix(control,model_control,modelform,Term_n)
+val <- Def_modelform_fix(control,model_control,modelform,term_n)
 model_control <- val$model_control
 modelform <- val$modelform
 
@@ -38,6 +38,7 @@ modelform <- val$modelform
 Other Data Cleaning Functions: 
 \code{\link{Check_Dupe_Columns}()},
 \code{\link{Check_Trunc}()},
+\code{\link{Check_Verbose}()},
 \code{\link{Correct_Formula_Order}()},
 \code{\link{Date_Shift}()},
 \code{\link{Def_Control}()},

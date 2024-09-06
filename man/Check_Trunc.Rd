@@ -2,16 +2,16 @@
 % Please edit documentation in R/Utility.R
 \name{Check_Trunc}
 \alias{Check_Trunc}
-\title{Applies time duration truncation limits}
+\title{Applies time duration truncation limits to create columns for Cox model}
 \usage{
-Check_Trunc(df, ce, verbose = FALSE)
+Check_Trunc(df, ce, verbose = 0)
 }
 \arguments{
 \item{df}{a data.table containing the columns of interest}
 
 \item{ce}{columns to check for truncation, (t0, t1, event)}
 
-\item{verbose}{boolean to control if additional information is printed to the console, also accepts 0/1 integer}
+\item{verbose}{integer valued 0-4 controlling what information is printed to the terminal. Each level includes the lower levels. 0: silent, 1: errors printed, 2: warnings printed, 3: notes printed, 4: debug information printed. Errors are situations that stop the regression, warnings are situations that assume default values that the user might not have intended, notes provide information on regression progress, and debug prints out C++ progress and intermediate results. The default level is 2 and True/False is converted to 3/0.}
 }
 \value{
 returns the updated data and time period columns
@@ -38,6 +38,7 @@ ce <- val$ce
 \seealso{
 Other Data Cleaning Functions: 
 \code{\link{Check_Dupe_Columns}()},
+\code{\link{Check_Verbose}()},
 \code{\link{Correct_Formula_Order}()},
 \code{\link{Date_Shift}()},
 \code{\link{Def_Control}()},

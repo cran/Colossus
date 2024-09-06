@@ -10,7 +10,7 @@ RunCoxPlots(
   time2,
   event0,
   names,
-  Term_n,
+  term_n,
   tform,
   keep_constant,
   a_n,
@@ -32,23 +32,23 @@ RunCoxPlots(
 
 \item{names}{columns for elements of the model, used to identify data columns}
 
-\item{Term_n}{term numbers for each element of the model}
+\item{term_n}{term numbers for each element of the model}
 
 \item{tform}{list of string function identifiers, used for linear/step}
 
 \item{keep_constant}{binary values to denote which parameters to change}
 
-\item{a_n}{list of initial parameter values, used to determine number of parameters}
+\item{a_n}{list of initial parameter values, used to determine number of parameters. May be either a list of vectors or a single vector.}
 
 \item{modelform}{string specifying the model type: M, ME, A, PA, PAE, GMIX, GMIX-R, GMIX-E}
 
 \item{fir}{term number for the initial term, used for models of the form T0*f(Ti) in which the order matters}
 
-\item{control}{list of parameters controlling the convergence, see Def_Control() for options or vignette("starting_description")}
+\item{control}{list of parameters controlling the convergence, see Def_Control() for options or vignette("Control_Options")}
 
 \item{plot_options}{list of parameters controlling the plot options, see RunCoxPlots() for different options}
 
-\item{model_control}{controls which alternative model options are used, see Def_model_control() for options and vignette("Alt_Run_opt") for further details}
+\item{model_control}{controls which alternative model options are used, see Def_model_control() for options and vignette("Control_Options") for further details}
 }
 \value{
 saves the plots in the current directory and returns a string
@@ -74,7 +74,7 @@ time1 <- "Starting_Age"
 time2 <- "Ending_Age"
 event <- "Cancer_Status"
 names <- c('a','b','c','d')
-Term_n <- c(0,1,1,2)
+term_n <- c(0,1,1,2)
 tform <- c("loglin","lin","lin","plin")
 modelform <- "M"
 fir <- 0
@@ -83,16 +83,16 @@ a_n <- c(-0.1, 0.5, 1.1, -0.3)
 keep_constant <- c(0,0,0,0)
 der_iden <- 0
 
-control <- list("Ncores"=2,'lr' = 0.75,'maxiter' = -1,'halfmax' = 5,
-   'epsilon' = 1e-3,'dbeta_max' = 0.5,'deriv_epsilon' = 1e-3,
+control <- list("ncores"=2,'lr' = 0.75,'maxiter' = -1,'halfmax' = 5,
+   'epsilon' = 1e-3,'deriv_epsilon' = 1e-3,
    'abs_max'=1.0,'change_all'=TRUE,'dose_abs_max'=100.0,
    'verbose'=FALSE, 'ties'='breslow','double_step'=1)
 #setting maxiter below 0 forces the function to calculate the score
 # and return
-plot_options=list("type"=c("SURV",paste(tempfile(),"run",sep="")), "studyID"="UserID",
+plot_options <- list("type"=c("surv",paste(tempfile(),"run",sep="")), "studyid"="UserID",
                   'verbose'=FALSE)
 
-RunCoxPlots(df, time1, time2, event, names, Term_n, tform, keep_constant,
+RunCoxPlots(df, time1, time2, event, names, term_n, tform, keep_constant,
             a_n, modelform, fir, control, plot_options)
 
 }

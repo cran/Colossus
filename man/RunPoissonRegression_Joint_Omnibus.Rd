@@ -2,14 +2,14 @@
 % Please edit documentation in R/Poisson_Regression.R
 \name{RunPoissonRegression_Joint_Omnibus}
 \alias{RunPoissonRegression_Joint_Omnibus}
-\title{Performs basic Poisson regression using the omnibus function}
+\title{Performs joint Poisson regression using the omnibus function}
 \usage{
 RunPoissonRegression_Joint_Omnibus(
   df,
   pyr0,
   events,
   name_list,
-  Term_n_list = list(),
+  term_n_list = list(),
   tform_list = list(),
   keep_constant_list = list(),
   a_n_list = list(),
@@ -17,10 +17,10 @@ RunPoissonRegression_Joint_Omnibus(
   fir = 0,
   der_iden = 0,
   control = list(),
-  Strat_Col = "null",
+  strat_col = "null",
   model_control = list(),
-  Cons_Mat = as.matrix(c(0)),
-  Cons_Vec = c(0)
+  cons_mat = as.matrix(c(0)),
+  cons_vec = c(0)
 )
 }
 \arguments{
@@ -32,7 +32,7 @@ RunPoissonRegression_Joint_Omnibus(
 
 \item{name_list}{list of vectors for columns for event specific or shared model elements, required}
 
-\item{Term_n_list}{list of vectors for term numbers for event specific or shared model elements, defaults to term 0}
+\item{term_n_list}{list of vectors for term numbers for event specific or shared model elements, defaults to term 0}
 
 \item{tform_list}{list of vectors for subterm types for event specific or shared model elements, defaults to loglinear}
 
@@ -44,17 +44,17 @@ RunPoissonRegression_Joint_Omnibus(
 
 \item{fir}{term number for the initial term, used for models of the form T0*f(Ti) in which the order matters}
 
-\item{der_iden}{number for the subterm to test derivative at, only used for testing runs with a single varying parameter, should be smaller than total number of parameters}
+\item{der_iden}{number for the subterm to test derivative at, only used for testing runs with a single varying parameter, should be smaller than total number of parameters. indexed starting at 0}
 
-\item{control}{list of parameters controlling the convergence, see Def_Control() for options or vignette("starting_description")}
+\item{control}{list of parameters controlling the convergence, see Def_Control() for options or vignette("Control_Options")}
 
-\item{Strat_Col}{column to stratify by if needed}
+\item{strat_col}{column to stratify by if needed}
 
-\item{model_control}{controls which alternative model options are used, see Def_model_control() for options and vignette("Alt_Run_opt") for further details}
+\item{model_control}{controls which alternative model options are used, see Def_model_control() for options and vignette("Control_Options") for further details}
 
-\item{Cons_Mat}{Matrix containing coefficients for system of linear constraints, formatted as matrix}
+\item{cons_mat}{Matrix containing coefficients for system of linear constraints, formatted as matrix}
 
-\item{Cons_Vec}{Vector containing constants for system of linear constraints, formatted as vector}
+\item{cons_vec}{Vector containing constants for system of linear constraints, formatted as vector}
 }
 \value{
 returns a list of the final results
@@ -83,9 +83,9 @@ events <- c('e0','e1')
 names_e0 <- c('fac')
 names_e1 <- c('fac')
 names_shared <- c('t0','t0')
-Term_n_e0 <- c(0)
-Term_n_e1 <- c(0)
-Term_n_shared <- c(0,0)
+term_n_e0 <- c(0)
+term_n_e1 <- c(0)
+term_n_shared <- c(0,0)
 tform_e0 <- c("loglin")
 tform_e1 <- c("loglin")
 tform_shared <- c("quad_slope","loglin_top")
@@ -96,7 +96,7 @@ a_n_e0 <- c(-0.1)
 a_n_e1 <- c(0.1)
 a_n_shared <- c(0.001, -0.02)
 name_list <- list('shared'=names_shared,'e0'=names_e0,'e1'=names_e1)
-Term_n_list <- list('shared'=Term_n_shared,'e0'=Term_n_e0,'e1'=Term_n_e1)
+term_n_list <- list('shared'=term_n_shared,'e0'=term_n_e0,'e1'=term_n_e1)
 tform_list <- list('shared'=tform_shared,'e0'=tform_e0,'e1'=tform_e1)
 keep_constant_list <- list('shared'=keep_constant_shared,
                            'e0'=keep_constant_e0,'e1'=keep_constant_e1)
@@ -105,24 +105,26 @@ a_n_list <- list('shared'=a_n_shared,'e0'=a_n_e0,'e1'=a_n_e1)
 der_iden <- 0
 modelform <- "M"
 fir <- 0
-control <- list("Ncores"=2,'lr' = 0.75,'maxiter' = 5,'halfmax' = 5,'epsilon' = 1e-3,
-   'dbeta_max' = 0.5,'deriv_epsilon' = 1e-3, 'abs_max'=1.0,'change_all'=TRUE,
+control <- list("ncores"=2,'lr' = 0.75,'maxiter' = 5,'halfmax' = 5,'epsilon' = 1e-3,
+   'deriv_epsilon' = 1e-3, 'abs_max'=1.0,'change_all'=TRUE,
    'dose_abs_max'=100.0,'verbose'=FALSE, 'ties'='breslow','double_step'=1)
 guesses_control <- list("maxiter"=10,"guesses"=10,"lin_min"=0.001,"lin_max"=1,
     "loglin_min"=-1,"loglin_max"=1, "lin_method"="uniform","loglin_method"="uniform",
      strata=FALSE)
-Strat_Col <- 'f'
-e <- RunPoissonRegression_Joint_Omnibus(df, pyr, events, name_list, Term_n_list,
+strat_col <- 'f'
+e <- RunPoissonRegression_Joint_Omnibus(df, pyr, events, name_list, term_n_list,
                                         tform_list, keep_constant_list, a_n_list,
-                                        modelform, fir, der_iden, control,Strat_Col)
+                                        modelform, fir, der_iden, control,strat_col)
 
 }
 \seealso{
 Other Poisson Wrapper Functions: 
 \code{\link{RunPoissonEventAssignment}()},
+\code{\link{RunPoissonEventAssignment_bound}()},
 \code{\link{RunPoissonRegression}()},
 \code{\link{RunPoissonRegression_Guesses_CPP}()},
 \code{\link{RunPoissonRegression_Omnibus}()},
+\code{\link{RunPoissonRegression_Residual}()},
 \code{\link{RunPoissonRegression_STRATA}()},
 \code{\link{RunPoissonRegression_Single}()},
 \code{\link{RunPoissonRegression_Tier_Guesses}()}

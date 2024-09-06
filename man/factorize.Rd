@@ -4,14 +4,14 @@
 \alias{factorize}
 \title{Splits a parameter into factors}
 \usage{
-factorize(df, col_list, verbose = FALSE)
+factorize(df, col_list, verbose = 0)
 }
 \arguments{
 \item{df}{a data.table containing the columns of interest}
 
 \item{col_list}{an array of column names that should have factor terms defined}
 
-\item{verbose}{boolean to control if additional information is printed to the console, also accepts 0/1 integer}
+\item{verbose}{integer valued 0-4 controlling what information is printed to the terminal. Each level includes the lower levels. 0: silent, 1: errors printed, 2: warnings printed, 3: notes printed, 4: debug information printed. Errors are situations that stop the regression, warnings are situations that assume default values that the user might not have intended, notes provide information on regression progress, and debug prints out C++ progress and intermediate results. The default level is 2 and True/False is converted to 3/0.}
 }
 \value{
 returns a list with two named fields. df for the updated dataframe, and cols for the new column names
@@ -36,6 +36,7 @@ new_col <- val$cols
 Other Data Cleaning Functions: 
 \code{\link{Check_Dupe_Columns}()},
 \code{\link{Check_Trunc}()},
+\code{\link{Check_Verbose}()},
 \code{\link{Correct_Formula_Order}()},
 \code{\link{Date_Shift}()},
 \code{\link{Def_Control}()},

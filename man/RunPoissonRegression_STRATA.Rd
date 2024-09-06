@@ -9,7 +9,7 @@ RunPoissonRegression_STRATA(
   pyr0,
   event0,
   names,
-  Term_n,
+  term_n,
   tform,
   keep_constant,
   a_n,
@@ -17,7 +17,7 @@ RunPoissonRegression_STRATA(
   fir,
   der_iden,
   control,
-  Strat_Col
+  strat_col
 )
 }
 \arguments{
@@ -29,23 +29,23 @@ RunPoissonRegression_STRATA(
 
 \item{names}{columns for elements of the model, used to identify data columns}
 
-\item{Term_n}{term numbers for each element of the model}
+\item{term_n}{term numbers for each element of the model}
 
 \item{tform}{list of string function identifiers, used for linear/step}
 
 \item{keep_constant}{binary values to denote which parameters to change}
 
-\item{a_n}{list of initial parameter values, used to determine number of parameters}
+\item{a_n}{list of initial parameter values, used to determine number of parameters. May be either a list of vectors or a single vector.}
 
 \item{modelform}{string specifying the model type: M, ME, A, PA, PAE, GMIX, GMIX-R, GMIX-E}
 
 \item{fir}{term number for the initial term, used for models of the form T0*f(Ti) in which the order matters}
 
-\item{der_iden}{number for the subterm to test derivative at, only used for testing runs with a single varying parameter, should be smaller than total number of parameters}
+\item{der_iden}{number for the subterm to test derivative at, only used for testing runs with a single varying parameter, should be smaller than total number of parameters. indexed starting at 0}
 
-\item{control}{list of parameters controlling the convergence, see Def_Control() for options or vignette("starting_description")}
+\item{control}{list of parameters controlling the convergence, see Def_Control() for options or vignette("Control_Options")}
 
-\item{Strat_Col}{column to stratify by if needed}
+\item{strat_col}{column to stratify by if needed}
 }
 \value{
 returns a list of the final results
@@ -71,7 +71,7 @@ df$pyr <- df$Ending_Age - df$Starting_Age
 pyr <- 'pyr'
 event <- "Cancer_Status"
 names <- c('a','b','c','d')
-Term_n <- c(0,1,1,2)
+term_n <- c(0,1,1,2)
 tform <- c("loglin","lin","lin","plin")
 modelform <- "M"
 fir <- 0
@@ -80,22 +80,24 @@ a_n <- c(0.1, 0.1, 0.1, 0.1)
 keep_constant <- c(0,0,0,0)
 der_iden <- 0
 
-control <- list("Ncores"=2,'lr' = 0.75,'maxiter' = 5,'halfmax' = 5,
-             'epsilon' = 1e-3,'dbeta_max' = 0.5, 'deriv_epsilon' = 1e-3,
+control <- list("ncores"=2,'lr' = 0.75,'maxiter' = 5,'halfmax' = 5,
+             'epsilon' = 1e-3, 'deriv_epsilon' = 1e-3,
              'abs_max'=1.0,'change_all'=TRUE,'dose_abs_max'=100.0,
              'verbose'=FALSE, 'double_step'=1)
-Strat_Col <- c("e")
-e <- RunPoissonRegression_STRATA(df, pyr, event, names, Term_n, tform, keep_constant,
-     a_n, modelform, fir, der_iden, control, Strat_Col)
+strat_col <- c("e")
+e <- RunPoissonRegression_STRATA(df, pyr, event, names, term_n, tform, keep_constant,
+     a_n, modelform, fir, der_iden, control, strat_col)
 
 }
 \seealso{
 Other Poisson Wrapper Functions: 
 \code{\link{RunPoissonEventAssignment}()},
+\code{\link{RunPoissonEventAssignment_bound}()},
 \code{\link{RunPoissonRegression}()},
 \code{\link{RunPoissonRegression_Guesses_CPP}()},
 \code{\link{RunPoissonRegression_Joint_Omnibus}()},
 \code{\link{RunPoissonRegression_Omnibus}()},
+\code{\link{RunPoissonRegression_Residual}()},
 \code{\link{RunPoissonRegression_Single}()},
 \code{\link{RunPoissonRegression_Tier_Guesses}()}
 }
