@@ -84,7 +84,7 @@ print(e)
 #> [1] 9.350729
 #> 
 #> $BIC
-#> [1] 9.134369
+#> [1] 8.517767
 #> 
 #> $Parameter_Lists
 #> $Parameter_Lists$term_n

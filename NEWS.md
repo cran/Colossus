@@ -54,3 +54,7 @@
 * Cox regression now removes rows that end before first event and start after last event
 * Cox regression now sets constant rows to be constant, helps with aliasing
 * Tests now use sink() to avoid printing as much excessive output to console. Tests now consolidated further.
+
+# Colossus 1.1.3.1
+
+* Grammar and formatting in vignettes corrected

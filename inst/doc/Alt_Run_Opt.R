@@ -103,3 +103,15 @@ RunPoissonRegression_Joint_Omnibus(df, pyr, events, name_list, term_n_list,
                                         tform_list, keep_constant_list, a_n_list,
                                         modelform, fir, der_iden, control,Strat_Col)
 
+## ----eval=FALSE---------------------------------------------------------------
+#  
+#  a_n <- list(c(1,1,1),c(1,2,1),c(1,2,2),c(2,1,1))
+#  
+#  control$maxiter <- 5 # runs each (4) starts 1 iteration, and then runs the best 5 iterations
+#  control$maxiters <- c(1,1,1,1,5) # runs each (4) starts 1 iteration, and then runs the best 5 iterations
+#  control$maxiters <- c(5,5,5,5,5) # runs each (4) starts 5 iterations, and then runs the best 5 iterations
+#  
+#  e <- RunCoxRegression_Omnibus(df, time1, time2, event,
+#                                names, term_n, tform, keep_constant,
+#                                a_n, modelform,control=control)
+

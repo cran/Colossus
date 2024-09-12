@@ -373,7 +373,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </div>
 <div id="infeasible-parameter-spaces" class="section level3">
 <h3>Infeasible Parameter Spaces</h3>
-<p>The risks calculated for Cox Proportional Hazards and Poisson regressions are generally assumed to be strictly positive values. The use of log-likelihoods as a scoring metric would not be possible without this assumption. However it is possible that, during a regression, the risk may be calculated with a set of parameters that would give a negative probability of an event. To illustrate consider the following poisson model.</p>
+<p>The risks calculated for Cox Proportional Hazards and Poisson model regressions are generally assumed to be strictly positive values. The use of log-likelihoods as a scoring metric would not be possible without this assumption. However it is possible that, during a regression, the risk may be calculated with a set of parameters that would give a negative probability of an event. To illustrate consider the following Poisson model.</p>
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
@@ -440,15 +440,15 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </tr>
 <tr class="odd">
 <td align="center">RunPoissonRegression_Guesses</td>
-<td align="center">Repeats Poisson regression at random points, then runs the best for more iterations</td>
+<td align="center">Repeats Poisson model regression at random points, then runs the best for more iterations</td>
 </tr>
 <tr class="even">
 <td align="center">RunPoissonRegression_Tier_Guesses</td>
-<td align="center">Repeats Poisson regression for subset of terms, then repeats with full model</td>
+<td align="center">Repeats Poisson model regression for subset of terms, then repeats with full model</td>
 </tr>
 </tbody>
 </table>
-<p>All of which use the same parameters the respective Cox Proportional Hazards and Poisson regression functions use, with the addition of a control term listing options for the guessing process.</p>
+<p>All of which use the same parameters the respective Cox Proportional Hazards and Poisson model regression functions use, with the addition of a control term listing options for the guessing process.</p>
 <table>
 <colgroup>
 <col width="47%"></col>

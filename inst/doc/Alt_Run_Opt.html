@@ -360,7 +360,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="kw">library</span>(data.table)</span></code></pre></div>
 <div id="general-options" class="section level2">
 <h2>General Options</h2>
-<p>Both Cox PH and Poisson regressions have additional functions that can account for specific situations. There general situations are as follows:</p>
+<p>Both Cox proportional hazards and Poisson model regressions have additional functions that can account for specific situations. There general situations are as follows:</p>
 <table>
 <colgroup>
 <col width="25%"></col>
@@ -379,7 +379,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <tbody>
 <tr class="odd">
 <td align="center">Stratification</td>
-<td align="center">In Cox PH, the stratification is applied in the risks groups to compare only like rows. In Poisson regression the stratification is an additional term in the model to account for the effects of stratified covariates</td>
+<td align="center">In Cox PH, the stratification is applied in the risks groups to compare only like rows. In Poisson model regression the stratification is an additional term in the model to account for the effects of stratified covariates</td>
 <td align="center">x</td>
 <td align="center">x</td>
 </tr>
@@ -387,7 +387,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <td align="center">Simplified Model</td>
 <td align="center">For a multiplicative Log-Linear model, there are simplifications that can be made to the code. These give a faster version.</td>
 <td align="center">x</td>
-<td align="center">x</td>
+<td align="center"></td>
 </tr>
 <tr class="odd">
 <td align="center">Non-Derivative Calculation</td>
@@ -402,6 +402,12 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <td align="center"></td>
 </tr>
 <tr class="odd">
+<td align="center">Joint Analysis</td>
+<td align="center">A Poisson method which allows a model to solve for multiple outcomes, by creating multiple copies of rows with multiple events and using a factor variable to add covariates for specific outcomes</td>
+<td align="center"></td>
+<td align="center">x</td>
+</tr>
+<tr class="even">
 <td align="center">Distributed Initial Parameter Sets</td>
 <td align="center">The user provides distribution for each starting parameter, Colossus runs low iteration regressions at random points, and then a full run at the best guess</td>
 <td align="center">x</td>
@@ -431,7 +437,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </div>
 <div id="poisson-regression" class="section level3">
 <h3>Poisson Regression</h3>
-<p>Poisson regression does not have risk groups to account for, but the theory is the same. To remove the influence of stratification covariate a new term is added to account for their effects. In Colossus, this is a Log-Linear term. So the following may be the model used without stratification:</p>
+<p>Poisson model regression does not have risk groups to account for, but the theory is the same. To remove the influence of stratification covariate a new term is added to account for their effects. In Colossus, this is a Log-Linear term. So the following may be the model used without stratification:</p>
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
@@ -473,8 +479,8 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </div>
 <div id="competing-risks" class="section level2">
 <h2>Competing Risks</h2>
-<div id="grey-fine" class="section level3">
-<h3>Grey-Fine</h3>
+<div id="fine-grey" class="section level3">
+<h3>Fine-Grey</h3>
 <p>In Cox PH there is an assumption that every individual is recorded until they have an event or they are naturally censored, and the same censoring rates are assumed to apply to every individual. These are violated when there is a competing event occurring. In sensitivity analysis there are two extremes that can be tested. Either every person with a competing event is treated as having the event of interest instead, or they are assumed to never experience the event of interest. However there are methods to find a more realistic alternative. Colossus applies the Fine-Gray model for competing risks, which instead weights the contribution of competing event intervals in future intervals by the probability they would not have been censored.</p>
 <p>As previously established, the risk groups are formed to measure the probability that an individual survived up to the time and experienced the event of interest, given that they did not experience an event up to that time:</p>
 <p class="text-center" style="background-color: aliceblue">
@@ -521,7 +527,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </div>
 <div id="poisson-joint-analysis" class="section level3">
 <h3>Poisson Joint Analysis</h3>
-<p>For a dataset with multiple outcomes there are often two ways that poisson models are fit. Either multiple independent models are fit or the events are combined and one model is fit to several events. These methods limit models to be completely independent or identical. The true model may be a combination of shared terms and terms specific to each event, which cannot be modeled with these methods. To fit this type of model a joint analysis method (Cologne, 2019) is available in Colossus.</p>
+<p>For a dataset with multiple outcomes there are often two ways that Poisson models are fit. Either multiple independent models are fit or the events are combined and one model is fit to several events. These methods limit models to be completely independent or identical. The true model may be a combination of shared terms and terms specific to each event, which cannot be modeled with these methods. To fit this type of model a joint analysis method (Cologne, 2019) is available in Colossus.</p>
 <p>Suppose one has a table of person-years, a covariate, and counts for two events. Assume we are fitting the event rate (<span class="math inline">\(\lambda\)</span>) for each event and have reason to believe that the background rate (<span class="math inline">\(\beta\)</span>) is the same for each event.</p>
 <table>
 <thead>
@@ -671,7 +677,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb9-30"><a href="#cb9-30" aria-hidden="true"></a><span class="co">#&gt; </span></span>
 <span id="cb9-31"><a href="#cb9-31" aria-hidden="true"></a><span class="co">#&gt; $a_n</span></span>
 <span id="cb9-32"><a href="#cb9-32" aria-hidden="true"></a><span class="co">#&gt; [1]  0.001 -0.020 -0.100  0.100</span></span></code></pre></div>
-<p>These results could be then used as input for any of the available regression functions. Colossus also includes a wrapper functions to directly call the poisson regression function. This method could applied to a Cox model assuming every event has the same baseline hazard. However this is not the intended use, so a wrapper function was not included.</p>
+<p>These results could be then used as input for any of the available regression functions. Colossus also includes a wrapper functions to directly call the Poisson model regression function. This method could applied to a Cox model assuming every event has the same baseline hazard. However this is not the intended use, so a wrapper function was not included.</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true"></a>der_iden &lt;-<span class="st"> </span><span class="dv">0</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true"></a>modelform &lt;-<span class="st"> &quot;M&quot;</span></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true"></a>fir &lt;-<span class="st"> </span><span class="dv">0</span></span>
@@ -738,6 +744,20 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb10-64"><a href="#cb10-64" aria-hidden="true"></a><span class="co">#&gt; $Converged</span></span>
 <span id="cb10-65"><a href="#cb10-65" aria-hidden="true"></a><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
 </div>
+</div>
+<div id="distributed-starts" class="section level2">
+<h2>Distributed starts</h2>
+<p>The distributed start framework is built into both Cox proportional hazards and Poisson functions and allows the user to provide a list of multiple starting points. Regressions with 1 guess use the “maxiter” control option, while regressions with multiple guesses use the “maxiters” control option to pass a list of iterations per guess. By default Colossus runs each guess for 1 iteration, picks the best guess, and then runs the full number of iterations starting at the best guess. Advanced users can select a different number of iterations for each guess.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true"></a></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true"></a>a_n &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>),<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">1</span>),<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">2</span>),<span class="kw">c</span>(<span class="dv">2</span>,<span class="dv">1</span>,<span class="dv">1</span>))</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true"></a>control<span class="op">$</span>maxiter &lt;-<span class="st"> </span><span class="dv">5</span> <span class="co"># runs each (4) starts 1 iteration, and then runs the best 5 iterations</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true"></a>control<span class="op">$</span>maxiters &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">5</span>) <span class="co"># runs each (4) starts 1 iteration, and then runs the best 5 iterations</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true"></a>control<span class="op">$</span>maxiters &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">5</span>,<span class="dv">5</span>,<span class="dv">5</span>,<span class="dv">5</span>,<span class="dv">5</span>) <span class="co"># runs each (4) starts 5 iterations, and then runs the best 5 iterations</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true"></a></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">RunCoxRegression_Omnibus</span>(df, time1, time2, event,</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true"></a>                              names, term_n, tform, keep_constant,</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true"></a>                              a_n, modelform,<span class="dt">control=</span>control)</span></code></pre></div>
 </div>
 
 

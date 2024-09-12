@@ -64,7 +64,7 @@ e <- RunCoxRegression(df, time1, time2, event, names, term_n, tform, keep_consta
                       a_n, modelform, fir, der_iden, control)
 print(e)
 
-#or a poisson regression
+#or a Poisson model regression
 a_n <- c(0.1, 0.1, 0.1, 0.1) #a_n is updated when either regression is called
 e <- RunPoissonRegression(df, pyr, event, names, term_n, tform, keep_constant, a_n,
                           modelform, fir, der_iden, control)
