@@ -55,6 +55,8 @@
 * Cox regression now sets constant rows to be constant, helps with aliasing
 * Tests now use sink() to avoid printing as much excessive output to console. Tests now consolidated further.
 
-# Colossus 1.1.3.1
+# Colossus 1.1.4.1
 
-* Grammar and formatting in vignettes corrected
+* Cox plotting functions now return the tables used for plots (only last plot table returned)
+* Plotting vignette updated to include more details and plots
+* survival package listed as suggested for plotting vignette
