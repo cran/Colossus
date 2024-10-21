@@ -12,13 +12,16 @@ other radiation dose response formula highlighted in the vignettes.
 Additional plotting capabilities are available.
 
 By default a fully portable version of the code is compiled, which does
-not support OpenMP on every system. Please consult the GitHub for
-details on libraries required for your OS if you are interested in using
-OpenMP on linux. Note that Colossus requires OpenMP support to perform
-parallel calculations. During the configuration stage of installation,
-text starting with “CONFIG NOTE” will denote what OS/Compiler are
-detected and if OpenMP support is configured. Currently OpenMP support
-is not configured for linux compiling with clang and MacOS systems.
+not support OpenMP on every system. Note that Colossus requires OpenMP
+support to perform parallel calculations. The environment variable
+“R_COLOSSUS_NOT_CRAN” is checked to determine if OpenMP should be
+disabled for linux compiling with clang. The number of cores is set to 1
+if the environment variable is empty, the operating system is detected
+as linux, and the default compiler or R compiler is clang. Colossues
+testing checks for the “NOT_CRAN” variable to determine if additional
+tests should be run. Setting “NOT_CRAN” to “false” will disable the
+longer tests. Currently OpenMP support is not configured for linux
+compiling with clang and MacOS systems.
 
 ## Example
 
@@ -26,38 +29,43 @@ This is a basic example which shows you how to solve a common problem:
 
 ``` r
 library(data.table)
+#> Warning: package 'data.table' was built under R version 4.3.3
 library(parallel)
 library(Colossus)
 ## basic example code reproduced from the starting-description vignette
 
-df <- data.table("UserID"=c(112, 114, 213, 214, 115, 116, 117),
-           "Starting_Age"=c(18,  20,  18,  19,  21,  20,  18),
-             "Ending_Age"=c(30,  45,  57,  47,  36,  60,  55),
-          "Cancer_Status"=c(0,   0,   1,   0,   1,   0,   0),
-                      "a"=c(0,   1,   1,   0,   1,   0,   1),
-                      "b"=c(1,   1.1, 2.1, 2,   0.1, 1,   0.2),
-                      "c"=c(10,  11,  10,  11,  12,  9,   11),
-                      "d"=c(0,   0,   0,   1,   1,   1,   1))
+df <- data.table(
+  "UserID" = c(112, 114, 213, 214, 115, 116, 117),
+  "Starting_Age" = c(18, 20, 18, 19, 21, 20, 18),
+  "Ending_Age" = c(30, 45, 57, 47, 36, 60, 55),
+  "Cancer_Status" = c(0, 0, 1, 0, 1, 0, 0),
+  "a" = c(0, 1, 1, 0, 1, 0, 1),
+  "b" = c(1, 1.1, 2.1, 2, 0.1, 1, 0.2),
+  "c" = c(10, 11, 10, 11, 12, 9, 11),
+  "d" = c(0, 0, 0, 1, 1, 1, 1)
+)
 # For the interval case
 time1 <- "Starting_Age"
 time2 <- "Ending_Age"
 event <- "Cancer_Status"
 
-names <- c('a','b','c','d')
-term_n <- c(0,1,1,2)
-tform <- c("loglin","lin","lin","plin")
+names <- c("a", "b", "c", "d")
+term_n <- c(0, 1, 1, 2)
+tform <- c("loglin", "lin", "lin", "plin")
 modelform <- "M"
 fir <- 0
 
 a_n <- c(0.1, 0.1, 0.1, 0.1)
 
-keep_constant <- c(0,0,0,0)
+keep_constant <- c(0, 0, 0, 0)
 der_iden <- 0
 
-control=list('lr' = 0.75,'maxiter' = 100,'halfmax' = 5,'epsilon' = 1e-9,
-             'dbeta_max' = 0.5,'deriv_epsilon' = 1e-9, 'abs_max'=1.0,
-             'change_all'=TRUE,'dose_abs_max'=100.0,'verbose'=FALSE,
-             'ties'='breslow','double_step'=1)
+control <- list(
+  "lr" = 0.75, "maxiter" = 100, "halfmax" = 5, "epsilon" = 1e-9,
+  "dbeta_max" = 0.5, "deriv_epsilon" = 1e-9, "abs_max" = 1.0,
+  "change_all" = TRUE, "dose_abs_max" = 100.0, "verbose" = FALSE,
+  "ties" = "breslow", "double_step" = 1
+)
 
 e <- RunCoxRegression(df, time1, time2, event, names, term_n, tform, keep_constant, a_n, modelform, fir, der_iden, control)
 print(e)
@@ -110,4 +118,7 @@ print(e)
 #> 
 #> $Converged
 #> [1] FALSE
+#> 
+#> $Status
+#> [1] "PASSED"
 ```

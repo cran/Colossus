@@ -23,6 +23,7 @@ PAE
 Raphson
 RunCoxPlots
 RunCoxRegression
+RunPoissonEventAssignment
 RunPoissonRegression
 STP
 Schoenfeld
@@ -46,6 +47,7 @@ frac
 func
 gcc
 ggplot
+ggsave
 gmix
 halfmax
 iden

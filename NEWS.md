@@ -60,3 +60,10 @@
 * Cox plotting functions now return the tables used for plots (only last plot table returned)
 * Plotting vignette updated to include more details and plots
 * survival package listed as suggested for plotting vignette
+
+# Colossus 1.1.4.2
+
+* R errors and warnings sent to stop() and warning(). C++ errors and warnings still controlled by verbosity argument
+* ggsave defaults to width/height = 7
+* Updates started to fix possible OpenMP issues with fedora 36 running clang 18
+* Unable to have debug printing as an option and cover the c++ files with testing, but still have test output be readable. debug output removed.

@@ -12,7 +12,7 @@
 
 
 
-<title>Multiple Realization Methods</title>
+<title>Excess and Predicted Cases</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -352,38 +352,64 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<h1 class="title toc-ignore">Multiple Realization Methods</h1>
+<h1 class="title toc-ignore">Excess and Predicted Cases</h1>
 
 
 
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">library</span>(Colossus)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="kw">library</span>(data.table)</span></code></pre></div>
-<div id="available-methods" class="section level2">
-<h2>Available Methods</h2>
-<p>There are many instances in which a user may want to use data that is known up to a distribution, in these cases it may not be sufficient to use a single realization. Colossus provides a method to run multiple regressions in a row, each with a different realization. This method was designed to assist in circumstances in which combinations of shared and unshared error are present, and a two-dimensional Monte Carlo method is used to generate realizations for at least one covariate column. Note that this method does not apply to the event/cases or interval/duration columns.</p>
-<div id="specifics-of-use" class="section level3">
-<h3>Specifics of Use</h3>
-<p>Let us suppose that we are interested in performing a regression with three covariates: an age bin, amount of exposure to a radioisotope during an interval, and average sleep during an interval. Age bin is known, exposure is known up to a distribution which could be shared among individuals, and sleep is randomly distributed and independent each interval.</p>
+<div id="general-theory" class="section level2">
+<h2>General Theory</h2>
+<p>In the field of radiation epidemiology, a common question is “How many additional cancer cases occurred due to radiation exposures?”. This is often generalized to the question of how many cases are background cases and how many cases are excess cases. These are calculated by splitting a poisson model into a background term and an excess term. In Colossus the background term is assumed to be the first term, and every other term is assumed to be causing excess cases. Colossus has a function, RunPoissonEventAssignment, which calculates the number of background/excess cases for both average predicted counts and true counts. Let us assume we have the following model for event rate:</p>
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
-    \lambda(a, r, s) = \exp{(\beta_a \times a + \beta_a \times r + \beta_a \times s)}
+    R(\beta,x, \alpha, D)=\exp(\beta \cdot x)*(1 + \alpha \cdot D)
 \end{aligned}
 \]</span>
 </p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>names &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;a&quot;</span>, <span class="st">&quot;r&quot;</span>, <span class="st">&quot;s&quot;</span>)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>term_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>tform &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;loglin&quot;</span>, <span class="st">&quot;loglin&quot;</span>, <span class="st">&quot;loglin&quot;</span>)</span>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>names &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;x&quot;</span>, <span class="st">&quot;D&quot;</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>term_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>tform &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;loglin&quot;</span>, <span class="st">&quot;lin&quot;</span>)</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>modelform &lt;-<span class="st"> &quot;M&quot;</span></span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>fir &lt;-<span class="st"> </span><span class="dv">0</span></span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a>a_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>)</span></code></pre></div>
-<p>Colossus requires two items to apply multiple realizations, a list of columns to replace and a matrix of columns for each realization. Suppose the user generates 5 realizations. Then there are two distributed columns and five realizations.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>dose_index &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;r&quot;</span>, <span class="st">&quot;s&quot;</span>) <span class="co"># the two columns in the model to replace are the radiation and sleeping covariates</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>dose_realizations &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>(<span class="st">&quot;r0&quot;</span>, <span class="st">&quot;r1&quot;</span>, <span class="st">&quot;r2&quot;</span>, <span class="st">&quot;r3&quot;</span>, <span class="st">&quot;r4&quot;</span>, <span class="st">&quot;s0&quot;</span>, <span class="st">&quot;s1&quot;</span>, <span class="st">&quot;s2&quot;</span>, <span class="st">&quot;s3&quot;</span>, <span class="st">&quot;s4&quot;</span>), <span class="dt">nrow =</span> <span class="dv">2</span>) <span class="co"># columns to be used for realizations 0-4, rows for each column being replaced</span></span></code></pre></div>
-<p>Once Colossus finishes regressions for each realization, it returns matrices for the final parameter estimates, standard deviations, and final log-likelihoods of each regression. These results can be used to create likelihood-weighted parameter distributions, to account for uncertainty in the final parameter estimates.</p>
-<p>Note that there is no strict requirement for the realization columns to actually be realizations of a distributed column. A user could use this method to compare models with the same formula but different covariates. The only difficulty is that Colossus does not refresh the parameter estimates between realization regressions, so the user may need to keep in mind feasible parameter space.</p>
-</div>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a>a_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.1</span>, <span class="fl">0.1</span>)</span></code></pre></div>
+<p>Our total rate (<span class="math inline">\(R\)</span>) is composed of a background rate (<span class="math inline">\(R_{BK}\)</span>) and excess rate (<span class="math inline">\(R_{EX}\)</span>). The cases each row have a total (<span class="math inline">\(c\)</span>) and background/excess count (<span class="math inline">\(c_{BK}, c_{EX}\)</span>). Additionally, every row has a measure of person-time (<span class="math inline">\(t\)</span>). Colossus also computes the predicted number of total, background, and excess cases (<span class="math inline">\(P, P_{BK}. P_{EX}\)</span>). For every model we assume the average number of background cases are the background rate multiplied by time, the remaining cases are excess, and the true number of background/excess cases are proportional to the predicted cases.</p>
+<p class="text-center" style="background-color: aliceblue">
+<span class="math display">\[
+\begin{aligned}
+    R = \exp(\beta \cdot x)*(1 + \alpha \cdot D)\\
+    R_{BK} = \exp(\beta \cdot x)\\
+    P = P_{BK} + P_{EX}\\
+    P = R * t\\
+    P_{BK} = R_{BK} * t\\
+    P_{EX} = P - P_{BK}\\
+    c = c_{BK} + c_{EX}\\
+    c_{BK} = c * \frac{P_{BK}}{P}\\
+    c_{EX} = c * \frac{P_{EX}}{P}
+\end{aligned}
+\]</span>
+</p>
+<p>Colossus returns two matrices, one for the true cases and one for the predicted cases. Each matrix has three columns for the events assigned to background, excess, and total.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>names &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;x&quot;</span>, <span class="st">&quot;D&quot;</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>term_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>tform &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;loglin&quot;</span>, <span class="st">&quot;lin&quot;</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a>modelform &lt;-<span class="st"> &quot;M&quot;</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true"></a>fir &lt;-<span class="st"> </span><span class="dv">0</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true"></a>a_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.1</span>, <span class="fl">0.1</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true"></a>keep_constant &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="dv">0</span>, <span class="kw">length</span>(names))</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true"></a>der_iden &lt;-<span class="st"> </span><span class="dv">0</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true"></a>control &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="st">&quot;Ncores&quot;</span> =<span class="st"> </span><span class="dv">2</span>, <span class="st">&quot;maxiters&quot;</span> =<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>), <span class="st">&quot;verbose&quot;</span> =<span class="st"> </span>F, <span class="st">&quot;abs_max&quot;</span> =<span class="st"> </span><span class="fl">0.1</span>)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true"></a>model_control &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="st">&quot;strata&quot;</span> =<span class="st"> </span><span class="ot">FALSE</span>, <span class="st">&quot;basic&quot;</span> =<span class="st"> </span><span class="ot">FALSE</span>, <span class="st">&quot;single&quot;</span> =<span class="st"> </span><span class="ot">FALSE</span>, <span class="st">&quot;CR&quot;</span> =<span class="st"> </span><span class="ot">FALSE</span>)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">RunPoissonEventAssignment</span>(df, pyr, event, names, Term_n, tform, keep_constant, a_n, modelform, fir, der_iden, control)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true"></a>e0 &lt;-<span class="st"> </span>e<span class="op">$</span>predict</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true"></a>e1 &lt;-<span class="st"> </span>e<span class="op">$</span>caused</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true"></a></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true"></a>BK &lt;-<span class="st"> </span>e0[, <span class="dv">1</span>]</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true"></a>EX &lt;-<span class="st"> </span>e0[, <span class="dv">2</span>]</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true"></a>Total &lt;-<span class="st"> </span>e0[, <span class="dv">3</span>]</span></code></pre></div>
 </div>
 
 
