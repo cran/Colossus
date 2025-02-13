@@ -1,4 +1,4 @@
-#' calculates and plots martingale residuals with a named dose column
+#' Calculates and plots martingale residuals with a named dose column
 #'
 #' \code{CoxMartingale} uses user provided data, columns, and identifier to create plots
 #'
@@ -139,7 +139,7 @@ CoxMartingale <- function(verbose, df, time1, time2, event0, e, t, ch, dnames, p
   return(table_out)
 }
 
-#' calculates and plots survival plots of the estimated baseline
+#' Calculates and plots survival plots of the estimated baseline
 #'
 #' \code{CoxSurvival} uses user provided data, columns, and identifier to create plots
 #'
@@ -204,7 +204,7 @@ CoxSurvival <- function(t, h, ch, surv, plot_name, verbose, time_lims, age_unit)
   return(table_out)
 }
 
-#' calculates and plots Kaplan-Meier survival plots
+#' Calculates and plots Kaplan-Meier survival plots
 #'
 #' \code{CoxKaplanMeier} uses user provided data, columns, and identifier to create plots, plots the kaplan-meier survival and log(time) vs log(-log(survival))
 #'
@@ -269,7 +269,7 @@ CoxKaplanMeier <- function(verbose, studyID, names, df, event0, time1, time2, tu
   return(table_out)
 }
 
-#' calculates and plots relative risk
+#' Calculates and plots relative risk
 #'
 #' \code{CoxRisk} uses user provided data, columns, and identifier to create plots of risk by covariate value for each column
 #'
@@ -341,7 +341,7 @@ CoxRisk <- function(verbose, df, event0, time1, time2, names, term_n, tform, a_n
   return(table_out)
 }
 
-#' calculates and plots survival curves for each unique value of the stratification column
+#' Calculates and plots survival curves for each unique value of the stratification column
 #'
 #' \code{CoxStratifiedSurvival} uses user provided data, columns, and identifier to calculate the survival fraction for each strata
 #'
@@ -370,7 +370,7 @@ CoxStratifiedSurvival <- function(verbose, df, event0, time1, time2, names, term
   if (control$verbose >= 3) {
     message(paste("Note:", length(uniq), " strata used", sep = " ")) # nocov
   }
-  data.table::setkeyv(df, c(time2, event0, strat_col))
+  data.table::setkeyv(df, c(strat_col, event0, time2, time1))
   ce <- c(time1, time2, event0, strat_col)
   model_control <- Def_model_control(model_control)
   val <- Def_modelform_fix(control, model_control, modelform, term_n)
@@ -486,7 +486,7 @@ CoxStratifiedSurvival <- function(verbose, df, event0, time1, time2, names, term
 #' @noRd
 #' @importFrom rlang .data
 PlotCox_Schoenfeld_Residual <- function(df, time1, time2, event0, names, term_n, tform, keep_constant, a_n, modelform, fir, der_iden, control, age_unit, plot_name, model_control = list()) {
-  data.table::setkeyv(df, c(time2, event0))
+  data.table::setkeyv(df, c(event0, time2, time1))
   model_control <- Def_model_control(model_control)
   val <- Def_modelform_fix(control, model_control, modelform, term_n)
   modelform <- val$modelform
@@ -650,7 +650,7 @@ GetCensWeight <- function(df, time1, time2, event0, names, term_n, tform, keep_c
   val <- Def_modelform_fix(control, model_control, modelform, term_n)
   modelform <- val$modelform
   model_control <- val$model_control
-  data.table::setkeyv(df, c(time2, event0))
+  data.table::setkeyv(df, c(event0, time2, time1))
   base <- NULL
   plot_name <- plot_options$name
   dfend <- df[get(event0) == 1, ]

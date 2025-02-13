@@ -67,3 +67,43 @@
 * ggsave defaults to width/height = 7
 * Updates started to fix possible OpenMP issues with fedora 36 running clang 18
 * Unable to have debug printing as an option and cover the c++ files with testing, but still have test output be readable. debug output removed.
+
+# Colossus 1.1.5
+
+* Started adding simplifications to allow for faster iterations
+* Added simplification for linear ERR model
+* Started gradient descent code
+* Started external rate comparison options
+* Added person-count and person-time table generation code and vignette
+
+# Colossus 1.1.5.5
+
+* Added CoxCurveSolver function to solve likelihood boundaries via bisection method
+
+# Colossus 1.1.6
+
+* MacOS testing with OpenMP finished. MacOS use with OpenMP officially checked.
+* By default the only systems that is forced to use single thread is linux using clang. This can be turned off by setting the "R_COLOSSUS_NOT_CRAN" environment variable.
+
+# Colossus 1.1.7
+
+* Gradient descent algorithms tested further and presented in vignette
+* Multiple realization function tested further
+
+# Colossus 1.1.8
+
+* CurveSolve functions converted to c++ functions
+* Testing scaled back to take up less time
+
+# Colossus 1.1.9
+
+* Cox based functions switched covariance matrix calculation from negative inverse of log-likelihood second derivative, to expected information matrix.
+
+# Colossus 1.1.10
+
+* Cox based functions updated to improve speed
+* Additional CurveSolve output provided to give final window width and final step
+
+# Colossus 1.2
+
+* Both Cox and Poisson functions now all return the expected information matrix derived covariance

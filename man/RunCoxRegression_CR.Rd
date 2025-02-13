@@ -101,14 +101,15 @@ e <- RunCoxRegression_CR(
 }
 \seealso{
 Other Cox Wrapper Functions: 
+\code{\link{CoxCurveSolver}()},
 \code{\link{RunCoxNull}()},
 \code{\link{RunCoxRegression}()},
 \code{\link{RunCoxRegression_Basic}()},
 \code{\link{RunCoxRegression_Guesses_CPP}()},
 \code{\link{RunCoxRegression_Omnibus}()},
 \code{\link{RunCoxRegression_Omnibus_Multidose}()},
-\code{\link{RunCoxRegression_STRATA}()},
 \code{\link{RunCoxRegression_Single}()},
+\code{\link{RunCoxRegression_Strata}()},
 \code{\link{RunCoxRegression_Tier_Guesses}()}
 }
 \concept{Cox Wrapper Functions}

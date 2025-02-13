@@ -13,7 +13,7 @@ library(survival)
 data(cancer, package = "survival")
 
 df <- cancer
-df$UserID <- 1:nrow(df)
+df$UserID <- seq_len(nrow(df))
 
 df$status <- df$status - 1
 df$sex <- df$sex - 1
@@ -32,7 +32,7 @@ keep_constant <- c(0, 0)
 modelform <- "M"
 fir <- 0
 
-## ----eval=TRUE----------------------------------------------------------------
+## ----eval=TRUE, fig.width=7,fig.height=4--------------------------------------
 plot_options <- list(
   "type" = c("surv", paste(tempfile(), "run", sep = "")), "studyid" = "UserID",
   "verbose" = 0, "surv_curv" = T, "martingale" = F, "strat_haz" = F, "km" = F
@@ -40,7 +40,7 @@ plot_options <- list(
 
 e <- RunCoxPlots(
   df, t0, t1, event, names, term_n, tform, keep_constant, a_n, modelform,
-  fir, control, plot_options
+  control = control, plot_options = plot_options
 )
 
 norm_surv <- e[["standard"]]
@@ -64,7 +64,7 @@ plot_options <- list(
 
 e <- RunCoxPlots(
   df, t0, t1, event, names, term_n, tform, keep_constant, a_n, modelform,
-  fir, control, plot_options
+  control = control, plot_options = plot_options
 )
 km <- e[["kaplin-meier"]]
 g <- ggplot2::ggplot(km, ggplot2::aes(x = .data$t_t, y = .data$n_t)) +
@@ -72,7 +72,7 @@ g <- ggplot2::ggplot(km, ggplot2::aes(x = .data$t_t, y = .data$n_t)) +
   ggplot2::labs(x = "age", y = "KM Survival")
 g
 
-## ----eval=TRUE----------------------------------------------------------------
+## ----eval=TRUE, fig.width=7,fig.height=4--------------------------------------
 plot_options <- list(
   "type" = c("schoenfeld", paste(tempfile(), "run", sep = "")),
   "studyid" = "UserID", "verbose" = 0
@@ -80,7 +80,8 @@ plot_options <- list(
 
 res_all <- RunCoxPlots(
   df, t0, t1, event, names, term_n, tform, keep_constant, a_n,
-  modelform, fir, control, plot_options
+  modelform,
+  control = control, plot_options = plot_options
 )
 
 res_age <- res_all[["age"]]
@@ -116,7 +117,7 @@ g <- ggplot2::ggplot(res_sex, ggplot2::aes(x = .data$time, y = .data$y_scale)) +
   )
 g
 
-## ----eval=TRUE----------------------------------------------------------------
+## ----eval=TRUE, fig.width=7,fig.height=4--------------------------------------
 plot_options <- list(
   "type" = c("surv", paste(tempfile(), "run", sep = "")),
   "studyid" = "UserID", "verbose" = 0, "surv_curv" = F,
@@ -124,7 +125,8 @@ plot_options <- list(
 )
 res_all <- RunCoxPlots(
   df, t0, t1, event, names, term_n, tform, keep_constant, a_n,
-  modelform, fir, control, plot_options
+  modelform,
+  control = control, plot_options = plot_options
 )
 
 res_age <- res_all[["age"]]
@@ -153,14 +155,15 @@ g <- ggplot2::ggplot() +
 g <- g + ggplot2::labs(x = "Survival Time", y = "Martingale Residuals")
 g
 
-## ----eval=TRUE----------------------------------------------------------------
+## ----eval=TRUE, fig.width=7,fig.height=4--------------------------------------
 plot_options <- list(
   "type" = c("risk", paste(tempfile(), "run", sep = "")), "studyid" = "UserID",
   "verbose" = 0
 )
 res_all <- RunCoxPlots(
   df, t0, t1, event, names, term_n, tform, keep_constant, a_n,
-  modelform, fir, control, plot_options
+  modelform,
+  control = control, plot_options = plot_options
 )
 
 res_age <- res_all[["age"]]

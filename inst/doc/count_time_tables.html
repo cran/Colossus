@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Generating Person-Count and Person-Time Tables</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
+  }
+});
+</script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Generating Person-Count and Person-Time Tables</h1>
+
+
+
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">library</span>(Colossus)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="kw">library</span>(data.table)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a><span class="kw">library</span>(parallel)</span></code></pre></div>
+<div id="general-purpose" class="section level2">
+<h2>General Purpose</h2>
+<p>Before performing a regression on rate or hazard ratio, it is often important to look at a summary of the data. It can be very informative to break columns into categories and summarize the number of event or average column value in each category. Colossus offers two function designed to create summary tables, Event_Count_Gen and Event_Time_Gen which create person-count tables and person-time table respectively. The following sections will cover generally how to use each function and what different needs are met.</p>
+<div id="person-count-tables" class="section level3">
+<h3>Person-Count Tables</h3>
+<p>A person count table is the simplest way to summarize a table. This assumes you have a columns you want to break into categories and columns you want to summarize. Lets start with a very simple example. Suppose we have a dataset tracking the number of apples and oranges people bought, the number of hands they used to carry their bag, and if the bag ripped or not.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>apples &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">4</span>, <span class="dv">2</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>oranges &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">7</span>, <span class="dv">6</span>, <span class="dv">5</span>, <span class="dv">4</span>, <span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">1</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>rip &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>hands &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>table &lt;-<span class="st"> </span>data.table<span class="op">::</span><span class="kw">data.table</span>(</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a>  <span class="st">&quot;apples&quot;</span> =<span class="st"> </span>apples,</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a>  <span class="st">&quot;oranges&quot;</span> =<span class="st"> </span>oranges,</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true"></a>  <span class="st">&quot;rip&quot;</span> =<span class="st"> </span>rip,</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true"></a>  <span class="st">&quot;hands&quot;</span> =<span class="st"> </span>hands</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true"></a>)</span></code></pre></div>
+<p>Suppose we want to split our dataset up by the number of each fruit, count the number of ripped bags in each category, and figure out the average number of hands used. We would start out by defining how we want to split the categories. There are two general ways to define the intervals, with a single string or a list of upper and lower bounds. Lets start with the string representation. The string is expected to alternate number and delimiter, either / or ], which split the upper and lower bounds for each interval. Every interval in this format includes the lower bound. The interval includes the upper bound if ] is used, and does not otherwise. So the interval [2,5) is equivalent to “2/5” and the interval [5,8] is equivalent to &quot;5]8&quot;. This method uses each triplet sequentially, so the categories will cover every value that falls between the first and last number listed. The list notation is very similar. There are 2 values required in the list and 1 optional value. The list has to have vectors titled lower and upper, which are the lower and upper bounds for each interval. This method can include gaps. Similarly to the string version, the lower bound is always included and the upper bound is included if the upper bound entry includes ]. The list option allows the categories to be labeled instead of being automatically numbered. A third list titled name can be provided to label each category. Lets suppose we want to break the apples column into the intervals: [0, 3), [3, 5), [5,7] and break our oranges column into the intervals: [-1,3), [3,6), [6,10) with the labels: few, good, and excessive. That would look like the following code. This splits each category into 3 levels, and in total 9 combinations.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>apple_category &lt;-<span class="st"> &quot;0/3/5]7&quot;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>orange_category &lt;-<span class="st"> </span><span class="kw">list</span>(</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>  <span class="dt">lower =</span> <span class="kw">c</span>(<span class="op">-</span><span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">6</span>),</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a>  <span class="dt">upper =</span> <span class="kw">c</span>(<span class="dv">3</span>, <span class="dv">6</span>, <span class="dv">10</span>),</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true"></a>  <span class="dt">name =</span> <span class="kw">c</span>(<span class="st">&quot;few&quot;</span>, <span class="st">&quot;good&quot;</span>, <span class="st">&quot;excessive&quot;</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true"></a>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true"></a>categ &lt;-<span class="st"> </span><span class="kw">list</span>(</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true"></a>  <span class="st">&quot;apples&quot;</span> =<span class="st"> </span>apple_category,</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true"></a>  <span class="st">&quot;oranges&quot;</span> =<span class="st"> </span>orange_category</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true"></a>)</span></code></pre></div>
+<p>Now we define what summary variables we want. Once again, we define a list. Every item in the list is named with the column it is applied to and contains a string specifying what summary method to use. There are two options supported currently: count and mean, which will sum or mean of the column in each category. One can also provide a new name for the summary column by listing the method as “option AS name”. Otherwise the grouped table will use the original column name for the summary column name. So lets suppose we wanted to take the sum of ripped bags and name it “dropped” and take the mean of the hands column.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a>event &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="st">&quot;rip&quot;</span> =<span class="st"> &quot;count AS dropped&quot;</span>, <span class="st">&quot;hands&quot;</span> =<span class="st"> &quot;mean&quot;</span>)</span></code></pre></div>
+<p>The final step is to run the function. The function returns two items, the grouped data and a summary of the category intervals. The category intervals should be checked to verify that the intervals match what are expected.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="kw">Event_Count_Gen</span>(table, categ, event)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a><span class="co">#&gt; $df</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a><span class="co">#&gt;    apples_category oranges_category COUNT dropped hands</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a><span class="co">#&gt;             &lt;char&gt;           &lt;char&gt; &lt;int&gt;   &lt;num&gt; &lt;num&gt;</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a><span class="co">#&gt; 1:               1                1     8       3  1.50</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a><span class="co">#&gt; 2:               2                2     5       3  2.00</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true"></a><span class="co">#&gt; 3:               3                3     4       3  1.25</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true"></a><span class="co">#&gt; $bounds</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true"></a><span class="co">#&gt; $bounds$apples_category</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true"></a><span class="co">#&gt; [1] &quot; [0, 3) [3, 5) [5, 7]&quot;</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true"></a><span class="co">#&gt; $bounds$oranges_category</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true"></a><span class="co">#&gt; [1] &quot; [-1, 3) [3, 6) [6, 10)&quot;</span></span></code></pre></div>
+</div>
+<div id="person-time-tables" class="section level3">
+<h3>Person-Time Tables</h3>
+<p>The previous method treats every row as being weighted the same. In many cases every row has some measure of time which we may want to use. That is the fundamental difference between the person count tables and person time tables, the inclusion of time. The code used to generate a person time table is very similar to the person count table, with several important differences. The first is that the data should have time columns. Similar to the Cox model options in Colossus, the data should have an entry column, exit column, or both. These would denote the scenario where every interval ends at the same point, starts at the same point, or have different start and stopping times. This method currently only supports day/month/year information which are combined into complete dates. The Event_Time_Gen function uses a list to input the time columns. This list should have entry and exit items if needed, each list should have a column name for the year, month, and day columns if needed. The dates will default to 1/1/1900 if not provided. The person-year list can also contain a unit, defaulted to years.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a>a &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">4</span>, <span class="dv">2</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a>b &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">7</span>, <span class="dv">6</span>, <span class="dv">5</span>, <span class="dv">4</span>, <span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">1</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a>c &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a>d &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">4</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true"></a>f &lt;-<span class="st"> </span><span class="kw">c</span>(</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true"></a>  <span class="dv">1900</span>, <span class="dv">1900</span>, <span class="dv">1900</span>, <span class="dv">1900</span>, <span class="dv">1900</span>, <span class="dv">1900</span>, <span class="dv">1900</span>, <span class="dv">1900</span>, <span class="dv">1900</span>,</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true"></a>  <span class="dv">1900</span>, <span class="dv">1900</span>, <span class="dv">1900</span>, <span class="dv">1900</span>, <span class="dv">1900</span>, <span class="dv">1900</span>, <span class="dv">1900</span>, <span class="dv">1900</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true"></a>)</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true"></a>g &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">4</span>, <span class="dv">4</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">6</span>, <span class="dv">6</span>, <span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">4</span>, <span class="dv">4</span>, <span class="dv">4</span>, <span class="dv">4</span>)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true"></a>h &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">6</span>, <span class="dv">4</span>, <span class="dv">4</span>, <span class="dv">6</span>, <span class="dv">6</span>, <span class="dv">6</span>, <span class="dv">4</span>, <span class="dv">4</span>, <span class="dv">4</span>, <span class="dv">6</span>, <span class="dv">6</span>, <span class="dv">6</span>, <span class="dv">6</span>, <span class="dv">4</span>, <span class="dv">4</span>, <span class="dv">4</span>, <span class="dv">4</span>)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true"></a>i &lt;-<span class="st"> </span><span class="kw">c</span>(</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true"></a>  <span class="dv">1901</span>, <span class="dv">1902</span>, <span class="dv">1903</span>, <span class="dv">1904</span>, <span class="dv">1905</span>, <span class="dv">1906</span>, <span class="dv">1907</span>, <span class="dv">1903</span>, <span class="dv">1904</span>,</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true"></a>  <span class="dv">1903</span>, <span class="dv">1904</span>, <span class="dv">1910</span>, <span class="dv">1903</span>, <span class="dv">1904</span>, <span class="dv">1903</span>, <span class="dv">1904</span>, <span class="dv">1910</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true"></a>)</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true"></a>table &lt;-<span class="st"> </span>data.table<span class="op">::</span><span class="kw">data.table</span>(</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true"></a>  <span class="st">&quot;a&quot;</span> =<span class="st"> </span>a, <span class="st">&quot;b&quot;</span> =<span class="st"> </span>b, <span class="st">&quot;c&quot;</span> =<span class="st"> </span>c,</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true"></a>  <span class="st">&quot;d&quot;</span> =<span class="st"> </span>d, <span class="st">&quot;e&quot;</span> =<span class="st"> </span>e, <span class="st">&quot;f&quot;</span> =<span class="st"> </span>f,</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true"></a>  <span class="st">&quot;g&quot;</span> =<span class="st"> </span>g, <span class="st">&quot;h&quot;</span> =<span class="st"> </span>h, <span class="st">&quot;i&quot;</span> =<span class="st"> </span>i</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true"></a>)</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true"></a></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true"></a>pyr &lt;-<span class="st"> </span><span class="kw">list</span>(</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true"></a>  <span class="dt">entry =</span> <span class="kw">list</span>(<span class="dt">year =</span> <span class="st">&quot;f&quot;</span>, <span class="dt">month =</span> <span class="st">&quot;e&quot;</span>, <span class="dt">day =</span> <span class="st">&quot;d&quot;</span>),</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true"></a>  <span class="dt">exit =</span> <span class="kw">list</span>(<span class="dt">year =</span> <span class="st">&quot;i&quot;</span>, <span class="dt">month =</span> <span class="st">&quot;h&quot;</span>, <span class="dt">day =</span> <span class="st">&quot;g&quot;</span>),</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true"></a>  <span class="dt">unit =</span> <span class="st">&quot;years&quot;</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true"></a>)</span></code></pre></div>
+<p>The second major difference is the possible use of time categories. Time categories are set by a vectors of of day, month, and year of each interval splitting point. So intervals changing every 2 days could be expressed by “day=c(1,3,5,…)”. Time categories are unique in that each row can correspond to multiple time categories, so the duration of each row in each time category is kept to distinguish which rows are only partially in each time interval. If a time category is not provided, then the full duration of each row is used for person-year calculations.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a>categ &lt;-<span class="st"> </span><span class="kw">list</span>(</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true"></a>  <span class="st">&quot;a&quot;</span> =<span class="st"> &quot;-1/3/5]7&quot;</span>,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true"></a>  <span class="st">&quot;b&quot;</span> =<span class="st"> </span><span class="kw">list</span>(</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true"></a>    <span class="dt">lower =</span> <span class="kw">c</span>(<span class="op">-</span><span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">6</span>), <span class="dt">upper =</span> <span class="kw">c</span>(<span class="dv">3</span>, <span class="dv">6</span>, <span class="dv">10</span>),</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true"></a>    <span class="dt">name =</span> <span class="kw">c</span>(<span class="st">&quot;low&quot;</span>, <span class="st">&quot;medium&quot;</span>, <span class="st">&quot;high&quot;</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true"></a>  ),</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true"></a>  <span class="st">&quot;time AS time_bin&quot;</span> =<span class="st"> </span><span class="kw">list</span>(</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true"></a>    <span class="st">&quot;day&quot;</span> =<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>),</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true"></a>    <span class="st">&quot;month&quot;</span> =<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>),</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true"></a>    <span class="st">&quot;year&quot;</span> =<span class="st"> </span><span class="kw">c</span>(<span class="dv">1899</span>, <span class="dv">1903</span>, <span class="dv">1910</span>)</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true"></a>  )</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true"></a>)</span></code></pre></div>
+<p>The final difference is that person-time tables make a distinction between events and summaries. The summary list is nearly identical to the event list in the person-count function. The only difference is that a weighted_mean option is added. This is the mean of the group weighted by person-years. The event list for the person-time table function is used to determine which time categories the event columns are assigned to. Based on the relative row intervals and category intervals, each row can be part of multiple time categories. However, the event is only assigned to the time category containing the endpoint of the row interval.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a>summary &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="st">&quot;c&quot;</span> =<span class="st"> &quot;count AS cases&quot;</span>, <span class="st">&quot;b&quot;</span> =<span class="st"> &quot;weighted_mean AS b_weighted&quot;</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true"></a>events &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="st">&quot;c&quot;</span>)</span></code></pre></div>
+<p>Finally the function is run. Similar to the person-count table function, the function returns the grouped table and list of category boundaries.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true"></a>pyr &lt;-<span class="st"> </span><span class="kw">list</span>(</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true"></a>  <span class="dt">entry =</span> <span class="kw">list</span>(<span class="dt">year =</span> <span class="st">&quot;f&quot;</span>, <span class="dt">month =</span> <span class="st">&quot;e&quot;</span>, <span class="dt">day =</span> <span class="st">&quot;d&quot;</span>),</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true"></a>  <span class="dt">exit =</span> <span class="kw">list</span>(<span class="dt">year =</span> <span class="st">&quot;i&quot;</span>, <span class="dt">month =</span> <span class="st">&quot;h&quot;</span>, <span class="dt">day =</span> <span class="st">&quot;g&quot;</span>),</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true"></a>  <span class="dt">unit =</span> <span class="st">&quot;years&quot;</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true"></a>)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true"></a><span class="kw">print</span>(<span class="kw">Event_Time_Gen</span>(table, pyr, categ, summary, events, T))</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true"></a><span class="co">#&gt; $df</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true"></a><span class="co">#&gt;     a_category b_category time_bin AT_RISK        PYR cases b_weighted</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true"></a><span class="co">#&gt;         &lt;char&gt;     &lt;char&gt;   &lt;char&gt;   &lt;int&gt;      &lt;num&gt; &lt;num&gt;      &lt;num&gt;</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true"></a><span class="co">#&gt;  1:          1       high        1       1  2.9952088     0   6.000000</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true"></a><span class="co">#&gt;  2:          1       high        2       1  0.2600958     0   6.000000</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true"></a><span class="co">#&gt;  3:          1        low        1       5 12.4791239     1   1.413339</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true"></a><span class="co">#&gt;  4:          1        low        2       3 14.4257358     0   1.485291</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true"></a><span class="co">#&gt;  5:          1     medium        1       2  5.9876797     0   3.999543</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true"></a><span class="co">#&gt;  6:          1     medium        2       2  1.5167693     1   4.664260</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true"></a><span class="co">#&gt;  7:          2        low        1       1  2.9979466     0   2.000000</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true"></a><span class="co">#&gt;  8:          2        low        2       1  1.2566735     0   2.000000</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true"></a><span class="co">#&gt;  9:          2     medium        1       4 11.8083504     0   3.993276</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true"></a><span class="co">#&gt; 10:          2     medium        2       4  5.7056810     3   4.175144</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true"></a><span class="co">#&gt; 11:          3       high        1       2  5.8234086     0   6.499765</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true"></a><span class="co">#&gt; 12:          3       high        2       2  7.6824093     2   6.554170</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true"></a><span class="co">#&gt; 13:          3        low        1       1  2.9130732     0   2.000000</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true"></a><span class="co">#&gt; 14:          3        low        2       1  0.2546201     1   2.000000</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true"></a><span class="co">#&gt; 15:          3     medium        1       1  2.9103354     0   3.000000</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true"></a><span class="co">#&gt; 16:          3     medium        2       1  1.2566735     0   3.000000</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true"></a><span class="co">#&gt; $bounds</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true"></a><span class="co">#&gt; $bounds$a_category</span></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true"></a><span class="co">#&gt; [1] &quot; [-1, 3) [3, 5) [5, 7]&quot;</span></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true"></a><span class="co">#&gt; $bounds$b_category</span></span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true"></a><span class="co">#&gt; [1] &quot; [-1, 3) [3, 6) [6, 10)&quot;</span></span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true"></a><span class="co">#&gt; $bounds$time_bin</span></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true"></a><span class="co">#&gt; [1] &quot; [1899-01-01 to 1903-01-01] [1903-01-01 to 1910-01-01]&quot;</span></span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true"></a>pyr &lt;-<span class="st"> </span><span class="kw">list</span>(</span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true"></a>  <span class="dt">entry =</span> <span class="kw">list</span>(<span class="dt">year =</span> <span class="st">&quot;f&quot;</span>, <span class="dt">month =</span> <span class="st">&quot;e&quot;</span>, <span class="dt">day =</span> <span class="st">&quot;d&quot;</span>),</span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true"></a>  <span class="dt">exit =</span> <span class="kw">list</span>(<span class="dt">year =</span> <span class="st">&quot;i&quot;</span>, <span class="dt">month =</span> <span class="st">&quot;h&quot;</span>, <span class="dt">day =</span> <span class="st">&quot;g&quot;</span>),</span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true"></a>  <span class="dt">unit =</span> <span class="st">&quot;months&quot;</span></span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true"></a>)</span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true"></a><span class="kw">print</span>(<span class="kw">Event_Time_Gen</span>(table, pyr, categ, summary, events, T))</span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true"></a><span class="co">#&gt; $df</span></span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true"></a><span class="co">#&gt;     a_category b_category time_bin AT_RISK        PYR cases b_weighted</span></span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true"></a><span class="co">#&gt;         &lt;char&gt;     &lt;char&gt;   &lt;char&gt;   &lt;int&gt;      &lt;num&gt; &lt;num&gt;      &lt;num&gt;</span></span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true"></a><span class="co">#&gt;  1:          1       high        1       1  35.942505     0   6.000000</span></span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true"></a><span class="co">#&gt;  2:          1       high        2       1   3.121150     0   6.000000</span></span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true"></a><span class="co">#&gt;  3:          1        low        1       5 149.749487     1   1.413339</span></span>
+<span id="cb9-48"><a href="#cb9-48" aria-hidden="true"></a><span class="co">#&gt;  4:          1        low        2       3 173.108830     0   1.485291</span></span>
+<span id="cb9-49"><a href="#cb9-49" aria-hidden="true"></a><span class="co">#&gt;  5:          1     medium        1       2  71.852156     0   3.999543</span></span>
+<span id="cb9-50"><a href="#cb9-50" aria-hidden="true"></a><span class="co">#&gt;  6:          1     medium        2       2  18.201232     1   4.664260</span></span>
+<span id="cb9-51"><a href="#cb9-51" aria-hidden="true"></a><span class="co">#&gt;  7:          2        low        1       1  35.975359     0   2.000000</span></span>
+<span id="cb9-52"><a href="#cb9-52" aria-hidden="true"></a><span class="co">#&gt;  8:          2        low        2       1  15.080082     0   2.000000</span></span>
+<span id="cb9-53"><a href="#cb9-53" aria-hidden="true"></a><span class="co">#&gt;  9:          2     medium        1       4 141.700205     0   3.993276</span></span>
+<span id="cb9-54"><a href="#cb9-54" aria-hidden="true"></a><span class="co">#&gt; 10:          2     medium        2       4  68.468172     3   4.175144</span></span>
+<span id="cb9-55"><a href="#cb9-55" aria-hidden="true"></a><span class="co">#&gt; 11:          3       high        1       2  69.880903     0   6.499765</span></span>
+<span id="cb9-56"><a href="#cb9-56" aria-hidden="true"></a><span class="co">#&gt; 12:          3       high        2       2  92.188912     2   6.554170</span></span>
+<span id="cb9-57"><a href="#cb9-57" aria-hidden="true"></a><span class="co">#&gt; 13:          3        low        1       1  34.956879     0   2.000000</span></span>
+<span id="cb9-58"><a href="#cb9-58" aria-hidden="true"></a><span class="co">#&gt; 14:          3        low        2       1   3.055441     1   2.000000</span></span>
+<span id="cb9-59"><a href="#cb9-59" aria-hidden="true"></a><span class="co">#&gt; 15:          3     medium        1       1  34.924025     0   3.000000</span></span>
+<span id="cb9-60"><a href="#cb9-60" aria-hidden="true"></a><span class="co">#&gt; 16:          3     medium        2       1  15.080082     0   3.000000</span></span>
+<span id="cb9-61"><a href="#cb9-61" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb9-62"><a href="#cb9-62" aria-hidden="true"></a><span class="co">#&gt; $bounds</span></span>
+<span id="cb9-63"><a href="#cb9-63" aria-hidden="true"></a><span class="co">#&gt; $bounds$a_category</span></span>
+<span id="cb9-64"><a href="#cb9-64" aria-hidden="true"></a><span class="co">#&gt; [1] &quot; [-1, 3) [3, 5) [5, 7]&quot;</span></span>
+<span id="cb9-65"><a href="#cb9-65" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb9-66"><a href="#cb9-66" aria-hidden="true"></a><span class="co">#&gt; $bounds$b_category</span></span>
+<span id="cb9-67"><a href="#cb9-67" aria-hidden="true"></a><span class="co">#&gt; [1] &quot; [-1, 3) [3, 6) [6, 10)&quot;</span></span>
+<span id="cb9-68"><a href="#cb9-68" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb9-69"><a href="#cb9-69" aria-hidden="true"></a><span class="co">#&gt; $bounds$time_bin</span></span>
+<span id="cb9-70"><a href="#cb9-70" aria-hidden="true"></a><span class="co">#&gt; [1] &quot; [1899-01-01 to 1903-01-01] [1903-01-01 to 1910-01-01]&quot;</span></span>
+<span id="cb9-71"><a href="#cb9-71" aria-hidden="true"></a>pyr &lt;-<span class="st"> </span><span class="kw">list</span>(</span>
+<span id="cb9-72"><a href="#cb9-72" aria-hidden="true"></a>  <span class="dt">entry =</span> <span class="kw">list</span>(<span class="dt">year =</span> <span class="st">&quot;f&quot;</span>, <span class="dt">month =</span> <span class="st">&quot;e&quot;</span>, <span class="dt">day =</span> <span class="st">&quot;d&quot;</span>),</span>
+<span id="cb9-73"><a href="#cb9-73" aria-hidden="true"></a>  <span class="dt">exit =</span> <span class="kw">list</span>(<span class="dt">year =</span> <span class="st">&quot;i&quot;</span>, <span class="dt">month =</span> <span class="st">&quot;h&quot;</span>, <span class="dt">day =</span> <span class="st">&quot;g&quot;</span>),</span>
+<span id="cb9-74"><a href="#cb9-74" aria-hidden="true"></a>  <span class="dt">unit =</span> <span class="st">&quot;days&quot;</span></span>
+<span id="cb9-75"><a href="#cb9-75" aria-hidden="true"></a>)</span>
+<span id="cb9-76"><a href="#cb9-76" aria-hidden="true"></a><span class="kw">print</span>(<span class="kw">Event_Time_Gen</span>(table, pyr, categ, summary, events, T))</span>
+<span id="cb9-77"><a href="#cb9-77" aria-hidden="true"></a><span class="co">#&gt; $df</span></span>
+<span id="cb9-78"><a href="#cb9-78" aria-hidden="true"></a><span class="co">#&gt;     a_category b_category time_bin AT_RISK   PYR cases b_weighted</span></span>
+<span id="cb9-79"><a href="#cb9-79" aria-hidden="true"></a><span class="co">#&gt;         &lt;char&gt;     &lt;char&gt;   &lt;char&gt;   &lt;int&gt; &lt;num&gt; &lt;num&gt;      &lt;num&gt;</span></span>
+<span id="cb9-80"><a href="#cb9-80" aria-hidden="true"></a><span class="co">#&gt;  1:          1       high        1       1  1094     0   6.000000</span></span>
+<span id="cb9-81"><a href="#cb9-81" aria-hidden="true"></a><span class="co">#&gt;  2:          1       high        2       1    95     0   6.000000</span></span>
+<span id="cb9-82"><a href="#cb9-82" aria-hidden="true"></a><span class="co">#&gt;  3:          1        low        1       5  4558     1   1.413339</span></span>
+<span id="cb9-83"><a href="#cb9-83" aria-hidden="true"></a><span class="co">#&gt;  4:          1        low        2       3  5269     0   1.485291</span></span>
+<span id="cb9-84"><a href="#cb9-84" aria-hidden="true"></a><span class="co">#&gt;  5:          1     medium        1       2  2187     0   3.999543</span></span>
+<span id="cb9-85"><a href="#cb9-85" aria-hidden="true"></a><span class="co">#&gt;  6:          1     medium        2       2   554     1   4.664260</span></span>
+<span id="cb9-86"><a href="#cb9-86" aria-hidden="true"></a><span class="co">#&gt;  7:          2        low        1       1  1095     0   2.000000</span></span>
+<span id="cb9-87"><a href="#cb9-87" aria-hidden="true"></a><span class="co">#&gt;  8:          2        low        2       1   459     0   2.000000</span></span>
+<span id="cb9-88"><a href="#cb9-88" aria-hidden="true"></a><span class="co">#&gt;  9:          2     medium        1       4  4313     0   3.993276</span></span>
+<span id="cb9-89"><a href="#cb9-89" aria-hidden="true"></a><span class="co">#&gt; 10:          2     medium        2       4  2084     3   4.175144</span></span>
+<span id="cb9-90"><a href="#cb9-90" aria-hidden="true"></a><span class="co">#&gt; 11:          3       high        1       2  2127     0   6.499765</span></span>
+<span id="cb9-91"><a href="#cb9-91" aria-hidden="true"></a><span class="co">#&gt; 12:          3       high        2       2  2806     2   6.554170</span></span>
+<span id="cb9-92"><a href="#cb9-92" aria-hidden="true"></a><span class="co">#&gt; 13:          3        low        1       1  1064     0   2.000000</span></span>
+<span id="cb9-93"><a href="#cb9-93" aria-hidden="true"></a><span class="co">#&gt; 14:          3        low        2       1    93     1   2.000000</span></span>
+<span id="cb9-94"><a href="#cb9-94" aria-hidden="true"></a><span class="co">#&gt; 15:          3     medium        1       1  1063     0   3.000000</span></span>
+<span id="cb9-95"><a href="#cb9-95" aria-hidden="true"></a><span class="co">#&gt; 16:          3     medium        2       1   459     0   3.000000</span></span>
+<span id="cb9-96"><a href="#cb9-96" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb9-97"><a href="#cb9-97" aria-hidden="true"></a><span class="co">#&gt; $bounds</span></span>
+<span id="cb9-98"><a href="#cb9-98" aria-hidden="true"></a><span class="co">#&gt; $bounds$a_category</span></span>
+<span id="cb9-99"><a href="#cb9-99" aria-hidden="true"></a><span class="co">#&gt; [1] &quot; [-1, 3) [3, 5) [5, 7]&quot;</span></span>
+<span id="cb9-100"><a href="#cb9-100" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb9-101"><a href="#cb9-101" aria-hidden="true"></a><span class="co">#&gt; $bounds$b_category</span></span>
+<span id="cb9-102"><a href="#cb9-102" aria-hidden="true"></a><span class="co">#&gt; [1] &quot; [-1, 3) [3, 6) [6, 10)&quot;</span></span>
+<span id="cb9-103"><a href="#cb9-103" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb9-104"><a href="#cb9-104" aria-hidden="true"></a><span class="co">#&gt; $bounds$time_bin</span></span>
+<span id="cb9-105"><a href="#cb9-105" aria-hidden="true"></a><span class="co">#&gt; [1] &quot; [1899-01-01 to 1903-01-01] [1903-01-01 to 1910-01-01]&quot;</span></span></code></pre></div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

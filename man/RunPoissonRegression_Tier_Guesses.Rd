@@ -98,6 +98,7 @@ guesses_control <- list(
   "loglin_method" = "uniform", strata = TRUE, term_initial = c(0, 1)
 )
 strat_col <- c("e")
+options(warn = -1)
 e <- RunPoissonRegression_Tier_Guesses(
   df, pyr, event, names,
   term_n, tform, keep_constant, a_n, modelform,
@@ -107,6 +108,7 @@ e <- RunPoissonRegression_Tier_Guesses(
 }
 \seealso{
 Other Poisson Wrapper Functions: 
+\code{\link{PoissonCurveSolver}()},
 \code{\link{RunPoissonEventAssignment}()},
 \code{\link{RunPoissonEventAssignment_bound}()},
 \code{\link{RunPoissonRegression}()},
@@ -114,7 +116,7 @@ Other Poisson Wrapper Functions:
 \code{\link{RunPoissonRegression_Joint_Omnibus}()},
 \code{\link{RunPoissonRegression_Omnibus}()},
 \code{\link{RunPoissonRegression_Residual}()},
-\code{\link{RunPoissonRegression_STRATA}()},
-\code{\link{RunPoissonRegression_Single}()}
+\code{\link{RunPoissonRegression_Single}()},
+\code{\link{RunPoissonRegression_Strata}()}
 }
 \concept{Poisson Wrapper Functions}

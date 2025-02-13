@@ -16,6 +16,7 @@
 #' @param dep_cols  columns that are not needed in the new dataframe
 #' @param der_iden  number for the subterm to test derivative at, only used for testing runs with a single varying parameter, should be smaller than total number of parameters. indexed starting at 0
 #' @param df  a data.table containing the columns of interest
+#' @param digits  digits used for printing results
 #' @param dnames  list of covariate columns to plot by
 #' @param dt  spacing in time for new rows
 #' @param e  output from a baseline calculation
@@ -30,7 +31,9 @@
 #' @param interactions  array of strings, each one is of form term1?*?term2" for term1 interaction of type * or + with term2, "?" dlimits
 #' @param iscox  boolean if rows not at event times should not be kept, rows are removed if true. a Cox proportional hazards model does not use rows with intervals not containing event times
 #' @param keep_constant  binary values to denote which parameters to change
+#' @param log_file file to save log to
 #' @param model_control  controls which alternative model options are used, see Def_model_control() for options and vignette("Control_Options") for further details
+#' @param Model_Eq  String representation of a survival model. Left hand side details the model (cox, poisson, cox_strata, poisson_strata), time columns, event, and strata when used. The right hand side details the subterm effects. The 'Unified Equation Representation' vignette provides more details.
 #' @param modelform  string specifying the model type: M, ME, A, PA, PAE, GMIX, GMIX-R, GMIX-E
 #' @param msv  value to replace na with, same used for every column used
 #' @param name_list  vector of string column names to check
@@ -38,6 +41,7 @@
 #' @param new_names  list of new names to use instead of default, default used if entry is ''
 #' @param nthreads  number of threads to use, do not use more threads than available on your machine
 #' @param null_model  a model to compare against, in list form
+#' @param out_list  list output from a regression, used to build results table and pull out convergence values
 #' @param paras  list of formula parameters
 #' @param plot_name  plot identifier, used in filename for saved plots
 #' @param plot_options  list of parameters controlling the plot options, see RunCoxPlots() for different options
@@ -90,7 +94,7 @@ NULL
 #' @param Rls1  First Risk sum storage
 #' @param Rls2  First Risk sum derivative storage
 #' @param Rls3  First Risk sum second derivative storage
-#' @param STRATA_vals  vector of strata identifier values
+#' @param Strata_vals  vector of strata identifier values
 #' @param Schoenfeld_bool  boolean for competing risks
 #' @param Surv_bool  boolean for competing risks
 #' @param T0  Term value for each subterm
@@ -184,8 +188,8 @@ NULL
 #' @importFrom Rcpp evalCpp
 #' @importFrom data.table data.table fread setkeyv copy setorderv setnames as.data.table set := .SD
 #' @importFrom parallel detectCores
-#' @importFrom stats runif
-#' @importFrom utils combn head
+#' @importFrom stats runif weighted.mean
+#' @importFrom utils combn head sessionInfo
 #' @importFrom grDevices colorRampPalette dev.off jpeg
 #' @importFrom graphics legend lines smoothScatter
 #' @importFrom stats approxfun time qchisq
@@ -193,5 +197,8 @@ NULL
 #' @importFrom processx run
 #' @importFrom stringr str_match
 #' @importFrom callr rcmd
+#' @importFrom tibble as_tibble tibble
+#' @importFrom dplyr mutate case_when group_by summarize n slice bind_rows across all_of
+#' @importFrom lubridate make_date interval as.duration
 #' @useDynLib Colossus, .registration = TRUE
 NULL

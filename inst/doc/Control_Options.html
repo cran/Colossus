@@ -383,7 +383,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </tr>
 <tr class="even">
 <td align="center">ncores</td>
-<td align="center">Number of cores used for parallel operations. The user can’t assign more cores than available. Defaults to the number of detected cores</td>
+<td align="center">Number of cores used for parallel operations. The user can not assign more cores than available. Defaults to the number of detected cores</td>
 </tr>
 <tr class="odd">
 <td align="center">lr</td>
@@ -403,11 +403,11 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </tr>
 <tr class="odd">
 <td align="center">epsilon</td>
-<td align="center">Minimum step size before convergence is assumed. Defaults to 1e-9</td>
+<td align="center">Minimum step size before convergence is assumed. Defaults to 1e-4</td>
 </tr>
 <tr class="even">
 <td align="center">deriv_epsilon</td>
-<td align="center">Smallest maximum first derivative before convergence is assumed. Defaults to 1e-9.</td>
+<td align="center">Smallest maximum first derivative before convergence is assumed. Defaults to 1e-4.</td>
 </tr>
 <tr class="odd">
 <td align="center">abs_max</td>
@@ -461,7 +461,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </tr>
 <tr class="even">
 <td align="center">cr</td>
-<td align="center">Boolean used by Cox functions to apply competing risks model options to use a Fine-Grey model. Defaults to FALSE.</td>
+<td align="center">Boolean used by Cox functions to apply competing risks model options to use a Fine-Gray model. Defaults to FALSE.</td>
 </tr>
 <tr class="odd">
 <td align="center">constraint</td>
@@ -549,6 +549,10 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <tr class="even">
 <td align="center">search_mult</td>
 <td align="center">Double used by manual search option, scales the initial step by that amount. This can be done to widen or narrow the scope of the search if the initial quadratic assumption made by the Venzon-Moolgavkar algorithm is incorrect.</td>
+</tr>
+<tr class="odd">
+<td align="center">step_size</td>
+<td align="center">Double used by the Curve Search functions. Sets the initial interval length used. Defaults to 0.5</td>
 </tr>
 </tbody>
 </table>

@@ -35,7 +35,7 @@ using Rcpp::as;
 //' @return Updates matrices in place: subterm matrices, Term matrices
 //' @noRd
 // [[Rcpp::export]]
-void Make_subterms(const int& totalnum, const IntegerVector& term_n, const StringVector&  tform, const IntegerVector& dfc, const int& fir, MatrixXd& T0, MatrixXd& Td0, MatrixXd& Tdd0, MatrixXd& Dose, MatrixXd& nonDose, MatrixXd& TTerm, MatrixXd& nonDose_LIN, MatrixXd& nonDose_PLIN, MatrixXd& nonDose_LOGLIN, const  VectorXd& beta_0, const  MatrixXd& df0, const double& dint, const double& dslp, const int& nthreads, bool debugging, const IntegerVector& KeepConstant) {
+void Make_subterms(const int& totalnum, const IntegerVector& term_n, const StringVector&  tform, const IntegerVector& dfc, const int& fir, MatrixXd& T0, MatrixXd& Td0, MatrixXd& Tdd0, MatrixXd& Dose, MatrixXd& nonDose, MatrixXd& TTerm, MatrixXd& nonDose_LIN, MatrixXd& nonDose_PLIN, MatrixXd& nonDose_LOGLIN, const  VectorXd& beta_0, const  MatrixXd& df0, const double& dint, const double& dslp, const int& nthreads, const IntegerVector& KeepConstant) {
     //
     // Calculates the sub term values
     //
@@ -133,8 +133,8 @@ void Make_subterms(const int& totalnum, const IntegerVector& term_n, const Strin
         } else if (as< string>(tform[ij]) == "lin_quad_int") {
         } else if (as< string>(tform[ij]) == "lin_exp_slope") {
             T0.col(ij) = (df0.col(df0_c).array() - beta_0[ij + 1]);
-            double c1;
-            double a1;
+            double c1 = 0.0;
+            double a1 = 0.0;
             if (beta_0[ij] < 0) {
                 c1 = log(- 1*beta_0[ij]/beta_0[ij+2]) + beta_0[ij + 1] * beta_0[ij+2];
                 a1 = - 1*beta_0[ij] * beta_0[ij + 1] + exp(c1 - beta_0[ij+2] * beta_0[ij + 1]);
@@ -278,8 +278,8 @@ void Make_subterms(const int& totalnum, const IntegerVector& term_n, const Strin
                 ArrayXd temp = (df0.col(df0_c).array() - beta_0[ij + 1]+dint);
                 ArrayXd temp0 = (df0.col(df0_c).array() - beta_0[ij + 1]+dint);
                 ArrayXd temp1 = (df0.col(df0_c).array() - beta_0[ij + 1]+dint);
-                double a1 = 0;
-                double b1 = 0;
+                double a1 = 0.0;
+                double b1 = 0.0;
                 //
                 temp = (df0.col(df0_c).array() - beta_0[ij + 1]+dint);
                 a1 = (beta_0[ij] - dslp) /2.0 / (beta_0[ij + 1]-dint);
@@ -363,8 +363,8 @@ void Make_subterms(const int& totalnum, const IntegerVector& term_n, const Strin
                 if (eeslp >= beta_0[ij+2]) {
                     eeslp = beta_0[ij+2]*0.9;
                 }
-                double c1;
-                double a1;
+                double c1 = 0.0;
+                double a1 = 0.0;
                 //
                 ArrayXd temp = (df0.col(df0_c).array() - beta_0[ij + 1]);
                 if (beta_0[ij] < 0) {
@@ -615,6 +615,90 @@ void Make_subterms(const int& totalnum, const IntegerVector& term_n, const Strin
     return;
 }
 
+//' Utility function to calculate the term and subterm values with gradient method
+//'
+//' \code{Make_subterms_Gradient} Called to update term matrices, Uses lists of term numbers and types to apply formulas, gradient method
+//' @inheritParams CPP_template
+//'
+//' @return Updates matrices in place: subterm matrices, Term matrices
+//' @noRd
+// [[Rcpp::export]]
+void Make_subterms_Gradient(const int& totalnum, const IntegerVector& term_n, const StringVector&  tform, const IntegerVector& dfc, const int& fir, MatrixXd& T0, MatrixXd& Td0, MatrixXd& nonDose, MatrixXd& TTerm, MatrixXd& nonDose_LIN, MatrixXd& nonDose_PLIN, MatrixXd& nonDose_LOGLIN, const  VectorXd& beta_0, const  MatrixXd& df0, const int& nthreads, const IntegerVector& KeepConstant) {
+    //
+    // Calculates the sub term values
+    //
+    // reset the subterm counts
+    nonDose_LIN = MatrixXd::Constant(T0.rows(), nonDose.cols(), 0.0);  // matrix of Linear subterm values
+    nonDose_PLIN = MatrixXd::Constant(T0.rows(), nonDose.cols(), 1.0);  // matrix of Loglinear subterm values
+    nonDose_LOGLIN = MatrixXd::Constant(T0.rows(), nonDose.cols(), 1.0);  // matrix of Product linear subterm values
+    //
+    vector<int> lin_count(nonDose.cols(), 0);
+    #ifdef _OPENMP
+    #pragma omp declare reduction (eig_plus: MatrixXd: omp_out=omp_out.array() + omp_in.array()) initializer(omp_priv = MatrixXd::Constant(omp_orig.rows(), omp_orig.cols(), 0.0))
+    #pragma omp declare reduction (eig_mult: MatrixXd: omp_out=omp_out.array() * omp_in.array()) initializer(omp_priv = MatrixXd::Constant(omp_orig.rows(), omp_orig.cols(), 1.0))
+    #pragma omp declare reduction(vec_int_plus : std::vector<int> : \
+            std::transform(omp_out.begin(), omp_out.end(), omp_in.begin(), omp_out.begin(), std::plus<int>())) \
+            initializer(omp_priv = omp_orig)
+    #pragma omp parallel for schedule(dynamic) num_threads(nthreads) reduction(eig_plus: nonDose_LIN, nonDose_PLIN) reduction(eig_mult:nonDose_LOGLIN) reduction(vec_int_plus:lin_count)
+    #endif
+    for (int ij = 0; ij < totalnum; ij++) {
+        int df0_c = dfc[ij] - 1;
+        int tn = term_n[ij];
+        if (as< string>(tform[ij]) == "loglin") {
+            T0.col(ij) = (df0.col(df0_c).array() * beta_0[ij]).matrix();
+            T0.col(ij) = T0.col(ij).array().exp();;
+            nonDose_LOGLIN.col(tn) = nonDose_LOGLIN.col(tn).array() * T0.col(ij).array();
+
+        } else if (as< string>(tform[ij]) == "lin") {
+            T0.col(ij) = (df0.col(df0_c).array() * beta_0[ij]).matrix();
+            nonDose_LIN.col(tn) = nonDose_LIN.col(tn).array() + T0.col(ij).array();
+            lin_count[tn] = lin_count[tn] + 1;
+
+        } else if (as< string>(tform[ij]) == "plin") {
+            T0.col(ij) = (df0.col(df0_c).array() * beta_0[ij]).matrix();
+            nonDose_PLIN.col(tn) = nonDose_PLIN.col(tn).array() + T0.col(ij).array();
+
+        } else {
+            throw invalid_argument("incorrect subterm type");
+        }
+    }
+    //
+    // Calculates the terms and derivatives
+    //
+    for (int ijk = 0;  ijk < nonDose.cols(); ijk++) {  // combines non-dose terms into a single term
+        if (lin_count[ijk] == 0) {
+            nonDose_LIN.col(ijk) = nonDose_LIN.col(ijk).array() * 0.0 + 1;  // replaces missing data with 1
+        }
+        nonDose.col(ijk) = nonDose_LIN.col(ijk).array()  * nonDose_PLIN.col(ijk).array()  * nonDose_LOGLIN.col(ijk).array();
+    }
+    TTerm << nonDose.array();
+    //
+    #ifdef _OPENMP
+    #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+    #endif
+    for (int ij = 0; ij < totalnum; ij++) {
+        int df0_c = dfc[ij] - 1;
+        int tn = term_n[ij];
+        if (KeepConstant[ij] == 0) {
+            int jk = ij - sum(head(KeepConstant, ij));
+            if (as< string>(tform[ij]) == "loglin") {
+                T0.col(ij) = nonDose_LOGLIN.col(tn);
+                Td0.col(jk) = df0.col(df0_c).array() * T0.col(ij).array();
+                // Tdd0.col((jk)*(jk + 1)/2+jk) = df0.col(df0_c).array() * Td0.col(jk).array();
+            } else if (as< string>(tform[ij]) == "plin") {
+                T0.col(ij) = nonDose_PLIN.col(tn);
+                Td0.col(jk) = df0.col(df0_c);
+            } else if (as< string>(tform[ij]) == "lin") {
+                T0.col(ij) = nonDose_LIN.col(tn);
+                Td0.col(jk) = df0.col(df0_c);
+            } else {
+            }
+        }
+    }
+    //
+    return;
+}
+
 //' Utility function to calculate the term and subterm values, but not derivatives
 //'
 //' \code{Make_subterms_Single} Called to update term matrices, Uses lists of term numbers and types to apply formulas
@@ -623,7 +707,7 @@ void Make_subterms(const int& totalnum, const IntegerVector& term_n, const Strin
 //' @return Updates matrices in place: subterm matrices, Term matrices
 //' @noRd
 // [[Rcpp::export]]
-void Make_subterms_Single(const int& totalnum, const IntegerVector& term_n, const StringVector&  tform, const IntegerVector& dfc, const int& fir, MatrixXd& T0, MatrixXd& Dose, MatrixXd& nonDose, MatrixXd& TTerm, MatrixXd& nonDose_LIN, MatrixXd& nonDose_PLIN, MatrixXd& nonDose_LOGLIN, const  VectorXd& beta_0, const  MatrixXd& df0, const int& nthreads, bool debugging, const IntegerVector& KeepConstant) {
+void Make_subterms_Single(const int& totalnum, const IntegerVector& term_n, const StringVector&  tform, const IntegerVector& dfc, const int& fir, MatrixXd& T0, MatrixXd& Dose, MatrixXd& nonDose, MatrixXd& TTerm, MatrixXd& nonDose_LIN, MatrixXd& nonDose_PLIN, MatrixXd& nonDose_LOGLIN, const  VectorXd& beta_0, const  MatrixXd& df0, const int& nthreads, const IntegerVector& KeepConstant) {
     //
     // Calculates the sub term values
     //
@@ -662,8 +746,6 @@ void Make_subterms_Single(const int& totalnum, const IntegerVector& term_n, cons
 
         } else if (as< string>(tform[ij]) == "loglin_slope") {
             T0.col(ij) = beta_0[ij] * (beta_0[ij + 1] * df0.col(df0_c)).array().exp();
-            //
-            //
             T0.col(ij + 1) = T0.col(ij);
             Dose.col(tn) = Dose.col(tn).array() + T0.col(ij).array();
             dose_count[tn] = dose_count[tn] + 1;
@@ -677,9 +759,7 @@ void Make_subterms_Single(const int& totalnum, const IntegerVector& term_n, cons
                 T0.col(ij) = (beta_0[ij] * df0.col(df0_c)).array().exp();
                 Dose.col(tn) = Dose.col(tn).array() + T0.col(ij).array();
                 dose_count[tn] = dose_count[tn] + 1;
-                //
-            } else {
-            }
+            } else {}
         } else if (as< string>(tform[ij]) == "lin_slope") {
             T0.col(ij) = (df0.col(df0_c).array() - beta_0[ij + 1]);
             //
@@ -721,8 +801,8 @@ void Make_subterms_Single(const int& totalnum, const IntegerVector& term_n, cons
         } else if (as< string>(tform[ij]) == "lin_quad_int") {
         } else if (as< string>(tform[ij]) == "lin_exp_slope") {
             T0.col(ij) = (df0.col(df0_c).array() - beta_0[ij + 1]);
-            double c1;
-            double a1;
+            double c1 = 0.0;
+            double a1 = 0.0;
             if (beta_0[ij] < 0) {
                 c1 = log(- 1*beta_0[ij]/beta_0[ij+2]) + beta_0[ij + 1] * beta_0[ij+2];
                 a1 = - 1*beta_0[ij] * beta_0[ij + 1] + exp(c1 - beta_0[ij+2] * beta_0[ij + 1]);
@@ -783,8 +863,7 @@ void Make_subterms_Single(const int& totalnum, const IntegerVector& term_n, cons
             } else if (tform[ij - 1] != "loglin_slope") {
                 T0.col(ij) = Dose.col(tn);
                 //
-            } else {
-            }
+            } else {}
         } else if (as< string>(tform[ij]) == "lin_slope") {
             //
             T0.col(ij) = Dose.col(tn);
@@ -808,8 +887,7 @@ void Make_subterms_Single(const int& totalnum, const IntegerVector& term_n, cons
             T0.col(ij + 1) = Dose.col(tn);
             T0.col(ij+2) = Dose.col(tn);
             //
-        } else {
-        }
+        } else {}
     }
     return;
 }
@@ -822,7 +900,7 @@ void Make_subterms_Single(const int& totalnum, const IntegerVector& term_n, cons
 //' @return Updates matrices in place: subterm matrices, Term matrices
 //' @noRd
 // [[Rcpp::export]]
-void Make_subterms_Basic(const int& totalnum, const IntegerVector& dfc, MatrixXd& T0, const VectorXd& beta_0, const MatrixXd& df0, const int& nthreads, bool debugging) {
+void Make_subterms_Basic(const int& totalnum, const IntegerVector& dfc, MatrixXd& T0, const VectorXd& beta_0, const MatrixXd& df0, const int& nthreads) {
     //
     // Calculates the sub term values
     //
@@ -837,6 +915,42 @@ void Make_subterms_Basic(const int& totalnum, const IntegerVector& dfc, MatrixXd
     return;
 }
 
+//' Utility function to calculate the term and subterm values
+//'
+//' \code{Make_subterms_Linear_ERR} Called to update subterms for Linear ERR simplification
+//' @inheritParams CPP_template
+//'
+//' @return Updates matrices in place: subterm matrices, Term matrices
+//' @noRd
+// [[Rcpp::export]]
+void Make_subterms_Linear_ERR(const int& totalnum, const StringVector&  tform, const IntegerVector& dfc, MatrixXd& nonDose_PLIN, MatrixXd& nonDose_LOGLIN, const  VectorXd& beta_0, const  MatrixXd& df0, const int& nthreads, const IntegerVector& KeepConstant) {
+    //
+    // Calculates the sub term values
+    //
+    // reset the subterm counts
+    nonDose_PLIN = MatrixXd::Constant(df0.rows(), 1, 1.0);  // matrix of Loglinear subterm values
+    nonDose_LOGLIN = MatrixXd::Constant(df0.rows(), 1, 1.0);  // matrix of Product linear subterm values
+    #ifdef _OPENMP
+    #pragma omp declare reduction (eig_plus: MatrixXd: omp_out=omp_out.array() + omp_in.array()) initializer(omp_priv = MatrixXd::Constant(omp_orig.rows(), omp_orig.cols(), 0.0))
+    #pragma omp declare reduction (eig_mult: MatrixXd: omp_out=omp_out.array() * omp_in.array()) initializer(omp_priv = MatrixXd::Constant(omp_orig.rows(), omp_orig.cols(), 1.0))
+    #pragma omp declare reduction(vec_int_plus : std::vector<int> : \
+            std::transform(omp_out.begin(), omp_out.end(), omp_in.begin(), omp_out.begin(), std::plus<int>())) \
+            initializer(omp_priv = omp_orig)
+    #pragma omp parallel for schedule(dynamic) num_threads(nthreads) reduction(eig_plus:nonDose_PLIN) reduction(eig_mult:nonDose_LOGLIN)
+    #endif
+    for (int ij = 0; ij < totalnum; ij++) {
+        int df0_c = dfc[ij] - 1;
+        if (as< string>(tform[ij]) == "loglin") {
+            nonDose_LOGLIN.col(0) = nonDose_LOGLIN.col(0).array() * (df0.col(df0_c).array() * beta_0[ij]).array().exp();;
+        } else if (as< string>(tform[ij]) == "plin") {
+            nonDose_PLIN.col(0) = nonDose_PLIN.col(0).array() + (df0.col(df0_c).array() * beta_0[ij]).array();
+        } else {
+            throw invalid_argument("incorrect subterm type");
+        }
+    }
+    return;
+}
+
 //' Utility function to calculate the risk and risk ratios
 //'
 //' \code{Make_Risks} Called to update risk matrices, Splits into cases based on model form, Uses lists of term numbers and types to apply different derivative formulas
@@ -845,7 +959,7 @@ void Make_subterms_Basic(const int& totalnum, const IntegerVector& dfc, MatrixXd
 //' @return Updates matrices in place: Risk, Risk ratios
 //' @noRd
 // [[Rcpp::export]]
-void Make_Risks(string modelform, const StringVector& tform, const IntegerVector& term_n, const int& totalnum, const int& fir, const MatrixXd& T0, const MatrixXd& Td0, const MatrixXd& Tdd0, MatrixXd& Te, MatrixXd& R, MatrixXd& Rd, MatrixXd& Rdd, MatrixXd& Dose, MatrixXd& nonDose, MatrixXd& TTerm, MatrixXd& nonDose_LIN, MatrixXd& nonDose_PLIN, MatrixXd& nonDose_LOGLIN, MatrixXd& RdR, MatrixXd& RddR, const int& nthreads, bool debugging, const IntegerVector& KeepConstant, const double gmix_theta, const IntegerVector& gmix_term) {
+void Make_Risks(string modelform, const StringVector& tform, const IntegerVector& term_n, const int& totalnum, const int& fir, const MatrixXd& T0, const MatrixXd& Td0, const MatrixXd& Tdd0, MatrixXd& Te, MatrixXd& R, MatrixXd& Rd, MatrixXd& Rdd, MatrixXd& Dose, MatrixXd& nonDose, MatrixXd& TTerm, MatrixXd& nonDose_LIN, MatrixXd& nonDose_PLIN, MatrixXd& nonDose_LOGLIN, MatrixXd& RdR, MatrixXd& RddR, const int& nthreads, const IntegerVector& KeepConstant, const double gmix_theta, const IntegerVector& gmix_term) {
     set<string> Dose_Iden;  // list of dose subterms
     Dose_Iden.insert("loglin_top");
     Dose_Iden.insert("loglin_slope");
@@ -863,6 +977,8 @@ void Make_Risks(string modelform, const StringVector& tform, const IntegerVector
     //
     MatrixXd Tterm_ratio = MatrixXd::Constant(Td0.rows(), Td0.cols(), 1.0);
     int reqrdnum = totalnum - sum(KeepConstant);
+    RdR = MatrixXd::Zero(RdR.rows(), reqrdnum);  // preallocates matrix for Risk to derivative ratios
+    RddR = MatrixXd::Zero(RddR.rows(), reqrdnum*(reqrdnum + 1)/2);  // preallocates matrix for Risk to second derivative ratios
     //
     if (((modelform == "A") || (modelform == "PA") || (modelform == "PAE")) && (TTerm.cols()>1)) {  // same process used for all of the additive type models
         Te = TTerm.array().rowwise().sum().array();
@@ -900,6 +1016,7 @@ void Make_Risks(string modelform, const StringVector& tform, const IntegerVector
                         } else if (tform[ij] == "plin") {
                             Rd.col(ij) =  nonDose_LIN.col(tij).array()  * nonDose_LOGLIN.col(tij).array() * Dose.col(tij).array() *   Td0.col(ij).array();
                         }
+                        RdR.col(ij) = R.col(0).array().pow(- 1).array() * Rd.col(ij).array();
                     } else if (tij == tjk) {
                         if (Dose_Iden.find(as< string>(tform[ij])) != Dose_Iden.end()) {
                             if (tform[jk] == "loglin") {
@@ -944,11 +1061,12 @@ void Make_Risks(string modelform, const StringVector& tform, const IntegerVector
                                 Rdd.col(p_ijk) = TTerm.col(tij).array() * Rdd.col(p_ijk).array();
                                 Rdd.col(p_ijk) = Rdd.col(p_ijk).array() * Td0.col(jk).array() *  Td0.col(ij).array();
                             }
-                        } else {
-                        }
+                        } else {}
                     }
+                    RddR.col(p_ijk) = R.col(0).array().pow(- 1).array() * Rdd.col(p_ijk).array();
                 }
             }
+            //
         } else if ((modelform == "PAE") || (modelform == "PA")) {
             Te = Te.array() - TTerm.col(fir).array();
             if (modelform == "PAE") {
@@ -977,30 +1095,54 @@ void Make_Risks(string modelform, const StringVector& tform, const IntegerVector
                         if (tij == fir) {
                             if (Dose_Iden.find(as< string>(tform[ij])) != Dose_Iden.end()) {
                                 Rd.col(ij) =  R.col(0).array() * Dose.col(tij).array().pow(- 1).array() * Td0.col(ij).array();
+                                RdR.col(ij) = Dose.col(tij).array().pow(- 1).array() * Td0.col(ij).array();
+                                //
                                 Rdd.col(p_ijk) = R.col(0).array() * Dose.col(tij).array().pow(- 1).array() * Tdd0.col(p_ijk).array();
+                                RddR.col(p_ijk) = Dose.col(tij).array().pow(- 1).array() * Tdd0.col(p_ijk).array();
                             } else if (tform[ij] == "lin") {
                                 Rd.col(ij) =  R.col(0).array() * nonDose_LIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array();
+                                RdR.col(ij) = nonDose_LIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array();
+                                //
                                 Rdd.col(p_ijk) = R.col(0).array() * nonDose_LIN.col(tij).array().pow(- 1).array() * Tdd0.col(p_ijk).array();
+                                RddR.col(p_ijk) = nonDose_LIN.col(tij).array().pow(- 1).array() * Tdd0.col(p_ijk).array();
                             } else if (tform[ij] == "plin") {
                                 Rd.col(ij) =  R.col(0).array() * nonDose_PLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array();
+                                RdR.col(ij) = nonDose_PLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array();
+                                //
                                 Rdd.col(p_ijk) = R.col(0).array() * nonDose_PLIN.col(tij).array().pow(- 1).array() * Tdd0.col(p_ijk).array();
+                                RddR.col(p_ijk) = nonDose_PLIN.col(tij).array().pow(- 1).array() * Tdd0.col(p_ijk).array();
                             } else if (tform[ij] == "loglin") {
                                 Rd.col(ij) =  R.col(0).array() * nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array();
+                                RdR.col(ij) = nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array();
+                                //
                                 Rdd.col(p_ijk) = R.col(0).array() * nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Tdd0.col(p_ijk).array();
+                                RddR.col(p_ijk) = nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Tdd0.col(p_ijk).array();
                             }
                         } else {
                             if (Dose_Iden.find(as< string>(tform[ij])) != Dose_Iden.end()) {
                                 Rd.col(ij) =  TTerm.col(fir).array() * nonDose.col(tij).array() * Td0.col(ij).array();
+                                RdR.col(ij) = Te.array().pow(- 1).array() * nonDose.col(tij).array() * Td0.col(ij).array();
+                                //
                                 Rdd.col(p_ijk) = TTerm.col(fir).array() * nonDose.col(tij).array() * Tdd0.col(p_ijk).array();
+                                RddR.col(p_ijk) = Te.array().pow(- 1).array() * nonDose.col(tij).array() * Tdd0.col(p_ijk).array();
                             } else if (tform[ij] == "lin") {
                                 Rd.col(ij) =  TTerm.col(fir).array() * nonDose_PLIN.col(tij).array()  * nonDose_LOGLIN.col(tij).array() * Dose.col(tij).array() * Td0.col(ij).array();
+                                RdR.col(ij) = Te.array().pow(- 1).array() * nonDose_PLIN.col(tij).array()  * nonDose_LOGLIN.col(tij).array() * Dose.col(tij).array() * Td0.col(ij).array();
+                                //
                                 Rdd.col(p_ijk) = TTerm.col(fir).array() * nonDose_PLIN.col(tij).array()  * nonDose_LOGLIN.col(tij).array() * Dose.col(tij).array() * Tdd0.col(p_ijk).array();
+                                RddR.col(p_ijk) = Te.array().pow(- 1).array() * nonDose_PLIN.col(tij).array()  * nonDose_LOGLIN.col(tij).array() * Dose.col(tij).array() * Tdd0.col(p_ijk).array();
                             } else if (tform[ij] == "plin") {
                                 Rd.col(ij) =  TTerm.col(fir).array() * nonDose_LIN.col(tij).array()  * nonDose_LOGLIN.col(tij).array() * Dose.col(tij).array() * Td0.col(ij).array();
+                                RdR.col(ij) = Te.array().pow(- 1).array() * nonDose_LIN.col(tij).array()  * nonDose_LOGLIN.col(tij).array() * Dose.col(tij).array() * Td0.col(ij).array();
+                                //
                                 Rdd.col(p_ijk) = TTerm.col(fir).array() * nonDose_LIN.col(tij).array()  * nonDose_LOGLIN.col(tij).array() * Dose.col(tij).array() * Tdd0.col(p_ijk).array();
+                                RddR.col(p_ijk) = Te.array().pow(- 1).array() * nonDose_LIN.col(tij).array()  * nonDose_LOGLIN.col(tij).array() * Dose.col(tij).array() * Tdd0.col(p_ijk).array();
                             } else if (tform[ij] == "loglin") {
                                 Rd.col(ij) =  TTerm.col(fir).array() * TTerm.col(tij).array() * nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array();
+                                RdR.col(ij) = Te.array().pow(- 1).array() * TTerm.col(tij).array() * nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array();
+                                //
                                 Rdd.col(p_ijk) = TTerm.col(fir).array() * TTerm.col(tij).array() * nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Tdd0.col(p_ijk).array();
+                                RddR.col(p_ijk) = Te.array().pow(- 1).array() * TTerm.col(tij).array() * nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Tdd0.col(p_ijk).array();
                             }
                         }
                     } else {
@@ -1009,144 +1151,191 @@ void Make_Risks(string modelform, const StringVector& tform, const IntegerVector
                                 if (Dose_Iden.find(as< string>(tform[ij])) != Dose_Iden.end()) {
                                     if (Dose_Iden.find(as< string>(tform[jk])) != Dose_Iden.end()) {
                                         Rdd.col(p_ijk) = R.col(0).array() * Dose.col(tij).array().pow(- 1).array() * Tdd0.col(p_ijk).array();
+                                        RddR.col(p_ijk) = Dose.col(tij).array().pow(- 1).array() * Tdd0.col(p_ijk).array();
                                     } else if (tform[jk] == "lin") {
                                         Rdd.col(p_ijk) = R.col(0).array() * Dose.col(tij).array().pow(- 1).array() * Td0.col(ij).array() * nonDose_LIN.col(tij).array().pow(- 1).array()    * Td0.col(jk).array();
+                                        RddR.col(p_ijk) = Dose.col(tij).array().pow(- 1).array() * Td0.col(ij).array() * nonDose_LIN.col(tij).array().pow(- 1).array()    * Td0.col(jk).array();
                                     } else if (tform[jk] == "plin") {
                                         Rdd.col(p_ijk) = R.col(0).array() * Dose.col(tij).array().pow(- 1).array() * Td0.col(ij).array() * nonDose_PLIN.col(tij).array().pow(- 1).array()   * Td0.col(jk).array();
+                                        RddR.col(p_ijk) = Dose.col(tij).array().pow(- 1).array() * Td0.col(ij).array() * nonDose_PLIN.col(tij).array().pow(- 1).array()   * Td0.col(jk).array();
                                     } else if (tform[jk] == "loglin") {
                                         Rdd.col(p_ijk) = R.col(0).array() * Dose.col(tij).array().pow(- 1).array() * Td0.col(ij).array() * nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Td0.col(jk).array();
+                                        RddR.col(p_ijk) = Dose.col(tij).array().pow(- 1).array() * Td0.col(ij).array() * nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Td0.col(jk).array();
                                     }
                                 } else if (Dose_Iden.find(as< string>(tform[jk])) != Dose_Iden.end()) {
                                     if (tform[ij] == "lin") {
                                         Rdd.col(p_ijk) = R.col(0).array() * Dose.col(tij).array().pow(- 1).array() * Td0.col(jk).array() * nonDose_LIN.col(tij).array().pow(- 1).array()    * Td0.col(ij).array();
+                                        RddR.col(p_ijk) = Dose.col(tij).array().pow(- 1).array() * Td0.col(jk).array() * nonDose_LIN.col(tij).array().pow(- 1).array()    * Td0.col(ij).array();
                                     } else if (tform[ij] == "plin") {
                                         Rdd.col(p_ijk) = R.col(0).array() * Dose.col(tij).array().pow(- 1).array() * Td0.col(jk).array() * nonDose_PLIN.col(tij).array().pow(- 1).array()   * Td0.col(ij).array();
+                                        RddR.col(p_ijk) = Dose.col(tij).array().pow(- 1).array() * Td0.col(jk).array() * nonDose_PLIN.col(tij).array().pow(- 1).array()   * Td0.col(ij).array();
                                     } else if (tform[ij] == "loglin") {
                                         Rdd.col(p_ijk) = R.col(0).array() * Dose.col(tij).array().pow(- 1).array() * Td0.col(jk).array() * nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array();
+                                        RddR.col(p_ijk) = Dose.col(tij).array().pow(- 1).array() * Td0.col(jk).array() * nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array();
                                     }
                                 } else if (tform[ij] == "loglin") {
                                     if (tform[jk] == "lin") {
                                         Rdd.col(p_ijk) = R.col(0).array() * nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array() * nonDose_LIN.col(tij).array().pow(- 1).array() * Td0.col(jk).array();
+                                        RddR.col(p_ijk) = nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array() * nonDose_LIN.col(tij).array().pow(- 1).array() * Td0.col(jk).array();
                                     } else if (tform[jk] == "plin") {
                                         Rdd.col(p_ijk) = R.col(0).array() * nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array() * nonDose_PLIN.col(tij).array().pow(- 1).array() * Td0.col(jk).array();
+                                        RddR.col(p_ijk) = nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array() * nonDose_PLIN.col(tij).array().pow(- 1).array() * Td0.col(jk).array();
                                     } else if (tform[jk] == "loglin") {
                                         Rdd.col(p_ijk) = R.col(0).array() * nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array() * nonDose_LOGLIN.col(tjk).array().pow(- 1).array() * Td0.col(jk).array();
+                                        RddR.col(p_ijk) = nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array() * nonDose_LOGLIN.col(tjk).array().pow(- 1).array() * Td0.col(jk).array();
                                     }
                                 } else if (tform[jk] == "loglin") {
                                     if (tform[ij] == "lin") {
                                         Rdd.col(p_ijk) = R.col(0).array() * nonDose_LOGLIN.col(tjk).array().pow(- 1).array() * Td0.col(jk).array() * nonDose_LIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array();
+                                        RddR.col(p_ijk) = nonDose_LOGLIN.col(tjk).array().pow(- 1).array() * Td0.col(jk).array() * nonDose_LIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array();
                                     } else if (tform[ij] == "plin") {
                                         Rdd.col(p_ijk) = R.col(0).array() * nonDose_LOGLIN.col(tjk).array().pow(- 1).array() * Td0.col(jk).array() * nonDose_PLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array();
+                                        RddR.col(p_ijk) = nonDose_LOGLIN.col(tjk).array().pow(- 1).array() * Td0.col(jk).array() * nonDose_PLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array();
                                     }
                                 } else if (tform[ij] == "lin") {
                                     if (tform[jk] == "lin") {
                                         Rdd.col(p_ijk) = R.col(0).array() * nonDose_LIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array() * nonDose_LIN.col(tij).array().pow(- 1).array() * Td0.col(jk).array();
+                                        RddR.col(p_ijk) = nonDose_LIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array() * nonDose_LIN.col(tij).array().pow(- 1).array() * Td0.col(jk).array();
                                     } else if (tform[jk] == "plin") {
                                         Rdd.col(p_ijk) = R.col(0).array() * nonDose_LIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array() * nonDose_PLIN.col(tij).array().pow(- 1).array() * Td0.col(jk).array();
+                                        RddR.col(p_ijk) = nonDose_LIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array() * nonDose_PLIN.col(tij).array().pow(- 1).array() * Td0.col(jk).array();
                                     }
                                 } else if (tform[jk] == "lin") {
                                     if (tform[ij] == "plin") {
                                         Rdd.col(p_ijk) = R.col(0).array() * nonDose_LIN.col(tjk).array().pow(- 1).array() * Td0.col(jk).array() * nonDose_PLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array();
+                                        RddR.col(p_ijk) = nonDose_LIN.col(tjk).array().pow(- 1).array() * Td0.col(jk).array() * nonDose_PLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array();
                                     }
                                 } else {
                                     Rdd.col(p_ijk) = R.col(0).array() * nonDose_PLIN.col(tjk).array().pow(- 1).array() * Td0.col(jk).array() * nonDose_PLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array();
+                                    RddR.col(p_ijk) = nonDose_PLIN.col(tjk).array().pow(- 1).array() * Td0.col(jk).array() * nonDose_PLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array();
                                 }
                             } else {
                                 if (Dose_Iden.find(as< string>(tform[ij])) != Dose_Iden.end()) {
                                     if (Dose_Iden.find(as< string>(tform[jk])) != Dose_Iden.end()) {
                                         Rdd.col(p_ijk) = TTerm.col(fir).array() * nonDose.col(tij).array() * Tdd0.col(p_ijk).array();
+                                        RddR.col(p_ijk) = Te.array().pow(- 1).array() * nonDose.col(tij).array() * Tdd0.col(p_ijk).array();
                                     } else if (tform[jk] == "lin") {
                                         Rdd.col(p_ijk) = TTerm.col(fir).array() * nonDose_PLIN.col(tij).array()  * nonDose_LOGLIN.col(tij).array() * Td0.col(jk).array() * Td0.col(ij).array();
+                                        RddR.col(p_ijk) = Te.array().pow(- 1).array() * nonDose_PLIN.col(tij).array()  * nonDose_LOGLIN.col(tij).array() * Td0.col(jk).array() * Td0.col(ij).array();
                                     } else if (tform[jk] == "plin") {
                                         Rdd.col(p_ijk) = TTerm.col(fir).array() * nonDose_LIN.col(tij).array()  * nonDose_LOGLIN.col(tij).array() * Td0.col(jk).array() * Td0.col(ij).array();
+                                        RddR.col(p_ijk) = Te.array().pow(- 1).array() * nonDose_LIN.col(tij).array()  * nonDose_LOGLIN.col(tij).array() * Td0.col(jk).array() * Td0.col(ij).array();
                                     } else if (tform[jk] == "loglin") {
                                         Rdd.col(p_ijk) = TTerm.col(fir).array() * nonDose.col(tij).array() * Td0.col(ij).array() * nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Td0.col(jk).array();
+                                        RddR.col(p_ijk) = Te.array().pow(- 1).array() * nonDose.col(tij).array() * Td0.col(ij).array() * nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Td0.col(jk).array();
                                     }
                                 } else if (Dose_Iden.find(as< string>(tform[jk])) != Dose_Iden.end()) {
                                     if (tform[ij] == "lin") {
                                         Rdd.col(p_ijk) = TTerm.col(fir).array() * nonDose_PLIN.col(tij).array()  * nonDose_LOGLIN.col(tij).array() * Td0.col(jk).array() * Td0.col(ij).array();
+                                        RddR.col(p_ijk) = Te.array().pow(- 1).array() * nonDose_PLIN.col(tij).array()  * nonDose_LOGLIN.col(tij).array() * Td0.col(jk).array() * Td0.col(ij).array();
                                     } else if (tform[ij] == "plin") {
                                         Rdd.col(p_ijk) = TTerm.col(fir).array() * nonDose_LIN.col(tij).array()  * nonDose_LOGLIN.col(tij).array() * Td0.col(jk).array() * Td0.col(ij).array();
+                                        RddR.col(p_ijk) = Te.array().pow(- 1).array() * nonDose_LIN.col(tij).array()  * nonDose_LOGLIN.col(tij).array() * Td0.col(jk).array() * Td0.col(ij).array();
                                     } else if (tform[ij] == "loglin") {
                                         Rdd.col(p_ijk) = TTerm.col(fir).array() * nonDose.col(tij).array() * Td0.col(jk).array() * nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array();
+                                        RddR.col(p_ijk) = Te.array().pow(- 1).array() * nonDose.col(tij).array() * Td0.col(jk).array() * nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array();
                                     }
                                 } else if (tform[ij] == "loglin") {
                                     if (tform[jk] == "lin") {
                                         Rdd.col(p_ijk) = TTerm.col(fir).array() * nonDose_PLIN.col(tij).array() * Dose.col(tij).array() * Td0.col(jk).array() * Td0.col(ij).array();
+                                        RddR.col(p_ijk) = Te.array().pow(- 1).array() * nonDose_PLIN.col(tij).array() * Dose.col(tij).array() * Td0.col(jk).array() * Td0.col(ij).array();
                                     } else if (tform[jk] == "plin") {
                                         Rdd.col(p_ijk) = TTerm.col(fir).array() * nonDose_PLIN.col(tij).array() * Dose.col(tij).array() * Td0.col(jk).array() * Td0.col(ij).array();
+                                        RddR.col(p_ijk) = Te.array().pow(- 1).array() * nonDose_PLIN.col(tij).array() * Dose.col(tij).array() * Td0.col(jk).array() * Td0.col(ij).array();
                                     } else if (tform[jk] == "loglin") {
                                         Rdd.col(p_ijk) = TTerm.col(fir).array() * TTerm.col(tij).array() * nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array() * nonDose_LOGLIN.col(tjk).array().pow(- 1).array() * Td0.col(jk).array();
+                                        RddR.col(p_ijk) = Te.array().pow(- 1).array() * TTerm.col(tij).array() * nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array() * nonDose_LOGLIN.col(tjk).array().pow(- 1).array() * Td0.col(jk).array();
                                     }
                                 } else if (tform[jk] == "loglin") {
                                     if (tform[ij] == "lin") {
                                         Rdd.col(p_ijk) = TTerm.col(fir).array() * nonDose_PLIN.col(tij).array() * Dose.col(tij).array() * Td0.col(jk).array() * Td0.col(ij).array();
+                                        RddR.col(p_ijk) = Te.array().pow(- 1).array() * nonDose_PLIN.col(tij).array() * Dose.col(tij).array() * Td0.col(jk).array() * Td0.col(ij).array();
                                     } else if (tform[ij] == "plin") {
                                         Rdd.col(p_ijk) = TTerm.col(fir).array() * nonDose_LIN.col(tij).array() * Dose.col(tij).array() * Td0.col(jk).array() * Td0.col(ij).array();
+                                        RddR.col(p_ijk) = Te.array().pow(- 1).array() * nonDose_LIN.col(tij).array() * Dose.col(tij).array() * Td0.col(jk).array() * Td0.col(ij).array();
                                     }
                                 } else if (tform[ij] == "lin") {
                                     if (tform[jk] == "lin") {
                                         Rdd.col(p_ijk) = TTerm.col(fir).array() * nonDose_LOGLIN.col(tij).array() * Dose.col(tij).array() * Td0.col(jk).array() * Td0.col(ij).array();
+                                        RddR.col(p_ijk) = Te.array().pow(- 1).array() * nonDose_LOGLIN.col(tij).array() * Dose.col(tij).array() * Td0.col(jk).array() * Td0.col(ij).array();
                                     } else if (tform[jk] == "plin") {
                                         Rdd.col(p_ijk) = TTerm.col(fir).array() * nonDose_LOGLIN.col(tij).array() * Dose.col(tij).array() * Td0.col(jk).array() * Td0.col(ij).array();
+                                        RddR.col(p_ijk) = Te.array().pow(- 1).array() * nonDose_LOGLIN.col(tij).array() * Dose.col(tij).array() * Td0.col(jk).array() * Td0.col(ij).array();
                                     }
                                 } else if (tform[jk] == "lin") {
                                     if (tform[ij] == "plin") {
                                         Rdd.col(p_ijk) = TTerm.col(fir).array() * nonDose_LOGLIN.col(tij).array() * Dose.col(tij).array() * Td0.col(jk).array() * Td0.col(ij).array();
+                                        RddR.col(p_ijk) = Te.array().pow(- 1).array() * nonDose_LOGLIN.col(tij).array() * Dose.col(tij).array() * Td0.col(jk).array() * Td0.col(ij).array();
                                     }
-                                } else {
-                                }
+                                } else {}
                             }
                         } else if ((tij == fir) || (tjk == fir)) {
                             if (Dose_Iden.find(as< string>(tform[ij])) != Dose_Iden.end()) {
                                 if (Dose_Iden.find(as< string>(tform[jk])) != Dose_Iden.end()) {
                                     Rdd.col(p_ijk) = TTerm.col(tjk).array() * nonDose.col(tij).array() * Tdd0.col(p_ijk).array();
+                                    RddR.col(p_ijk) = R.col(0).array().pow(- 1).array() * Rdd.col(p_ijk).array();
                                 } else if (tform[jk] == "lin") {
                                     Rdd.col(p_ijk) = nonDose_PLIN.col(tjk).array()  * nonDose_LOGLIN.col(tjk).array() * Dose.col(tjk).array() * nonDose.col(tij).array() * Td0.col(jk).array() * Td0.col(ij).array();
+                                    RddR.col(p_ijk) = R.col(0).array().pow(- 1).array() * Rdd.col(p_ijk).array();
                                 } else if (tform[jk] == "plin") {
                                     Rdd.col(p_ijk) = nonDose_LIN.col(tjk).array()  * nonDose_LOGLIN.col(tjk).array() * Dose.col(tjk).array() * nonDose.col(tij).array() * Td0.col(jk).array() * Td0.col(ij).array();
+                                    RddR.col(p_ijk) = R.col(0).array().pow(- 1).array() * Rdd.col(p_ijk).array();
                                 } else if (tform[jk] == "loglin") {
                                     Rdd.col(p_ijk) = TTerm.col(tjk).array() * nonDose.col(tij).array() * Td0.col(ij).array() * nonDose_LOGLIN.col(tjk).array().pow(- 1).array() * Td0.col(jk).array();
+                                    RddR.col(p_ijk) = R.col(0).array().pow(- 1).array() * Rdd.col(p_ijk).array();
                                 }
                             } else if (Dose_Iden.find(as< string>(tform[jk])) != Dose_Iden.end()) {
                                 if (tform[ij] == "lin") {
                                     Rdd.col(p_ijk) = nonDose.col(tjk).array() * nonDose_PLIN.col(tij).array()  * nonDose_LOGLIN.col(tij).array() * Dose.col(tij).array() * Td0.col(ij).array() * Td0.col(jk).array();
+                                    RddR.col(p_ijk) = R.col(0).array().pow(- 1).array() * Rdd.col(p_ijk).array();
                                 } else if (tform[ij] == "plin") {
                                     Rdd.col(p_ijk) = nonDose.col(tjk).array() * nonDose_LIN.col(tij).array()  * nonDose_LOGLIN.col(tij).array() * Dose.col(tij).array() * Td0.col(ij).array() * Td0.col(jk).array();
+                                    RddR.col(p_ijk) = R.col(0).array().pow(- 1).array() * Rdd.col(p_ijk).array();
                                 } else if (tform[ij] == "loglin") {
                                     Rdd.col(p_ijk) = TTerm.col(tij).array() * nonDose.col(tjk).array() * Td0.col(jk).array() * nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array();
                                 }
                             } else if (tform[ij] == "loglin") {
                                 if (tform[jk] == "lin") {
                                     Rdd.col(p_ijk) = nonDose_PLIN.col(tjk).array()  * nonDose_LOGLIN.col(tjk).array() * Dose.col(tjk).array() * TTerm.col(tij).array() * nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array() * Td0.col(jk).array();
+                                    RddR.col(p_ijk) = R.col(0).array().pow(- 1).array() * Rdd.col(p_ijk).array();
                                 } else if (tform[jk] == "plin") {
                                     Rdd.col(p_ijk) = nonDose_LIN.col(tjk).array()  * nonDose_LOGLIN.col(tjk).array() * Dose.col(tjk).array() * TTerm.col(tij).array() * nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array() * Td0.col(jk).array();
+                                    RddR.col(p_ijk) = R.col(0).array().pow(- 1).array() * Rdd.col(p_ijk).array();
                                 } else if (tform[jk] == "loglin") {
                                     Rdd.col(p_ijk) = TTerm.col(tjk).array() * TTerm.col(tij).array() * nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array() * nonDose_LOGLIN.col(tjk).array().pow(- 1).array() * Td0.col(jk).array();
+                                    RddR.col(p_ijk) = R.col(0).array().pow(- 1).array() * Rdd.col(p_ijk).array();
                                 }
                             } else if (tform[jk] == "loglin") {
                                 if (tform[ij] == "lin") {
                                     Rdd.col(p_ijk) = nonDose_PLIN.col(tij).array()  * nonDose_LOGLIN.col(tij).array() * Dose.col(tij).array() * TTerm.col(tjk).array() * nonDose_LOGLIN.col(tjk).array().pow(- 1).array() * Td0.col(jk).array() * Td0.col(ij).array();
+                                    RddR.col(p_ijk) = R.col(0).array().pow(- 1).array() * Rdd.col(p_ijk).array();
                                 } else if (tform[ij] == "plin") {
                                     Rdd.col(p_ijk) = nonDose_LIN.col(tij).array()  * nonDose_LOGLIN.col(tij).array() * Dose.col(tij).array() * TTerm.col(tjk).array() * nonDose_LOGLIN.col(tjk).array().pow(- 1).array() * Td0.col(jk).array() * Td0.col(ij).array();
+                                    RddR.col(p_ijk) = R.col(0).array().pow(- 1).array() * Rdd.col(p_ijk).array();
                                 }
                             } else if (tform[ij] == "lin") {
                                 if (tform[jk] == "lin") {
                                     Rdd.col(p_ijk) = nonDose_PLIN.col(tjk).array()  * nonDose_LOGLIN.col(tjk).array() * Dose.col(tjk).array() * nonDose_PLIN.col(tij).array()  * nonDose_LOGLIN.col(tij).array() * Dose.col(tij).array() * Td0.col(ij).array() * Td0.col(jk).array();
+                                    RddR.col(p_ijk) = R.col(0).array().pow(- 1).array() * Rdd.col(p_ijk).array();
                                 } else if (tform[jk] == "plin") {
                                     Rdd.col(p_ijk) = nonDose_LIN.col(tjk).array()  * nonDose_LOGLIN.col(tjk).array() * Dose.col(tjk).array() * nonDose_PLIN.col(tij).array()  * nonDose_LOGLIN.col(tij).array() * Dose.col(tij).array() * Td0.col(ij).array() * Td0.col(jk).array();
+                                    RddR.col(p_ijk) = R.col(0).array().pow(- 1).array() * Rdd.col(p_ijk).array();
                                 }
                             } else if (tform[jk] == "lin") {
                                 if (tform[ij] == "plin") {
                                     Rdd.col(p_ijk) = nonDose_PLIN.col(tjk).array()  * nonDose_LOGLIN.col(tjk).array() * Dose.col(tjk).array() * nonDose_LIN.col(tij).array()  * nonDose_LOGLIN.col(tij).array() * Dose.col(tij).array() * Td0.col(jk).array() * Td0.col(ij).array();
+                                    RddR.col(p_ijk) = R.col(0).array().pow(- 1).array() * Rdd.col(p_ijk).array();
                                 }
                             } else {
                                 Rdd.col(p_ijk) = nonDose_LIN.col(tjk).array()  * nonDose_LOGLIN.col(tjk).array() * Dose.col(tjk).array() * nonDose_LIN.col(tij).array()  * nonDose_LOGLIN.col(tij).array() * Dose.col(tij).array() * Td0.col(jk).array() * Td0.col(ij).array();
+                                RddR.col(p_ijk) = R.col(0).array().pow(- 1).array() * Rdd.col(p_ijk).array();
                             }
                         }
                     }
                 }
             }
+            //
+            //
         }
     }else if ((modelform == "M") || (((modelform == "A") || (modelform == "PA") || (modelform == "PAE")) && (TTerm.cols() == 1))) {
         //
@@ -1178,6 +1367,7 @@ void Make_Risks(string modelform, const StringVector& tform, const IntegerVector
                     Tterm_ratio.col(ijk) = Tterm_ratio.col(ijk).array() * nonDose_PLIN.col(tij).array().pow(- 1).array();
                 }
                 Rd.col(ijk) = R.col(0).array() * Td0.array().col(ijk).array() * Tterm_ratio.col(ijk).array();
+                RdR.col(ijk) = Td0.array().col(ijk).array() * Tterm_ratio.col(ijk).array();
             }
         }
         R = (R.array().isFinite()).select(R,  - 1);
@@ -1203,13 +1393,34 @@ void Make_Risks(string modelform, const StringVector& tform, const IntegerVector
                 int p_ijk = ij*(ij + 1)/2 + jk;
                 //
                 if (tij == tjk) {
-                    Rdd.col(p_ijk) = R.col(0).array() * Tterm_ratio.col(ij).array() * Tdd0.array().col(p_ijk).array();
+                    if (Dose_Iden.find(as< string>(tform[ij])) != Dose_Iden.end()) {
+                        if (Dose_Iden.find(as< string>(tform[jk])) != Dose_Iden.end()) {
+                            Rdd.col(p_ijk) = R.col(0).array()  * Tterm_ratio.col(ij).array() * Tdd0.col(p_ijk).array(); // both are dose
+                            RddR.col(p_ijk) = Tterm_ratio.col(ij).array() * Tdd0.col(p_ijk).array();
+                        } else {
+                            Rdd.col(p_ijk) = R.col(0).array() *  Tterm_ratio.col(ij).array() * Td0.col(ij).array() * Tterm_ratio.col(jk).array() * Td0.col(jk).array(); // two different tform
+                            RddR.col(p_ijk) = Tterm_ratio.col(ij).array() * Td0.col(ij).array() * Tterm_ratio.col(jk).array() * Td0.col(jk).array();
+                        }
+                    } else if (Dose_Iden.find(as< string>(tform[jk])) != Dose_Iden.end()) {
+                        Rdd.col(p_ijk) = R.col(0).array() *  Tterm_ratio.col(ij).array() * Td0.col(ij).array() * Tterm_ratio.col(jk).array() * Td0.col(jk).array(); // two different tform
+                        RddR.col(p_ijk) = Tterm_ratio.col(ij).array() * Td0.col(ij).array() * Tterm_ratio.col(jk).array() * Td0.col(jk).array();
+                    } else {
+                        if (tform[jk] != tform[ij]) {
+                            Rdd.col(p_ijk) = R.col(0).array() *  Tterm_ratio.col(ij).array() * Td0.col(ij).array() * Tterm_ratio.col(jk).array() * Td0.col(jk).array(); // two different tform
+                            RddR.col(p_ijk) = Tterm_ratio.col(ij).array() * Td0.col(ij).array() * Tterm_ratio.col(jk).array() * Td0.col(jk).array();
+                        } else {
+                            Rdd.col(p_ijk) = R.col(0).array() *  Tterm_ratio.col(ij).array() * Tdd0.col(p_ijk).array(); // both are the same subterm
+                            RddR.col(p_ijk) = Tterm_ratio.col(ij).array() * Tdd0.col(p_ijk).array();
+                        }
+                    }
                 } else {
                     Rdd.col(p_ijk) = R.col(0).array() * Tterm_ratio.col(ij).array() * Tterm_ratio.col(jk).array() * Td0.array().col(ij).array() * Td0.array().col(jk).array();
+                    RddR.col(p_ijk) = Tterm_ratio.col(ij).array() * Tterm_ratio.col(jk).array() * Td0.array().col(ij).array() * Td0.array().col(jk).array();
                     //
                 }
             }
         }
+        //
     } else if (modelform == "GMIX") {
         VectorXd A_vec(TTerm.rows(), 1);
         VectorXd B_vec(TTerm.rows(), 1);
@@ -1234,8 +1445,10 @@ void Make_Risks(string modelform, const StringVector& tform, const IntegerVector
                 int ijk = ij - sum(head(KeepConstant, ij));
                 if (tij != fir) {
                     Rd.col(ijk) = R.col(0).array() * Td0.col(ijk).array() * ((1-gmix_theta) * B_vec.array().pow(- 1).array() + gmix_theta * TTerm.col(tij).array().pow(- 1).array());
+                    RdR.col(ijk) = Td0.col(ijk).array() * ((1-gmix_theta) * B_vec.array().pow(- 1).array() + gmix_theta * TTerm.col(tij).array().pow(- 1).array());
                 } else {
                     Rd.col(ijk) = R.col(0).array() * Td0.col(ijk).array() *  TTerm.col(tij).array().pow(- 1).array();
+                    RdR.col(ijk) = Td0.col(ijk).array() *  TTerm.col(tij).array().pow(- 1).array();
                 }
             }
         }
@@ -1272,8 +1485,10 @@ void Make_Risks(string modelform, const StringVector& tform, const IntegerVector
                         Rdd.col(p_ijk) = Td0.col(ij).array() * Td0.col(jk).array() * ((gmix_theta - 1) * R.col(0).array() * B_vec.array().pow(-2).array() + ((1-gmix_theta) * B_vec.array().pow(- 1).array() + gmix_theta * TTerm.col(tij).array().pow(- 1).array()) * ((1-gmix_theta) * B_vec.array().pow(- 1).array() + gmix_theta * TTerm.col(tjk).array().pow(- 1).array()));
                     }
                 }
+                RddR.col(p_ijk) = R.col(0).array().pow(- 1).array() * Rdd.col(p_ijk).array();
             }
         }
+        //
     } else if (modelform == "GM") {
         throw invalid_argument("GM isn't implemented");
     } else {
@@ -1284,19 +1499,123 @@ void Make_Risks(string modelform, const StringVector& tform, const IntegerVector
     R =  (R.array().isFinite()).select(R,  - 1);
     Rd = (Rd.array().isFinite()).select(Rd, 0);
     Rdd = (Rdd.array().isFinite()).select(Rdd, 0);
+    return;
+}
+
+//' Utility function to calculate the risk and risk ratios for gradient method
+//'
+//' \code{Make_Risks_Gradient} Called to update risk matrices, Splits into cases based on model form, Uses lists of term numbers and types to apply different derivative formulas for gradient method
+//' @inheritParams CPP_template
+//'
+//' @return Updates matrices in place: Risk, Risk ratios
+//' @noRd
+// [[Rcpp::export]]
+void Make_Risks_Gradient(string modelform, const StringVector& tform, const IntegerVector& term_n, const int& totalnum, const int& fir, const MatrixXd& T0, const MatrixXd& Td0, MatrixXd& Te, MatrixXd& R, MatrixXd& Rd, MatrixXd& nonDose, MatrixXd& TTerm, MatrixXd& nonDose_LIN, MatrixXd& nonDose_PLIN, MatrixXd& nonDose_LOGLIN, MatrixXd& RdR, const int& nthreads, const IntegerVector& KeepConstant) {
     //
-    for (int ijk = 0; ijk < (reqrdnum*(reqrdnum + 1)/2); ijk++) {  // calculates ratios
-        int ij = 0;
-        int jk = ijk;
-        while (jk > ij) {
-            ij++;
-            jk -= ij;
+    MatrixXd Tterm_ratio = MatrixXd::Constant(Td0.rows(), Td0.cols(), 1.0);
+    if (((modelform == "A") || (modelform == "PA") || (modelform == "PAE")) && (TTerm.cols()>1)) {  // same process used for all of the additive type models
+        Te = TTerm.array().rowwise().sum().array();
+        // computes initial risk and derivatives
+        if (modelform == "A") {
+            R << Te.array();
+            //
+            #ifdef _OPENMP
+            #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+            #endif
+            for (int ij = 0; ij < totalnum; ij++) {
+                int tij = term_n[ij];
+                if (KeepConstant[ij] == 0) {
+                    //
+                    ij = ij - sum(head(KeepConstant, ij));
+                    if (tform[ij] == "loglin") {
+                        Rd.col(ij) =  TTerm.col(tij).array() * nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array();
+                    } else if (tform[ij] == "lin") {
+                        Rd.col(ij) =  nonDose_PLIN.col(tij).array()  * nonDose_LOGLIN.col(tij).array() *   Td0.col(ij).array();
+                    } else if (tform[ij] == "plin") {
+                        Rd.col(ij) =  nonDose_LIN.col(tij).array()  * nonDose_LOGLIN.col(tij).array()  *   Td0.col(ij).array();
+                    }
+                    RdR.col(ij) = R.col(0).array().pow(- 1).array() * Rd.col(ij).array();
+                }
+            }
+        } else if ((modelform == "PAE") || (modelform == "PA")) {
+            Te = Te.array() - TTerm.col(fir).array();
+            if (modelform == "PAE") {
+                Te = Te.array() + 1;
+            }
+            R << TTerm.col(fir).array() * Te.array();
+            #ifdef _OPENMP
+            #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+            #endif
+            for (int ij = 0; ij < totalnum; ij++) {
+                int tij = term_n[ij];
+                if (KeepConstant[ij]) {
+                    //
+                    ij = ij - sum(head(KeepConstant, ij));
+                    if (tij == fir) {
+                        if (tform[ij] == "lin") {
+                            Rd.col(ij) =  R.col(0).array() * nonDose_LIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array();
+                            RdR.col(ij) = nonDose_LIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array();
+                        } else if (tform[ij] == "plin") {
+                            Rd.col(ij) =  R.col(0).array() * nonDose_PLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array();
+                            RdR.col(ij) = nonDose_PLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array();
+                        } else if (tform[ij] == "loglin") {
+                            Rd.col(ij) =  R.col(0).array() * nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array();
+                            RdR.col(ij) = nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array();
+                        }
+                    } else {
+                        if (tform[ij] == "lin") {
+                            Rd.col(ij) =  TTerm.col(fir).array() * nonDose_PLIN.col(tij).array()  * nonDose_LOGLIN.col(tij).array() * Td0.col(ij).array();
+                            RdR.col(ij) = Te.array().pow(- 1).array() * nonDose_PLIN.col(tij).array()  * nonDose_LOGLIN.col(tij).array() * Td0.col(ij).array();
+                        } else if (tform[ij] == "plin") {
+                            Rd.col(ij) =  TTerm.col(fir).array() * nonDose_LIN.col(tij).array()  * nonDose_LOGLIN.col(tij).array()  * Td0.col(ij).array();
+                            RdR.col(ij) = Te.array().pow(- 1).array() * nonDose_LIN.col(tij).array()  * nonDose_LOGLIN.col(tij).array()  * Td0.col(ij).array();
+                        } else if (tform[ij] == "loglin") {
+                            Rd.col(ij) =  TTerm.col(fir).array() * TTerm.col(tij).array() * nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array();
+                            RdR.col(ij) = Te.array().pow(- 1).array() * TTerm.col(tij).array() * nonDose_LOGLIN.col(tij).array().pow(- 1).array() * Td0.col(ij).array();
+                        }
+                    }
+                }
+            }
         }
-        if (ij == jk) {
-            RdR.col(ij) = R.col(0).array().pow(- 1).array() * Rd.col(jk).array();
+    }else if ((modelform == "M") || (((modelform == "A") || (modelform == "PA") || (modelform == "PAE")) && (TTerm.cols() == 1))) {
+        //
+        MatrixXd TTerm_p = MatrixXd::Zero(TTerm.rows(), TTerm.cols());
+        TTerm_p << TTerm.array() + 1.0;
+        TTerm_p.col(fir) = TTerm.col(fir).array();
+        Te = TTerm_p.array().rowwise().prod().array();
+        R << Te.array();
+        Rd = Td0.array();
+        //
+        #ifdef _OPENMP
+        #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+        #endif
+        for (int ij = 0; ij < totalnum; ij++) {
+            int tij = term_n[ij];
+            if (KeepConstant[ij] == 0) {
+                int ijk = ij - sum(head(KeepConstant, ij));
+                if (tij != fir) {
+                    Tterm_ratio.col(ijk) = TTerm.col(tij).array() * TTerm_p.col(tij).array().pow(- 1).array();
+                }
+                if (tform[ij] == "loglin") {
+                    Tterm_ratio.col(ijk) = Tterm_ratio.col(ijk).array() * nonDose_LOGLIN.col(tij).array().pow(- 1).array();
+                } else if (tform[ij] == "lin") {
+                    Tterm_ratio.col(ijk) = Tterm_ratio.col(ijk).array() * nonDose_LIN.col(tij).array().pow(- 1).array();
+                } else if (tform[ij] == "plin") {
+                    Tterm_ratio.col(ijk) = Tterm_ratio.col(ijk).array() * nonDose_PLIN.col(tij).array().pow(- 1).array();
+                }
+                Rd.col(ijk) = R.col(0).array() * Td0.array().col(ijk).array() * Tterm_ratio.col(ijk).array();
+                RdR.col(ijk) = Td0.array().col(ijk).array() * Tterm_ratio.col(ijk).array();
+            }
         }
-        RddR.col(ijk) = R.col(0).array().pow(- 1).array() * Rdd.col(ijk).array();
+        R = (R.array().isFinite()).select(R,  - 1);
+        Rd = (Rd.array().isFinite()).select(Rd, 0);
+    } else {
+        Rcout << "C++ Note: " << modelform << ", " << TTerm.cols() << endl;
+        throw invalid_argument("Model isn't implemented");
     }
+    //
+    R =  (R.array().isFinite()).select(R,  - 1);
+    Rd = (Rd.array().isFinite()).select(Rd, 0);
     return;
 }
 
@@ -1308,9 +1627,9 @@ void Make_Risks(string modelform, const StringVector& tform, const IntegerVector
 //' @return Updates matrices in place: Risk, Risk ratios
 //' @noRd
 // [[Rcpp::export]]
-void Make_Risks_Weighted(string modelform, const StringVector& tform, const IntegerVector& term_n, const int& totalnum, const int& fir, const MatrixXd& s_weights, const MatrixXd& T0, const MatrixXd& Td0, const MatrixXd& Tdd0, MatrixXd& Te, MatrixXd& R, MatrixXd& Rd, MatrixXd& Rdd, MatrixXd& Dose, MatrixXd& nonDose, MatrixXd& TTerm, MatrixXd& nonDose_LIN, MatrixXd& nonDose_PLIN, MatrixXd& nonDose_LOGLIN, MatrixXd& RdR, MatrixXd& RddR, const int& nthreads, bool debugging, const IntegerVector& KeepConstant, const double gmix_theta, const IntegerVector& gmix_term) {
+void Make_Risks_Weighted(string modelform, const StringVector& tform, const IntegerVector& term_n, const int& totalnum, const int& fir, const MatrixXd& s_weights, const MatrixXd& T0, const MatrixXd& Td0, const MatrixXd& Tdd0, MatrixXd& Te, MatrixXd& R, MatrixXd& Rd, MatrixXd& Rdd, MatrixXd& Dose, MatrixXd& nonDose, MatrixXd& TTerm, MatrixXd& nonDose_LIN, MatrixXd& nonDose_PLIN, MatrixXd& nonDose_LOGLIN, MatrixXd& RdR, MatrixXd& RddR, const int& nthreads, const IntegerVector& KeepConstant, const double gmix_theta, const IntegerVector& gmix_term) {
     //
-    Make_Risks(modelform, tform, term_n, totalnum, fir, T0, Td0, Tdd0, Te, R, Rd, Rdd, Dose, nonDose, TTerm, nonDose_LIN, nonDose_PLIN, nonDose_LOGLIN, RdR, RddR, nthreads, debugging, KeepConstant, gmix_theta, gmix_term);
+    Make_Risks(modelform, tform, term_n, totalnum, fir, T0, Td0, Tdd0, Te, R, Rd, Rdd, Dose, nonDose, TTerm, nonDose_LIN, nonDose_PLIN, nonDose_LOGLIN, RdR, RddR, nthreads, KeepConstant, gmix_theta, gmix_term);
     //
     int reqrdnum = totalnum - sum(KeepConstant);
     R = R.array() * s_weights.array();
@@ -1328,10 +1647,29 @@ void Make_Risks_Weighted(string modelform, const StringVector& tform, const Inte
         }
         if (ij == jk) {
             Rd.col(jk) = Rd.col(jk).array() * s_weights.array();
-            RdR.col(ij) = R.col(0).array().pow(- 1).array() * Rd.col(jk).array();
         }
         Rdd.col(ijk) = Rdd.col(ijk).array() * s_weights.array();
-        RddR.col(ijk) = R.col(0).array().pow(- 1).array() * Rdd.col(ijk).array();
+    }
+    return;
+}
+
+//' Utility function to calculate the risk and risk ratios with a weighting applied and gradient method
+//'
+//' \code{Make_Risks_Weighted_Gradient} Called to update weighted risk matrices, Splits into cases based on model form, Uses lists of term numbers and types to apply different derivative formulas
+//' @inheritParams CPP_template
+//'
+//' @return Updates matrices in place: Risk, Risk ratios
+//' @noRd
+// [[Rcpp::export]]
+void Make_Risks_Weighted_Gradient(string modelform, const StringVector& tform, const IntegerVector& term_n, const int& totalnum, const int& fir, const MatrixXd& s_weights, const MatrixXd& T0, const MatrixXd& Td0, MatrixXd& Te, MatrixXd& R, MatrixXd& Rd, MatrixXd& nonDose, MatrixXd& TTerm, MatrixXd& nonDose_LIN, MatrixXd& nonDose_PLIN, MatrixXd& nonDose_LOGLIN, MatrixXd& RdR, const int& nthreads, const IntegerVector& KeepConstant) {
+    //
+    Make_Risks_Gradient(modelform, tform, term_n, totalnum, fir, T0, Td0, Te, R, Rd, nonDose, TTerm, nonDose_LIN, nonDose_PLIN, nonDose_LOGLIN, RdR, nthreads, KeepConstant);
+    int reqrdnum = totalnum - sum(KeepConstant);
+    R = R.array() * s_weights.array();
+    R =  (R.array().isFinite()).select(R,  - 1);
+    Rd = (Rd.array().isFinite()).select(Rd, 0);
+    for (int ij = 0; ij < reqrdnum; ij++) {  // calculates ratios
+        Rd.col(ij) = Rd.col(ij).array() * s_weights.array();
     }
     return;
 }
@@ -1345,14 +1683,11 @@ void Make_Risks_Weighted(string modelform, const StringVector& tform, const Inte
 //' @return Updates matrices in place: Risk, Risk ratios
 //' @noRd
 // [[Rcpp::export]]
-void Make_Risks_Weighted_Single(string modelform, const StringVector& tform, const IntegerVector& term_n, const int& totalnum, const int& fir, const MatrixXd& s_weights, const MatrixXd& T0, MatrixXd& Te, MatrixXd& R, MatrixXd& Dose, MatrixXd& nonDose, MatrixXd& TTerm, MatrixXd& nonDose_LIN, MatrixXd& nonDose_PLIN, MatrixXd& nonDose_LOGLIN, const int& nthreads, bool debugging, const IntegerVector& KeepConstant, const double gmix_theta, const IntegerVector& gmix_term) {
+void Make_Risks_Weighted_Single(string modelform, const StringVector& tform, const IntegerVector& term_n, const int& totalnum, const int& fir, const MatrixXd& s_weights, const MatrixXd& T0, MatrixXd& Te, MatrixXd& R, MatrixXd& Dose, MatrixXd& nonDose, MatrixXd& TTerm, MatrixXd& nonDose_LIN, MatrixXd& nonDose_PLIN, MatrixXd& nonDose_LOGLIN, const int& nthreads, const IntegerVector& KeepConstant, const double gmix_theta, const IntegerVector& gmix_term) {
     //
-    Make_Risks_Single(modelform, tform, term_n, totalnum, fir, T0, Te, R, Dose, nonDose, TTerm, nonDose_LIN, nonDose_PLIN, nonDose_LOGLIN, nthreads, debugging, KeepConstant, gmix_theta, gmix_term);
-    //
+    Make_Risks_Single(modelform, tform, term_n, totalnum, fir, T0, Te, R, Dose, nonDose, TTerm, nonDose_LIN, nonDose_PLIN, nonDose_LOGLIN, nthreads, KeepConstant, gmix_theta, gmix_term);
     R = R.array() * s_weights.array();
-    //
     R =  (R.array().isFinite()).select(R,  - 1);
-    //
     return;
 }
 
@@ -1364,7 +1699,7 @@ void Make_Risks_Weighted_Single(string modelform, const StringVector& tform, con
 //' @return Updates matrices in place: Risk, Risk ratios
 //' @noRd
 // [[Rcpp::export]]
-void Make_Risks_Single(string modelform, const StringVector& tform, const IntegerVector& term_n, const int& totalnum, const int& fir, const MatrixXd& T0, MatrixXd& Te, MatrixXd& R, MatrixXd& Dose, MatrixXd& nonDose, MatrixXd& TTerm, MatrixXd& nonDose_LIN, MatrixXd& nonDose_PLIN, MatrixXd& nonDose_LOGLIN, const int& nthreads, bool debugging, const IntegerVector& KeepConstant, const double gmix_theta, const IntegerVector& gmix_term) {
+void Make_Risks_Single(string modelform, const StringVector& tform, const IntegerVector& term_n, const int& totalnum, const int& fir, const MatrixXd& T0, MatrixXd& Te, MatrixXd& R, MatrixXd& Dose, MatrixXd& nonDose, MatrixXd& TTerm, MatrixXd& nonDose_LIN, MatrixXd& nonDose_PLIN, MatrixXd& nonDose_LOGLIN, const int& nthreads, const IntegerVector& KeepConstant, const double gmix_theta, const IntegerVector& gmix_term) {
     set<string> Dose_Iden;  // list of dose subterms
     Dose_Iden.insert("loglin_top");
     Dose_Iden.insert("loglin_slope");
@@ -1419,8 +1754,6 @@ void Make_Risks_Single(string modelform, const StringVector& tform, const Intege
     } else {
         throw invalid_argument("Model isn't implemented");
     }
-    //
-    //
     R = (R.array().isFinite()).select(R,  - 1);
     return;
 }
@@ -1433,7 +1766,7 @@ void Make_Risks_Single(string modelform, const StringVector& tform, const Intege
 //' @return Updates matrices in place: Risk, Risk ratios
 //' @noRd
 // [[Rcpp::export]]
-void Make_Risks_Basic(const int& totalnum, const MatrixXd& T0, MatrixXd& R, MatrixXd& Rd, MatrixXd& Rdd, MatrixXd& RdR, const int& nthreads, bool debugging, const MatrixXd& df0, const IntegerVector& dfc, const IntegerVector& KeepConstant) {
+void Make_Risks_Basic(const int& totalnum, const MatrixXd& T0, MatrixXd& R, MatrixXd& Rd, MatrixXd& Rdd, MatrixXd& RdR, const int& nthreads, const MatrixXd& df0, const IntegerVector& dfc, const IntegerVector& KeepConstant) {
     //
     R.col(0) = T0.rowwise().prod();
     #ifdef _OPENMP
@@ -1444,6 +1777,7 @@ void Make_Risks_Basic(const int& totalnum, const MatrixXd& T0, MatrixXd& R, Matr
         if (KeepConstant[ij] == 0) {
             int ijk = ij - sum(head(KeepConstant, ij));
             Rd.col(ijk) = R.col(0).array() * df0.col(df0_c).array();
+            RdR.col(ijk) = df0.col(df0_c).array();
         }
     }
     R = (R.array().isFinite()).select(R,  - 1);
@@ -1471,11 +1805,70 @@ void Make_Risks_Basic(const int& totalnum, const MatrixXd& T0, MatrixXd& R, Matr
     //
     Rdd = (Rdd.array().isFinite()).select(Rdd, 0);
     //
-    for (int ij = 0; ij < totalnum; ij++) {  // calculates ratios
-        int df0_ij = dfc[ij] - 1;
+    return;
+}
+
+//' Utility function to calculate the risk and risk ratios
+//'
+//' \code{Make_Risks_Linear_ERR} Called to update risk matrices, uses the Linear ERR simplification
+//' @inheritParams CPP_template
+//'
+//' @return Updates matrices in place: Risk, Risk ratios
+//' @noRd
+// [[Rcpp::export]]
+void Make_Risks_Linear_ERR(const StringVector& tform, const IntegerVector& dfc, const  MatrixXd& df0, const int& totalnum, MatrixXd& R, MatrixXd& Rd, MatrixXd& Rdd, MatrixXd& nonDose_PLIN, MatrixXd& nonDose_LOGLIN, MatrixXd& RdR, MatrixXd& RddR, const int& nthreads, const IntegerVector& KeepConstant) {
+    //
+    R = nonDose_PLIN.array() * nonDose_LOGLIN.array();
+    #ifdef _OPENMP
+    #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+    #endif
+    for (int ij = 0; ij < totalnum; ij++) {
         if (KeepConstant[ij] == 0) {
-            RdR.col(ij) = df0.col(df0_ij).array();
+            int df0_c = dfc[ij] - 1;
+            int ijk = ij - sum(head(KeepConstant, ij));
+            if (tform[ij] == "loglin") {
+                Rd.col(ijk) = df0.col(df0_c).array() * R.array();
+                RdR.col(ijk) = df0.col(df0_c).array();
+            } else {
+                Rd.col(ijk) = df0.col(df0_c).array() * nonDose_LOGLIN.array();
+                RdR.col(ijk) = df0.col(df0_c).array() * nonDose_PLIN.array().pow(-1).array();
+            }
         }
     }
+    //
+    #ifdef _OPENMP
+    #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+    #endif
+    for (int ijk = 0; ijk < totalnum*(totalnum + 1)/2; ijk++) {
+        int ij = 0;
+        int jk = ijk;
+        while (jk > ij) {
+            ij++;
+            jk -= ij;
+        }
+        if (KeepConstant[ij]+KeepConstant[jk] == 0) {
+            //
+            ij = ij - sum(head(KeepConstant, ij));
+            jk = jk - sum(head(KeepConstant, jk));
+            int p_ijk = ij*(ij + 1)/2 + jk;
+            //
+            int df0_ij = dfc[ij] - 1;
+            int df0_jk = dfc[jk] - 1;
+            if (tform[ij] != tform[jk]){
+                Rdd.col(p_ijk) = nonDose_LOGLIN.array() * df0.col(df0_ij).array() * df0.col(df0_jk).array();
+                RddR.col(p_ijk) = df0.col(df0_ij).array() * df0.col(df0_jk).array() * nonDose_PLIN.array().pow(-1).array();
+            } else {
+                if (tform[ij] == "loglin"){
+                    Rdd.col(p_ijk) = R.array() * df0.col(df0_ij).array() * df0.col(df0_jk).array();
+                    RddR.col(p_ijk) = df0.col(df0_ij).array() * df0.col(df0_jk).array();
+                } else {}
+            }
+        }
+    }
+    //
+    R =  (R.array().isFinite()).select(R,  - 1);
+    Rd = (Rd.array().isFinite()).select(Rd, 0);
+    Rdd = (Rdd.array().isFinite()).select(Rdd, 0);
+    //
     return;
 }

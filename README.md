@@ -3,6 +3,20 @@
 
 # Colossus
 
+<!-- badges: start -->
+
+[![](https://img.shields.io/github/languages/code-size/ericgiunta/Colossus.svg)](https://github.com/ericgiunta/Colossus)
+[![](https://img.shields.io/github/last-commit/ericgiunta/Colossus.svg)](https://github.com/ericgiunta/Colossus/commits/master)
+[![](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![Project Status: Active - The project has reached a stable, usable
+state and is being actively
+developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![codecov](https://codecov.io/gh/ericgiunta/Colossus/graph/badge.svg?token=NMH5R502W8)](https://app.codecov.io/gh/ericgiunta/Colossus)
+[![pkgdown](https://github.com/ericgiunta/Colossus/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/ericgiunta/Colossus/actions/workflows/pkgdown.yaml)
+[![OS\_Checks](https://github.com/ericgiunta/Colossus/actions/workflows/OS_TEST.yml/badge.svg?branch=main)](https://github.com/ericgiunta/Colossus/actions/workflows/OS_TEST.yml)
+[![](https://cranlogs.r-pkg.org/badges/grand-total/Colossus)](https://CRAN.R-project.org/package=Colossus)
+<!-- badges: end -->
+
 The goal of Colossus is to provide an open-source means of performing
 survival analysis on big data with complex risk formula. Colossus is
 designed to perform Cox Proportional Hazard regressions and Poisson
@@ -14,14 +28,14 @@ Additional plotting capabilities are available.
 By default a fully portable version of the code is compiled, which does
 not support OpenMP on every system. Note that Colossus requires OpenMP
 support to perform parallel calculations. The environment variable
-“R_COLOSSUS_NOT_CRAN” is checked to determine if OpenMP should be
+“R\_COLOSSUS\_NOT\_CRAN” is checked to determine if OpenMP should be
 disabled for linux compiling with clang. The number of cores is set to 1
 if the environment variable is empty, the operating system is detected
-as linux, and the default compiler or R compiler is clang. Colossues
-testing checks for the “NOT_CRAN” variable to determine if additional
-tests should be run. Setting “NOT_CRAN” to “false” will disable the
+as linux, and the default compiler or R compiler is clang. Colossus
+testing checks for the “NOT\_CRAN” variable to determine if additional
+tests should be run. Setting “NOT\_CRAN” to “false” will disable the
 longer tests. Currently OpenMP support is not configured for linux
-compiling with clang and MacOS systems.
+compiling with clang.
 
 ## Example
 
@@ -29,7 +43,6 @@ This is a basic example which shows you how to solve a common problem:
 
 ``` r
 library(data.table)
-#> Warning: package 'data.table' was built under R version 4.3.3
 library(parallel)
 library(Colossus)
 ## basic example code reproduced from the starting-description vignette
@@ -53,7 +66,6 @@ names <- c("a", "b", "c", "d")
 term_n <- c(0, 1, 1, 2)
 tform <- c("loglin", "lin", "lin", "plin")
 modelform <- "M"
-fir <- 0
 
 a_n <- c(0.1, 0.1, 0.1, 0.1)
 
@@ -62,63 +74,26 @@ der_iden <- 0
 
 control <- list(
   "lr" = 0.75, "maxiter" = 100, "halfmax" = 5, "epsilon" = 1e-9,
-  "dbeta_max" = 0.5, "deriv_epsilon" = 1e-9, "abs_max" = 1.0,
-  "change_all" = TRUE, "dose_abs_max" = 100.0, "verbose" = FALSE,
-  "ties" = "breslow", "double_step" = 1
+  "deriv_epsilon" = 1e-9, "abs_max" = 1.0,
+  "verbose" = FALSE, "ties" = "breslow"
 )
 
-e <- RunCoxRegression(df, time1, time2, event, names, term_n, tform, keep_constant, a_n, modelform, fir, der_iden, control)
-print(e)
-#> $LogLik
-#> [1] -0.6753644
+e <- RunCoxRegression(df, time1, time2, event, names, term_n, tform, keep_constant, a_n, modelform, control = control)
+Interpret_Output(e)
+#> |-------------------------------------------------------------------|
+#> Final Results
+#>    Covariate Subterm Term Number Central Estimate Standard Deviation
+#>       <char>  <char>       <int>            <num>              <num>
+#> 1:         a  loglin           0         44.53340       9.490627e+07
+#> 2:         b     lin           1         98.72266                NaN
+#> 3:         c     lin           1         96.82311       2.408255e+02
+#> 4:         d    plin           2        101.10000       5.207003e+02
 #> 
-#> $First_Der
-#> [1]  0.000000e+00 -7.187040e-05  7.361232e-05  1.919948e-04
-#> 
-#> $Second_Der
-#>              [,1]         [,2]          [,3]          [,4]
-#> [1,] 0.000000e+00 0.000000e+00  0.000000e+00  4.965508e-19
-#> [2,] 0.000000e+00 1.742209e-08  7.238366e-07  2.311365e-07
-#> [3,] 0.000000e+00 7.238366e-07 -1.501037e-06 -2.356033e-07
-#> [4,] 4.965508e-19 2.311365e-07 -2.356033e-07 -3.687577e-06
-#> 
-#> $beta_0
-#> [1]  41.26157  98.72266  96.82311 101.10000
-#> 
-#> $Standard_Deviation
-#> [1]      NaN      NaN 177.9643   0.0000
-#> 
-#> $AIC
-#> [1] 9.350729
-#> 
-#> $BIC
-#> [1] 8.517767
-#> 
-#> $Parameter_Lists
-#> $Parameter_Lists$term_n
-#> [1] 0 1 1 2
-#> 
-#> $Parameter_Lists$tforms
-#> [1] "loglin" "lin"    "lin"    "plin"  
-#> 
-#> $Parameter_Lists$names
-#> [1] "a" "b" "c" "d"
-#> 
-#> 
-#> $Control_List
-#> $Control_List$Iteration
-#> [1] 100
-#> 
-#> $Control_List$`Maximum Step`
-#> [1] 1
-#> 
-#> $Control_List$`Derivative Limiting`
-#> [1] 0.0001919948
-#> 
-#> 
-#> $Converged
-#> [1] FALSE
-#> 
-#> $Status
-#> [1] "PASSED"
+#> Cox Model Used
+#> -2*Log-Likelihood: 1.35,  AIC: 9.35
+#> Iterations run: 100
+#> maximum step size: 1.00e+00, maximum first derivative: 1.92e-04
+#> Analysis did not converge, check convergence criteria or run further
+#> Run finished in 0.25 seconds
+#> |-------------------------------------------------------------------|
 ```

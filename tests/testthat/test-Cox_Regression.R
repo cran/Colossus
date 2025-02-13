@@ -59,7 +59,7 @@ test_that("Coxph_strata time column missing", {
   fir <- 0
   der_iden <- 0
   control <- list("ncores" = 2, "lr" = 0.75, "maxiter" = -1, "halfmax" = 5, "epsilon" = 1e-9, "deriv_epsilon" = 1e-9, "abs_max" = 1.0, "change_all" = TRUE, "dose_abs_max" = 100.0, "verbose" = 0, "ties" = "breslow", "double_step" = 1)
-  expect_error(RunCoxRegression_STRATA(df, time1, time2, event, names, term_n, tform, keep_constant, a_n, modelform, fir, der_iden, control, strat_col))
+  expect_error(RunCoxRegression_Strata(df, time1, time2, event, names, term_n, tform, keep_constant, a_n, modelform, fir, der_iden, control, strat_col))
 })
 test_that("Coxph_strata no events", {
   a <- c(0, 1, 2, 3, 4, 5, 6)
@@ -81,15 +81,31 @@ test_that("Coxph_strata no events", {
   fir <- 0
   der_iden <- 0
   control <- list("ncores" = 2, "lr" = 0.75, "maxiter" = -1, "halfmax" = 5, "epsilon" = 1e-9, "deriv_epsilon" = 1e-9, "abs_max" = 1.0, "change_all" = TRUE, "dose_abs_max" = 100.0, "verbose" = 0, "ties" = "breslow", "double_step" = 1)
-  expect_error(RunCoxRegression_STRATA(df, time1, time2, event, names, term_n, tform, keep_constant, a_n, modelform, fir, der_iden, control, strat_col))
+  expect_error(RunCoxRegression_Strata(df, time1, time2, event, names, term_n, tform, keep_constant, a_n, modelform, fir, der_iden, control, strat_col))
   #
+})
+test_that("Coxph_strata no events in strata", {
   a <- c(0, 1, 2, 3, 4, 5, 6)
   b <- c(1, 2, 3, 4, 5, 6, 7)
-  c <- c(1, 0, 0, 0, 0, 0, 0)
+  c <- c(1, 0, 1, 0, 0, 0, 0)
   d <- c(3, 4, 5, 6, 7, 8, 9)
-  e <- c(1, 1, 0, 0, 1, 0, 1)
+  e <- c(2, 1, 2, 0, 1, 0, 2)
   df <- data.table("a" = a, "b" = b, "c" = c, "d" = d, "e" = e)
-  expect_no_error(RunCoxRegression_STRATA(df, time1, time2, event, names, term_n, tform, keep_constant, a_n, modelform, fir, der_iden, control, strat_col))
+  time1 <- "a"
+  time2 <- "b"
+  event <- "c"
+  names <- c("d", "a")
+  strat_col <- "e"
+  term_n <- c(0, 0)
+  tform <- c("loglin", "loglin")
+  keep_constant <- c(0, 0)
+  a_n <- c(-0.1, 0.1)
+  modelform <- "M"
+  fir <- 0
+  der_iden <- 0
+  control <- list("ncores" = 2, "lr" = 0.75, "maxiter" = -1, "halfmax" = 5, "epsilon" = 1e-9, "deriv_epsilon" = 1e-9, "abs_max" = 1.0, "change_all" = TRUE, "dose_abs_max" = 100.0, "verbose" = 0, "ties" = "breslow", "double_step" = 1)
+  options(warn = -1)
+  expect_no_error(RunCoxRegression_Strata(df, time1, time2, event, names, term_n, tform, keep_constant, a_n, modelform, fir, der_iden, control, strat_col))
 })
 test_that("Coxph_strata no strata", {
   a <- c(0, 1, 2, 3, 4, 5, 6)
@@ -111,7 +127,7 @@ test_that("Coxph_strata no strata", {
   fir <- 0
   der_iden <- 0
   control <- list("ncores" = 2, "lr" = 0.75, "maxiter" = -1, "halfmax" = 5, "epsilon" = 1e-9, "deriv_epsilon" = 1e-9, "abs_max" = 1.0, "change_all" = TRUE, "dose_abs_max" = 100.0, "verbose" = 0, "ties" = "breslow", "double_step" = 1)
-  expect_error(RunCoxRegression_STRATA(df, time1, time2, event, names, term_n, tform, keep_constant, a_n, modelform, fir, der_iden, control, strat_col))
+  expect_error(RunCoxRegression_Strata(df, time1, time2, event, names, term_n, tform, keep_constant, a_n, modelform, fir, der_iden, control, strat_col))
 })
 test_that("Coxph_strata strata with no error", {
   a <- c(0, 1, 2, 3, 4, 5, 6)
@@ -133,7 +149,7 @@ test_that("Coxph_strata strata with no error", {
   fir <- 0
   der_iden <- 0
   control <- list("ncores" = 2, "lr" = 0.75, "maxiter" = -1, "halfmax" = 5, "epsilon" = 1e-9, "deriv_epsilon" = 1e-9, "abs_max" = 1.0, "change_all" = TRUE, "dose_abs_max" = 100.0, "verbose" = 0, "ties" = "breslow", "double_step" = 1)
-  expect_error(RunCoxRegression_STRATA(df, time1, time2, event, names, term_n, tform, keep_constant, a_n, modelform, fir, der_iden, control, strat_col))
+  expect_error(RunCoxRegression_Strata(df, time1, time2, event, names, term_n, tform, keep_constant, a_n, modelform, fir, der_iden, control, strat_col))
 })
 
 test_that("Coxph null time column missing", {
@@ -161,64 +177,6 @@ test_that("Coxph null no events", {
   expect_error(RunCoxNull(df, time1, time2, event, control))
 })
 
-test_that("Coxph loglin_M", {
-  fname <- "ll_0.csv"
-  colTypes <- c("double", "double", "double", "integer", "integer")
-  df <- fread(fname, nThread = min(c(detectCores(), 2)), data.table = TRUE, header = TRUE, colClasses = colTypes, verbose = FALSE, fill = TRUE)
-  time1 <- "t0"
-  time2 <- "t1"
-  event <- "lung"
-  names <- c("dose", "fac")
-  term_n <- c(0, 0)
-  tform <- c("loglin", "loglin")
-  keep_constant <- c(0, 0)
-  a_n <- c(0.01, 0.1)
-  modelform <- "M"
-  fir <- 0
-  der_iden <- 0
-  control <- list("ncores" = 2, "lr" = 0.75, "maxiter" = 20, "halfmax" = 5, "epsilon" = 1e-6, "deriv_epsilon" = 1e-6, "abs_max" = 1.0, "change_all" = TRUE, "dose_abs_max" = 100.0, "verbose" = 0, "ties" = "breslow", "double_step" = 1)
-  e <- RunCoxRegression(df, time1, time2, event, names, term_n, tform, keep_constant, a_n, modelform, fir, der_iden, control)
-  expect_equal(e$beta_0, c(-0.0996, -0.05697), tolerance = 1e-2)
-})
-test_that("Coxph loglin_plin_M", {
-  fname <- "l_pl_0.csv"
-  colTypes <- c("double", "double", "double", "integer", "integer")
-  df <- fread(fname, nThread = min(c(detectCores(), 2)), data.table = TRUE, header = TRUE, colClasses = colTypes, verbose = FALSE, fill = TRUE)
-  time1 <- "t0"
-  time2 <- "t1"
-  event <- "lung"
-  names <- c("dose", "fac")
-  term_n <- c(0, 0)
-  tform <- c("loglin", "plin")
-  keep_constant <- c(0, 0)
-  a_n <- c(0.01, 0.5)
-  modelform <- "M"
-  fir <- 0
-  der_iden <- 0
-  control <- list("ncores" = 2, "lr" = 0.75, "maxiter" = 20, "halfmax" = 5, "epsilon" = 1e-6, "deriv_epsilon" = 1e-6, "abs_max" = 1.0, "change_all" = TRUE, "dose_abs_max" = 100.0, "verbose" = 0, "ties" = "breslow", "double_step" = 1)
-  e <- RunCoxRegression(df, time1, time2, event, names, term_n, tform, keep_constant, a_n, modelform, fir, der_iden, control)
-  expect_equal(e$beta_0, c(0.1747772, 0.75), tolerance = 1e-2)
-})
-test_that("Coxph loglin_plin_A", {
-  fname <- "l_pl_A_0.csv"
-  colTypes <- c("double", "double", "double", "integer", "integer")
-  df <- fread(fname, nThread = min(c(detectCores(), 2)), data.table = TRUE, header = TRUE, colClasses = colTypes, verbose = FALSE, fill = TRUE)
-  time1 <- "t0"
-  time2 <- "t1"
-  event <- "lung"
-  names <- c("dose", "fac")
-  term_n <- c(0, 1)
-  tform <- c("loglin", "plin")
-  keep_constant <- c(0, 0)
-  a_n <- c(0.01, 0.5)
-  modelform <- "A"
-  fir <- 0
-  der_iden <- 0
-  control <- list("ncores" = 2, "lr" = 0.75, "maxiter" = 100, "halfmax" = 5, "epsilon" = 1e-6, "deriv_epsilon" = 1e-6, "abs_max" = 1.0, "change_all" = TRUE, "dose_abs_max" = 100.0, "verbose" = 0, "ties" = "breslow", "double_step" = 1)
-  e <- RunCoxRegression(df, time1, time2, event, names, term_n, tform, keep_constant, a_n, modelform, fir, der_iden, control)
-  expect_equal(e$beta_0, c(0.11, 1.01), tolerance = 1e-2)
-})
-#
 test_that("Coxph dose list", {
   fname <- "dose.csv"
   colTypes <- c("double", "double", "double", "integer")
@@ -275,7 +233,7 @@ test_that("Coxph loglin_M Strata", {
   fir <- 0
   der_iden <- 0
   control <- list("ncores" = 2, "lr" = 0.75, "maxiter" = 20, "halfmax" = 5, "epsilon" = 1e-6, "deriv_epsilon" = 1e-6, "abs_max" = 1.0, "change_all" = TRUE, "dose_abs_max" = 100.0, "verbose" = 0, "ties" = "breslow", "double_step" = 1)
-  e <- RunCoxRegression_STRATA(df, time1, time2, event, names, term_n, tform, keep_constant, a_n, modelform, fir, der_iden, control, "fac")
+  e <- RunCoxRegression_Strata(df, time1, time2, event, names, term_n, tform, keep_constant, a_n, modelform, fir, der_iden, control, "fac")
   expect_equal(e$beta_0, c(-0.106), tolerance = 1e-2)
 })
 test_that("Coxph loglin_M Single", {
@@ -381,26 +339,6 @@ test_that("Coxph loglin_M CENSOR Default", {
   expect_equal(sum(dft$ch), 699, tolerance = 1e-2)
 })
 
-test_that("Coxph loglin_M Basic", {
-  fname <- "ll_0.csv"
-  colTypes <- c("double", "double", "double", "integer", "integer")
-  df <- fread(fname, nThread = min(c(detectCores(), 2)), data.table = TRUE, header = TRUE, colClasses = colTypes, verbose = FALSE, fill = TRUE)
-  time1 <- "t0"
-  time2 <- "t1"
-  event <- "lung"
-  names <- c("dose", "fac")
-  term_n <- c(0, 0)
-  tform <- c("loglin", "loglin")
-  keep_constant <- c(0, 0)
-  a_n <- c(0.01, 0.1)
-  modelform <- "M"
-  fir <- 0
-  der_iden <- 0
-  control <- list("ncores" = 2, "lr" = 0.75, "maxiter" = 20, "halfmax" = 5, "epsilon" = 1e-6, "deriv_epsilon" = 1e-6, "abs_max" = 1.0, "change_all" = TRUE, "dose_abs_max" = 100.0, "verbose" = 0, "ties" = "breslow", "double_step" = 1)
-  e <- RunCoxRegression_Basic(df, time1, time2, event, names, keep_constant, a_n, der_iden, control)
-  expect_equal(e$beta_0, c(-0.09962, -0.05698), tolerance = 1e-2)
-})
-
 test_that("Coxph censoring weight", {
   fname <- "ll_comp_0.csv"
   colTypes <- c("double", "double", "double", "integer", "integer")
@@ -440,4 +378,56 @@ test_that("Coxph censoring weight", {
   expect_equal(e0$LogLik - e1$LogLik, -2.909427, tolerance = 1e-2)
   #
   expect_error(RunCoxRegression_CR(df, time1, time2, event, names, term_n, tform, keep_constant, a_n, modelform, fir, der_iden, control, "bad_weighting"))
+})
+
+test_that("dose nondose combinations", {
+  fname <- "dose.csv"
+  colTypes <- c("double", "double", "double", "integer")
+  df <- fread(fname, nThread = min(c(detectCores(), 2)), data.table = TRUE, header = TRUE, colClasses = colTypes, verbose = FALSE, fill = TRUE)
+  #
+  df$dose2 <- df$dose * df$dose
+  df$a <- df$dose + 0.001
+  df$b <- df$dose2 + 0.001
+  #
+  time1 <- "t0"
+  time2 <- "t1"
+  event <- "lung"
+  names <- c("a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "b", "b", "b")
+  term_n <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1)
+  tform <- c("loglin_slope", "loglin_top", "lin_slope", "lin_int", "quad_slope", "step_slope", "step_int", "lin_quad_slope", "lin_quad_int", "lin_exp_slope", "lin_exp_int", "lin_exp_exp_slope", "loglin", "plin", "lin")
+  keep_constant <- c(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+  a_n <- c(1.0, -0.1, -0.1, 1, 0.1, 1, 2, 0.3, 1.5, 0.2, 0.7, 1, 1, 1, 1)
+  modelform <- "A"
+  fir <- 0
+  der_iden <- 0
+  control <- list("ncores" = 2, "lr" = 0.75, "maxiter" = 1, "halfmax" = 2, "epsilon" = 1e-6, "deriv_epsilon" = 1e-6, "abs_max" = 1.0, "change_all" = TRUE, "dose_abs_max" = 100.0, "verbose" = 0, "ties" = "breslow", "double_step" = 1)
+  options(warn = -1)
+  expect_no_error(RunCoxRegression(df, time1, time2, event, names, term_n, tform, keep_constant, a_n, modelform, fir, der_iden, control))
+  if (!isTRUE(as.logical(Sys.getenv("NOT_CRAN", "false")))) {
+    skip("Cran Skip")
+  }
+  for (model in c("A", "PAE")) {
+    names <- c("a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "b", "b", "b", "b", "b", "b")
+    term_n <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1)
+    tform <- c("loglin_top", "lin_slope", "lin_int", "quad_slope", "step_slope", "step_int", "lin_quad_slope", "lin_quad_int", "lin_exp_slope", "lin_exp_int", "lin_exp_exp_slope", "loglin", "plin", "lin", "loglin", "plin", "lin")
+    keep_constant <- c(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    a_n <- c(-0.1, -0.1, 1, 0.1, 1, 2, 0.3, 1.5, 0.2, 0.7, 1, 1, 1, 1, 1, 1, 1)
+    modelform <- model
+    expect_no_error(RunCoxRegression(df, time1, time2, event, names, term_n, tform, keep_constant, a_n, modelform, fir, der_iden, control))
+    names <- c("b", "b", "b", "b", "b", "b", "b", "b", "b", "b", "b", "a", "a", "a", "a", "a", "a")
+    term_n <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1)
+    tform <- c("loglin_top", "lin_slope", "lin_int", "quad_slope", "step_slope", "step_int", "lin_quad_slope", "lin_quad_int", "lin_exp_slope", "lin_exp_int", "lin_exp_exp_slope", "loglin", "plin", "lin", "loglin", "plin", "lin")
+    keep_constant <- c(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    a_n <- c(-0.1, -0.1, 1, 0.1, 1, 2, 0.3, 1.5, 0.2, 0.7, 1, 1, 1, 1, 1, 1, 1)
+    modelform <- model
+    expect_no_error(RunCoxRegression(df, time1, time2, event, names, term_n, tform, keep_constant, a_n, modelform, fir, der_iden, control))
+    #
+    names <- c("b", "b", "b", "b", "b", "a")
+    term_n <- c(0, 0, 0, 0, 0, 1)
+    tform <- c("loglin_top", "loglin_slope", "lin_exp_slope", "lin_exp_int", "lin_exp_exp_slope", "loglin")
+    keep_constant <- c(0, 0, 0, 0, 0, 0)
+    a_n <- c(1, 1, -1.0, 100, -0.1, 1)
+    modelform <- model
+    expect_no_error(RunCoxRegression(df, time1, time2, event, names, term_n, tform, keep_constant, a_n, modelform, fir, der_iden, control))
+  }
 })

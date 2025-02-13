@@ -16,8 +16,15 @@ modelform <- "M"
 fir <- 0
 
 a_n <- c(0.1, 0.1, 0.1)
+model_control <- list("mcml" = FALSE)
+# setting to true uses the Monte-Carlo Maximum Likelihood option and optimizes the average log-likelihood, setting to false optimizes each realization seperately.
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  dose_index <- c("r", "s") # the two columns in the model to replace are the radiation and sleeping covariates
-#  dose_realizations <- matrix(c("r0", "r1", "r2", "r3", "r4", "s0", "s1", "s2", "s3", "s4"), nrow = 2) # columns to be used for realizations 0-4, rows for each column being replaced
+# dose_index <- c("r", "s")
+# # the two columns in the model to replace are the radiation and sleeping covariates
+# dose_realizations <- matrix(
+#   c("r0", "r1", "r2", "r3", "r4", "s0", "s1", "s2", "s3", "s4"),
+#   nrow = 2
+# )
+# # columns to be used for realizations 0-4, rows for each column being replaced
 

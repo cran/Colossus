@@ -111,14 +111,15 @@ e <- RunPoissonRegression_Omnibus(
 }
 \seealso{
 Other Poisson Wrapper Functions: 
+\code{\link{PoissonCurveSolver}()},
 \code{\link{RunPoissonEventAssignment}()},
 \code{\link{RunPoissonEventAssignment_bound}()},
 \code{\link{RunPoissonRegression}()},
 \code{\link{RunPoissonRegression_Guesses_CPP}()},
 \code{\link{RunPoissonRegression_Joint_Omnibus}()},
 \code{\link{RunPoissonRegression_Residual}()},
-\code{\link{RunPoissonRegression_STRATA}()},
 \code{\link{RunPoissonRegression_Single}()},
+\code{\link{RunPoissonRegression_Strata}()},
 \code{\link{RunPoissonRegression_Tier_Guesses}()}
 }
 \concept{Poisson Wrapper Functions}

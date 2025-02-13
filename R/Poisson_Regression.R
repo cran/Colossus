@@ -55,12 +55,14 @@
 #' )
 #' @importFrom rlang .data
 RunPoissonRegression_Omnibus <- function(df, pyr0 = "pyr", event0 = "event", names = c("CONST"), term_n = c(0), tform = "loglin", keep_constant = c(0), a_n = c(0), modelform = "M", fir = 0, der_iden = 0, control = list(), strat_col = "null", model_control = list(), cons_mat = as.matrix(c(0)), cons_vec = c(0)) {
+  func_t_start <- Sys.time()
   df <- data.table(df)
   control <- Def_Control(control)
+  model_control <- Def_model_control(model_control)
   val <- Correct_Formula_Order(
     term_n, tform, keep_constant, a_n,
     names, der_iden, cons_mat, cons_vec,
-    control$verbose
+    control$verbose, model_control
   )
   term_n <- val$term_n
   tform <- val$tform
@@ -70,6 +72,9 @@ RunPoissonRegression_Omnibus <- function(df, pyr0 = "pyr", event0 = "event", nam
   names <- val$names
   cons_mat <- as.matrix(val$cons_mat)
   cons_vec <- val$cons_vec
+  if ("para_number" %in% names(model_control)) {
+    model_control$para_number <- val$para_num
+  }
   if (typeof(a_n) != "list") {
     a_n <- list(a_n)
   }
@@ -79,7 +84,6 @@ RunPoissonRegression_Omnibus <- function(df, pyr0 = "pyr", event0 = "event", nam
       warning("Warning: model covariate order changed")
     }
   }
-  model_control <- Def_model_control(model_control)
   val <- Def_modelform_fix(control, model_control, modelform, term_n)
   modelform <- val$modelform
   model_control <- val$model_control
@@ -133,31 +137,14 @@ RunPoissonRegression_Omnibus <- function(df, pyr0 = "pyr", event0 = "event", nam
   }
   if (model_control$log_bound) {
     if ("maxiters" %in% names(control)) {
-      if ("guesses" %in% names(control)) {
-        # both are in
-        if (control$guesses + 1 == length(control$maxiters)) {
-          # all good, it matches
-        } else if (length(control$maxiters) == 2) {
-          iter0 <- control$maxiters[1]
-          iter1 <- control$maxiters[2]
-          applied_iter <- c(rep(iter0, control$guesses), iter1)
-          control$maxiters <- applied_iter
-        } else {
-          stop(paste("Error: guesses:", control["guesses"],
-            ", iterations per guess:", control["maxiters"],
-            sep = " "
-          ))
-        }
-      } else {
-        control$guesses <- length(control$maxiters) - 1
-      }
+      # good
     } else {
-      if ("guesses" %in% names(control)) {
-        control$maxiters <- rep(1, control$guesses + 1)
-      } else {
-        control$guesses <- 1
-        control$maxiters <- c(control$maxiter)
-      }
+      control$maxiters <- c(control$maxiter)
+    }
+    if ("guesses" %in% names(control)) {
+      # good
+    } else {
+      control$guesses <- 10
     }
     e <- pois_Omnibus_Bounds_transition(
       as.matrix(df[, ce, with = FALSE]),
@@ -226,14 +213,20 @@ RunPoissonRegression_Omnibus <- function(df, pyr0 = "pyr", event0 = "event", nam
       ), dfc, x_all, fir, der_iden,
       modelform, control, keep_constant,
       term_tot, as.matrix(df0[, val_cols,
-        with = FALSE]),
+        with = FALSE
+      ]),
       model_control, cons_mat, cons_vec
     )
     e$Parameter_Lists$names <- names
+    e$Parameter_Lists$modelformula <- modelform
+    e$Parameter_Lists$first_term <- fir
+    e$Survival_Type <- "Poisson"
     if (is.nan(e$LogLik)) {
       stop(e$Status)
     }
   }
+  func_t_end <- Sys.time()
+  e$RunTime <- func_t_end - func_t_start
   return(e)
 }
 
@@ -675,7 +668,7 @@ RunPoissonRegression_Single <- function(df, pyr0 = "pyr", event0 = "event", name
 
 #' Performs poisson regression with strata effect
 #'
-#' \code{RunPoissonRegression_STRATA} uses user provided data, time/event columns, vectors specifying the model, and options to control the convergence and starting positions
+#' \code{RunPoissonRegression_Strata} uses user provided data, time/event columns, vectors specifying the model, and options to control the convergence and starting positions
 #'
 #' @inheritParams R_template
 #' @family Poisson Wrapper Functions
@@ -714,13 +707,13 @@ RunPoissonRegression_Single <- function(df, pyr0 = "pyr", event0 = "event", name
 #'   "verbose" = FALSE, "double_step" = 1
 #' )
 #' strat_col <- c("e")
-#' e <- RunPoissonRegression_STRATA(
+#' e <- RunPoissonRegression_Strata(
 #'   df, pyr, event, names,
 #'   term_n, tform, keep_constant,
 #'   a_n, modelform, fir, der_iden, control, strat_col
 #' )
 #'
-RunPoissonRegression_STRATA <- function(df, pyr0 = "pyr", event0 = "event", names = c("CONST"), term_n = c(0), tform = "loglin", keep_constant = c(0), a_n = c(0), modelform = "M", fir = 0, der_iden = 0, control = list(), strat_col = "null") {
+RunPoissonRegression_Strata <- function(df, pyr0 = "pyr", event0 = "event", names = c("CONST"), term_n = c(0), tform = "loglin", keep_constant = c(0), a_n = c(0), modelform = "M", fir = 0, der_iden = 0, control = list(), strat_col = "null") {
   control <- Def_Control(control)
   control$maxiters <- c(1, control$maxiter)
   control$guesses <- 1
@@ -781,6 +774,7 @@ RunPoissonRegression_STRATA <- function(df, pyr0 = "pyr", event0 = "event", name
 #'   "loglin_method" = "uniform", strata = TRUE, term_initial = c(0, 1)
 #' )
 #' strat_col <- c("e")
+#' options(warn = -1)
 #' e <- RunPoissonRegression_Tier_Guesses(
 #'   df, pyr, event, names,
 #'   term_n, tform, keep_constant, a_n, modelform,
@@ -904,6 +898,7 @@ RunPoissonRegression_Tier_Guesses <- function(df, pyr0 = "pyr", event0 = "event"
 #'   "loglin_method" = "uniform", strata = FALSE
 #' )
 #' strat_col <- "e"
+#' options(warn = -1)
 #' e <- RunPoissonRegression_Guesses_CPP(
 #'   df, pyr, event, names, term_n,
 #'   tform, keep_constant, a_n, modelform, fir,
@@ -1108,8 +1103,174 @@ RunPoissonRegression_Residual <- function(df, pyr0 = "pyr", event0 = "event", na
     dfc, x_all, fir, der_iden, modelform,
     control, keep_constant,
     term_tot, as.matrix(df0[, val_cols,
-      with = FALSE]),
+      with = FALSE
+    ]),
     model_control
   )
+  return(e)
+}
+
+#' Calculates the likelihood curve for a poisson model directly
+#'
+#' \code{PoissonCurveSolver} solves the confidence interval for a poisson model, starting at the optimum point and
+#' iteratively optimizing each point to using the bisection method
+#'
+#' @inheritParams R_template
+#'
+#' @return returns a list of the final results
+#' @export
+#' @family Poisson Wrapper Functions
+#' @importFrom rlang .data
+PoissonCurveSolver <- function(df, pyr0 = "pyr", event0 = "event", names = c("CONST"), term_n = c(0), tform = "loglin", keep_constant = c(0), a_n = c(0), modelform = "M", fir = 0, der_iden = 0, control = list(), strat_col = "null", model_control = list(), cons_mat = as.matrix(c(0)), cons_vec = c(0)) {
+  func_t_start <- Sys.time()
+  df <- data.table(df)
+  control <- Def_Control(control)
+  model_control <- Def_model_control(model_control)
+  val <- Correct_Formula_Order(
+    term_n, tform, keep_constant, a_n,
+    names, der_iden, cons_mat, cons_vec,
+    control$verbose, model_control
+  )
+  term_n <- val$term_n
+  tform <- val$tform
+  keep_constant <- val$keep_constant
+  a_n <- val$a_n
+  der_iden <- val$der_iden
+  names <- val$names
+  cons_mat <- as.matrix(val$cons_mat)
+  cons_vec <- val$cons_vec
+  if ("para_number" %in% names(model_control)) {
+    model_control$para_number <- val$para_num
+  }
+  if (typeof(a_n) != "list") {
+    a_n <- list(a_n)
+  }
+  df <- df[get(pyr0) > 0, ]
+  if (control$verbose >= 2) {
+    if (any(val$Permutation != seq_along(tform))) {
+      warning("Warning: model covariate order changed")
+    }
+  }
+  val <- Def_modelform_fix(control, model_control, modelform, term_n)
+  modelform <- val$modelform
+  model_control <- val$model_control
+  if (min(keep_constant) > 0) {
+    stop("Error: Atleast one parameter must be free")
+  }
+  if (sum(df[, event0, with = FALSE]) == 0) {
+    stop("Error: no events")
+  }
+  if ("CONST" %in% names) {
+    if ("CONST" %in% names(df)) {
+      # fine
+    } else {
+      df$CONST <- 1
+    }
+  }
+  if (model_control$strata == TRUE) {
+    val <- factorize(df, strat_col)
+    df0 <- val$df
+    df <- val$df
+    val_cols <- c()
+    for (col in val$cols) {
+      dftemp <- df[get(col) == 1, ]
+      temp <- sum(dftemp[, get(event0)])
+      if (temp == 0) {
+        warning(paste("Warning: no events for strata group:", col,
+          sep = " "
+        ))
+        df <- df[get(col) != 1, ]
+        df0 <- df0[get(col) != 1, ]
+      } else {
+        val_cols <- c(val_cols, col)
+      }
+      data.table::setkeyv(df0, c(pyr0, event0))
+    }
+  } else {
+    df0 <- data.table::data.table("a" = c(0, 0))
+    val <- list(cols = c("a"))
+    val_cols <- c("a")
+  }
+  data.table::setkeyv(df, c(pyr0, event0))
+  all_names <- unique(names)
+  df <- Replace_Missing(df, all_names, 0.0, control$verbose)
+  dfc <- match(names, all_names)
+  term_tot <- max(term_n) + 1
+  x_all <- as.matrix(df[, all_names, with = FALSE])
+  ce <- c(pyr0, event0)
+  a_ns <- c()
+  for (i in a_n) {
+    a_ns <- c(a_ns, i)
+  }
+  if ("maxiters" %in% names(control)) {
+    if (length(control$maxiters) == length(a_n) + 1) {
+      # all good, it matches
+    } else {
+      if (control$verbose >= 3) {
+        message(paste("Note: Initial starts:", length(a_n),
+          ", Number of iterations provided:",
+          length(control$maxiters),
+          ". Colossus requires one more iteration counts than number of guesses (for best guess)",
+          sep = " "
+        )) # nocov
+      }
+      if (length(control$maxiters) < length(a_n) + 1) {
+        additional <- length(a_n) + 1 - length(control$maxiters)
+        control$maxiters <- c(control$maxiters, rep(1, additional))
+      } else {
+        additional <- length(a_n) + 1
+        control$maxiters <- control$maxiters[1:additional]
+      }
+    }
+    if ("guesses" %in% names(control)) {
+      # both are in
+      if (control$guesses + 1 == length(control$maxiters)) {
+        # all good, it matches
+      } else {
+        stop(paste("Error: guesses:", control["guesses"],
+          ", iterations per guess:",
+          control["maxiters"],
+          sep = " "
+        ))
+      }
+    } else {
+      control$guesses <- length(control$maxiters) - 1
+    }
+  } else {
+    if ("guesses" %in% names(control)) {
+      if (control$guesses == length(a_n)) {
+        # both match, all good
+      } else {
+        control$guesses <- length(a_n)
+      }
+      control$maxiters <- rep(1, control$guesses + 1)
+    } else {
+      control$guesses <- length(a_n)
+      control$maxiters <- c(rep(1, length(a_n)), control$maxiter)
+    }
+  }
+  if ("alpha" %in% names(model_control)) {
+    model_control["qchi"] <- qchisq(1 - model_control[["alpha"]], df = 1) / 2
+  } else {
+    model_control["alpha"] <- 0.05
+    model_control["qchi"] <- qchisq(1 - model_control[["alpha"]], df = 1) / 2
+  }
+  para_num <- model_control$para_num + 1 # 3
+  keep_constant[para_num] <- 1
+  if (min(keep_constant) == 1) {
+    model_control["single"] <- TRUE
+  }
+  e <- pois_Omnibus_CurveSearch_transition(
+    as.matrix(df[, ce, with = FALSE]),
+    term_n, tform, a_ns, dfc, x_all, fir, modelform, control,
+    keep_constant, term_tot, as.matrix(df0[, val_cols, with = FALSE]),
+    model_control, cons_mat, cons_vec
+  )
+  e$Parameter_Lists$names <- names
+  e$Parameter_Lists$modelformula <- modelform
+  e$Parameter_Lists$first_term <- fir
+  e$Survival_Type <- "Poisson"
+  func_t_end <- Sys.time()
+  e$RunTime <- func_t_end - func_t_start
   return(e)
 }

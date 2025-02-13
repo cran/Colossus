@@ -7,11 +7,35 @@ test_that("System version", {
 })
 
 ## ------------------------------------- ##
+## Verify the logging code
+## ------------------------------------- ##
+test_that("Logging_Full", {
+  fname <- "l_pl_A_0.csv"
+  colTypes <- c("double", "double", "double", "integer", "integer")
+  df <- fread(fname, nThread = min(c(detectCores(), 2)), data.table = TRUE, header = TRUE, colClasses = colTypes, verbose = FALSE, fill = TRUE)
+  time1 <- "t0"
+  time2 <- "t1"
+  event <- "lung"
+  names <- c("dose", "fac")
+  term_n <- c(0, 1)
+  tform <- c("loglin", "plin")
+  keep_constant <- c(0, 0)
+  a_n <- c(0.01, 0.5)
+  modelform <- "A"
+  fir <- 0
+  der_iden <- 0
+  control <- list("ncores" = 2, "lr" = 0.75, "maxiter" = 100, "halfmax" = 5, "epsilon" = 1e-6, "deriv_epsilon" = 1e-6, "abs_max" = 1.0, "change_all" = TRUE, "dose_abs_max" = 100.0, "verbose" = 0, "ties" = "breslow", "double_step" = 1)
+  res <- RunCoxRegression(df, time1, time2, event, names, term_n, tform, keep_constant, a_n, modelform, fir, der_iden, control)
+  expect_no_error(Model_Results_Log(paste(tempfile(), "out.log", sep = ""), df, res, TRUE))
+  expect_no_error(Model_Results_Log(paste(tempfile(), "out.log", sep = ""), noprint = TRUE))
+})
+
+## ------------------------------------- ##
 ## Verify verbosity code
 ## ------------------------------------- ##
 test_that("Check verbose, T/F", {
-  expect_no_error(Check_Verbose(T))
-  expect_no_error(Check_Verbose(F))
+  expect_no_error(Check_Verbose(TRUE))
+  expect_no_error(Check_Verbose(FALSE))
   expect_no_error(Check_Verbose("TRUE"))
 })
 test_that("Check verbose, 0/1/2/3/4", {
@@ -36,13 +60,22 @@ test_that("Default control no error", {
   expect_no_error(Def_Control(control_def))
 })
 # test_that( "Default control error", {
-#     control_def<- list( "ncores"=detectCores()+100, "verbose"=T)
+#     control_def<- list( "ncores"=detectCores()+100, "verbose"=TRUE)
 
 #     expect_error(Def_Control(control_def))
 # })
 test_that("Default control no error", {
   control_def <- list("temp" = FALSE)
   a_n <- c(1, 2, 3)
+  expect_no_error(Def_Control_Guess(control_def, a_n))
+})
+test_that("Default control guess combinations", {
+  control_def <- list("verbose" = TRUE)
+  a_n <- c(1, 2, 3)
+  expect_no_error(Def_Control_Guess(control_def, a_n))
+  control_def <- list("verbose" = "p")
+  expect_error(Def_Control_Guess(control_def, a_n))
+  control_def <- list("verbose" = TRUE, "guess_constant" = c(1))
   expect_no_error(Def_Control_Guess(control_def, a_n))
 })
 
@@ -278,6 +311,15 @@ test_that("Iteract formula operation error", {
   new_names <- c("", "")
   expect_error(interact_them(df, interactions, new_names, TRUE))
 })
+test_that("Iteract formula operation error", {
+  a <- c(0, 1, 2, 3, 4, 5, 6)
+  b <- c(1, 2, 3, 4, 5, 6, 7)
+  c <- c(0, 0, 0, 0, 0, 0, 0)
+  df <- data.table("a" = c, "b" = c, "c" = c)
+  interactions <- c("a?++?b", "a?*?b")
+  new_names <- c("", "")
+  expect_error(interact_them(df, interactions, new_names, FALSE))
+})
 
 #######################################
 ## Modelform Fixes
@@ -383,6 +425,11 @@ test_that("Factorize missing", {
   df <- data.table("a" = a, "b" = b, "c" = c)
   col_list <- c("d")
   expect_error(factorize(df, col_list, TRUE))
+})
+test_that("Factorize survival lung, test", {
+  data(cancer, package = "survival")
+  col_list <- c("inst")
+  expect_no_error(factorize(cancer, col_list, TRUE))
 })
 
 
@@ -630,6 +677,19 @@ test_that("linked exp no error", {
   paras <- list("first" = c(0.1, 10, 5))
   expect_no_error(Linked_Dose_Formula(tforms, paras, TRUE))
 })
+test_that("linked formula combinations", {
+  tforms <- list("first" = "quad")
+  paras <- list("first" = c(0.1, 10))
+  expect_error(Linked_Dose_Formula(tforms, paras, verbose = "p"))
+  paras <- list("first" = c(0.1, "10"))
+  expect_error(Linked_Dose_Formula(tforms, paras, TRUE))
+  #
+  tforms <- list("first" = "exp")
+  paras <- list("first" = c(0.1, "10", 5))
+  expect_error(Linked_Dose_Formula(tforms, paras, TRUE))
+  paras <- list("first" = c(0.1, 10, "5"))
+  expect_error(Linked_Dose_Formula(tforms, paras, TRUE))
+})
 
 test_that("linked exp parameter low goal error", {
   y <- 10
@@ -656,7 +716,7 @@ test_that("Missing Value missing column error", {
   c <- c(1, 1, 1, 1, 1, 1, 1)
   d <- c(3, 4, 5, 6, 7, 8, 9)
   df <- data.table("a" = a, "b" = b, "c" = c, "d" = d)
-  expect_error(Replace_Missing(df, c("a", "e"), 0.0, T))
+  expect_error(Replace_Missing(df, c("a", "e"), 0.0, TRUE))
 })
 test_that("Missing Value NA replacement error", {
   a <- c(0, 1, 2, 3, 4, 5, 6)
@@ -664,7 +724,7 @@ test_that("Missing Value NA replacement error", {
   c <- c(1, 1, 1, 1, 1, 1, 1)
   d <- c(3, 4, 5, 6, 7, 8, 9)
   df <- data.table("a" = a, "b" = b, "c" = c, "d" = d)
-  expect_error(Replace_Missing(df, c("a", "b", "c", "d"), NA, T))
+  expect_error(Replace_Missing(df, c("a", "b", "c", "d"), NA, TRUE))
 })
 test_that("Missing Value no error", {
   a <- c(0, 1, 2, 3, 4, 5, 6)
@@ -672,7 +732,7 @@ test_that("Missing Value no error", {
   c <- c(1, 1, 1, 1, 1, 1, 1)
   d <- c(3, 4, 5, 6, 7, 8, 9)
   df <- data.table("a" = a, "b" = b, "c" = c, "d" = d)
-  expect_no_error(Replace_Missing(df, c("a", "b", "c", "d"), 0.0, T))
+  expect_no_error(Replace_Missing(df, c("a", "b", "c", "d"), 0.0, TRUE))
 })
 test_that("Missing Value checked replaced 0", {
   a <- c(0, 1, 2, 3, 4, 5, 6)
@@ -681,7 +741,7 @@ test_that("Missing Value checked replaced 0", {
   d <- c(3, 4, 5, 6, 7, 8, 9)
   df <- data.table("a" = a, "b" = b, "c" = c, "d" = d)
 
-  df0 <- Replace_Missing(df, c("a", "b"), 0.0, T)
+  df0 <- Replace_Missing(df, c("a", "b"), 0.0, TRUE)
   expect_equal(c(sum(df0$a), sum(df0$b)), c(sum(df$a), 2))
 })
 test_that("Missing Value checked replaced 1", {
@@ -691,8 +751,17 @@ test_that("Missing Value checked replaced 1", {
   d <- c(3, 4, 5, 6, 7, 8, 9)
   df <- data.table("a" = a, "b" = b, "c" = c, "d" = d)
 
-  df0 <- Replace_Missing(df, c("a", "b"), 1.0, T)
+  df0 <- Replace_Missing(df, c("a", "b"), 1.0, TRUE)
   expect_equal(c(sum(df0$a), sum(df0$b)), c(sum(df$a), 3))
+})
+test_that("Missing Value verbose error", {
+  a <- c(0, 1, 2, 3, 4, 5, 6)
+  b <- c(1, 2, 3, 4, 5, 6, 7)
+  c <- c(1, 1, 1, 1, 1, 1, 1)
+  d <- c(3, 4, 5, 6, 7, 8, 9)
+  df <- data.table("a" = a, "b" = b, "c" = c, "d" = d)
+  expect_no_error(Replace_Missing(df, c("a", "b", "c", "d"), 0.0, TRUE))
+  expect_error(Replace_Missing(df, c("a", "b", "c", "d"), 0.0, -1))
 })
 
 # test_that( "Check Date Shift", {
@@ -762,7 +831,7 @@ test_that("tform order, tform order", {
   keep_constant <- c(0, 0, 0, 0, 0)
   a_n <- c(1, 2, 3, 4, 5)
   names <- c("a", "a", "a", "a", "a")
-  val <- Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T)
+  val <- Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE)
   term_n <- val$term_n
   tform <- val$tform
   keep_constant <- val$keep_constant
@@ -777,7 +846,7 @@ test_that("tform order, tform and term_n order", {
   keep_constant <- c(0, 0, 0, 0, 0)
   a_n <- c(1, 2, 3, 4, 5)
   names <- c("a", "a", "a", "a", "a")
-  val <- Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T)
+  val <- Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE)
   term_n <- val$term_n
   tform <- val$tform
   keep_constant <- val$keep_constant
@@ -792,7 +861,7 @@ test_that("tform order, combined", {
   keep_constant <- c(0, 0, 0, 1, 0)
   a_n <- c(1, 2, 3, 4, 5)
   names <- c("a", "a", "a", "a", "a")
-  val <- Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T)
+  val <- Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE)
   term_n <- val$term_n
   tform <- val$tform
   keep_constant <- val$keep_constant
@@ -807,7 +876,7 @@ test_that("tform order, tform order, list single", {
   keep_constant <- c(0, 0, 0, 0, 0)
   a_n <- list(c(1, 2, 3, 4, 5))
   names <- c("a", "a", "a", "a", "a")
-  val <- Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T)
+  val <- Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE)
   term_n <- val$term_n
   tform <- val$tform
   keep_constant <- val$keep_constant
@@ -822,7 +891,7 @@ test_that("tform order, tform and term_n order, list single", {
   keep_constant <- c(0, 0, 0, 0, 0)
   a_n <- list(c(1, 2, 3, 4, 5))
   names <- c("a", "a", "a", "a", "a")
-  val <- Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T)
+  val <- Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE)
   term_n <- val$term_n
   tform <- val$tform
   keep_constant <- val$keep_constant
@@ -837,7 +906,7 @@ test_that("tform order, combined, list single", {
   keep_constant <- c(0, 0, 0, 1, 0)
   a_n <- list(c(1, 2, 3, 4, 5))
   names <- c("a", "a", "a", "a", "a")
-  val <- Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T)
+  val <- Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE)
   term_n <- val$term_n
   tform <- val$tform
   keep_constant <- val$keep_constant
@@ -853,7 +922,7 @@ test_that("formula order, too few parameters", {
   a_n <- c(1, 2, 3, 4)
   names <- c("a", "a", "a", "a", "a")
   options(warn = -1)
-  expect_no_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_no_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
 })
 test_that("formula order, no free", {
   term_n <- c(0, 1, 1, 0, 0)
@@ -861,7 +930,7 @@ test_that("formula order, no free", {
   keep_constant <- c(1, 1, 1, 1, 1)
   a_n <- c(1, 2, 3, 4, 5, 6)
   names <- c("a", "a", "a", "a", "a")
-  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
 })
 test_that("formula order, too many parameters", {
   term_n <- c(0, 1, 1, 0, 0)
@@ -869,7 +938,7 @@ test_that("formula order, too many parameters", {
   keep_constant <- c(0, 0, 0, 1, 0)
   a_n <- c(1, 2, 3, 4, 5, 6)
   names <- c("a", "a", "a", "a", "a")
-  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
 })
 test_that("formula order, too few term numbers", {
   term_n <- c(0, 1, 1, 0)
@@ -877,7 +946,7 @@ test_that("formula order, too few term numbers", {
   keep_constant <- c(0, 0, 0, 1, 0)
   a_n <- c(1, 2, 3, 4, 5)
   names <- c("a", "a", "a", "a", "a")
-  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
 })
 test_that("formula order, too many term numbers", {
   term_n <- c(0, 1, 1, 0, 0, 1)
@@ -885,7 +954,7 @@ test_that("formula order, too many term numbers", {
   keep_constant <- c(0, 0, 0, 1, 0)
   a_n <- c(1, 2, 3, 4, 5)
   names <- c("a", "a", "a", "a", "a")
-  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
 })
 test_that("formula order, too few term types", {
   term_n <- c(0, 1, 1, 0, 0)
@@ -893,7 +962,7 @@ test_that("formula order, too few term types", {
   keep_constant <- c(0, 0, 0, 1, 0)
   a_n <- c(1, 2, 3, 4, 5)
   names <- c("a", "a", "a", "a", "a")
-  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
 })
 test_that("formula order, too many term types", {
   term_n <- c(0, 1, 1, 0, 0)
@@ -901,7 +970,7 @@ test_that("formula order, too many term types", {
   keep_constant <- c(0, 0, 0, 1, 0)
   a_n <- c(1, 2, 3, 4, 5)
   names <- c("a", "a", "a", "a", "a")
-  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
 })
 
 test_that("formula order, missing lin_int", {
@@ -910,7 +979,7 @@ test_that("formula order, missing lin_int", {
   keep_constant <- c(0, 0, 0, 1, 0)
   a_n <- c(1, 2, 3, 4, 5)
   names <- c("a", "a", "a", "a", "a")
-  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
 })
 test_that("formula order, missing step_int", {
   term_n <- c(0, 1, 1, 0, 0)
@@ -918,7 +987,7 @@ test_that("formula order, missing step_int", {
   keep_constant <- c(0, 0, 0, 1, 0)
   a_n <- c(1, 2, 3, 4, 5)
   names <- c("a", "a", "a", "a", "a")
-  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
 })
 test_that("formula order, missing loglin_top", {
   term_n <- c(0, 1, 1, 0, 0)
@@ -926,7 +995,7 @@ test_that("formula order, missing loglin_top", {
   keep_constant <- c(0, 0, 0, 1, 0)
   a_n <- c(1, 2, 3, 4, 5)
   names <- c("a", "a", "a", "a", "a")
-  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
 })
 test_that("formula order, missing lin_quad_slope", {
   term_n <- c(0, 1, 1, 0, 0)
@@ -934,7 +1003,7 @@ test_that("formula order, missing lin_quad_slope", {
   keep_constant <- c(0, 0, 0, 1, 0)
   a_n <- c(1, 2, 3, 4, 5)
   names <- c("a", "a", "a", "a", "a")
-  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
 })
 test_that("formula order, missing lin_exp_int", {
   term_n <- c(0, 1, 1, 0, 0)
@@ -942,7 +1011,7 @@ test_that("formula order, missing lin_exp_int", {
   keep_constant <- c(0, 0, 0, 1, 0)
   a_n <- c(1, 2, 3, 4, 5)
   names <- c("a", "a", "a", "a", "a")
-  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
 })
 test_that("formula order, missing lin_exp_exp_slope", {
   term_n <- c(0, 1, 1, 0, 0)
@@ -950,7 +1019,7 @@ test_that("formula order, missing lin_exp_exp_slope", {
   keep_constant <- c(0, 0, 0, 1, 0)
   a_n <- c(1, 2, 3, 4, 5)
   names <- c("a", "a", "a", "a", "a")
-  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
 })
 
 test_that("formula order, missing step_slope", {
@@ -959,7 +1028,7 @@ test_that("formula order, missing step_slope", {
   keep_constant <- c(0, 0, 0, 1, 0)
   a_n <- c(1, 2, 3, 4, 5)
   names <- c("a", "a", "a", "a", "a")
-  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
 })
 test_that("formula order, missing lin_slope", {
   term_n <- c(0, 1, 1, 0, 0)
@@ -967,7 +1036,7 @@ test_that("formula order, missing lin_slope", {
   keep_constant <- c(0, 0, 0, 1, 0)
   a_n <- c(1, 2, 3, 4, 5)
   names <- c("a", "a", "a", "a", "a")
-  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
 })
 test_that("formula order, missing lin_quad_slope", {
   term_n <- c(0, 1, 1, 0, 0)
@@ -975,7 +1044,7 @@ test_that("formula order, missing lin_quad_slope", {
   keep_constant <- c(0, 0, 0, 1, 0)
   a_n <- c(1, 2, 3, 4, 5)
   names <- c("a", "a", "a", "a", "a")
-  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
 })
 test_that("formula order, missing lin_exp_slope", {
   term_n <- c(0, 1, 1, 0, 0)
@@ -983,7 +1052,7 @@ test_that("formula order, missing lin_exp_slope", {
   keep_constant <- c(0, 0, 0, 1, 0)
   a_n <- c(1, 2, 3, 4, 5)
   names <- c("a", "a", "a", "a", "a")
-  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
 })
 test_that("formula order, missing lin_exp_exp_int", {
   term_n <- c(0, 1, 1, 0, 0)
@@ -991,7 +1060,7 @@ test_that("formula order, missing lin_exp_exp_int", {
   keep_constant <- c(0, 0, 0, 1, 0)
   a_n <- c(1, 2, 3, 4, 5)
   names <- c("a", "a", "a", "a", "a")
-  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
 })
 
 #####################################
@@ -1003,7 +1072,7 @@ test_that("tform order, tform order, list double", {
   keep_constant <- c(0, 0, 0, 0, 0)
   a_n <- list(c(1, 2, 3, 4, 5), c(2, 3, 4, 5, 6))
   names <- c("a", "a", "a", "a", "a")
-  val <- Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T)
+  val <- Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE)
   term_n <- val$term_n
   tform <- val$tform
   keep_constant <- val$keep_constant
@@ -1018,7 +1087,7 @@ test_that("tform order, tform and term_n order, list double", {
   keep_constant <- c(0, 0, 0, 0, 0)
   a_n <- list(c(1, 2, 3, 4, 5), c(2, 3, 4, 5, 6))
   names <- c("a", "a", "a", "a", "a")
-  val <- Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T)
+  val <- Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE)
   term_n <- val$term_n
   tform <- val$tform
   keep_constant <- val$keep_constant
@@ -1033,7 +1102,7 @@ test_that("tform order, combined, list double", {
   keep_constant <- c(0, 0, 0, 1, 0)
   a_n <- list(c(1, 2, 3, 4, 5), c(2, 3, 4, 5, 6))
   names <- c("a", "a", "a", "a", "a")
-  val <- Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T)
+  val <- Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE)
   term_n <- val$term_n
   tform <- val$tform
   keep_constant <- val$keep_constant
@@ -1048,7 +1117,7 @@ test_that("formula order, different parameter lengths, list double", {
   keep_constant <- c(0, 0, 0, 1, 0)
   a_n <- list(c(1, 2, 3, 4, 5), c(2, 3, 4, 5))
   names <- c("a", "a", "a", "a", "a")
-  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
 })
 test_that("formula order, too few parameters, list double", {
   term_n <- c(0, 1, 1, 0, 0)
@@ -1057,7 +1126,7 @@ test_that("formula order, too few parameters, list double", {
   a_n <- list(c(1, 2, 3, 4), c(2, 3, 4, 5))
   names <- c("a", "a", "a", "a", "a")
   options(warn = -1)
-  expect_no_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_no_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
 })
 test_that("formula order, too many parameters, list double", {
   term_n <- c(0, 1, 1, 0, 0)
@@ -1065,7 +1134,7 @@ test_that("formula order, too many parameters, list double", {
   keep_constant <- c(0, 0, 0, 1, 0)
   a_n <- list(c(1, 2, 3, 4, 5, 6), c(2, 3, 4, 5, 6, 7))
   names <- c("a", "a", "a", "a", "a")
-  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
 })
 test_that("formula order, too few term numbers, list double", {
   term_n <- c(0, 1, 1, 0)
@@ -1073,7 +1142,7 @@ test_that("formula order, too few term numbers, list double", {
   keep_constant <- c(0, 0, 0, 1, 0)
   a_n <- list(c(1, 2, 3, 4, 5), c(2, 3, 4, 5, 6))
   names <- c("a", "a", "a", "a", "a")
-  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
 })
 test_that("formula order, too many term numbers, list double", {
   term_n <- c(0, 1, 1, 0, 0, 1)
@@ -1081,7 +1150,7 @@ test_that("formula order, too many term numbers, list double", {
   keep_constant <- c(0, 0, 0, 1, 0)
   a_n <- list(c(1, 2, 3, 4, 5), c(2, 3, 4, 5, 6))
   names <- c("a", "a", "a", "a", "a")
-  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
 })
 test_that("formula order, too few term types, list double", {
   term_n <- c(0, 1, 1, 0, 0)
@@ -1089,7 +1158,7 @@ test_that("formula order, too few term types, list double", {
   keep_constant <- c(0, 0, 0, 1, 0)
   a_n <- list(c(1, 2, 3, 4, 5), c(2, 3, 4, 5, 6))
   names <- c("a", "a", "a", "a", "a")
-  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
 })
 test_that("formula order, too many term types, list double", {
   term_n <- c(0, 1, 1, 0, 0)
@@ -1097,7 +1166,7 @@ test_that("formula order, too many term types, list double", {
   keep_constant <- c(0, 0, 0, 1, 0)
   a_n <- list(c(1, 2, 3, 4, 5), c(2, 3, 4, 5, 6))
   names <- c("a", "a", "a", "a", "a")
-  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
 })
 #####################################
 # Formula order, Constraints and verbose check
@@ -1108,7 +1177,7 @@ test_that("Checking constraint matrix", {
   keep_constant <- c(0, 0, 0, 1, 0)
   a_n <- list(c(1, 2, 3, 4, 5))
   names <- c("a", "a", "a", "a", "a")
-  cons_mat <- matrix(c(1:12), nrow = 3, byrow = T)
+  cons_mat <- matrix(c(1:12), nrow = 3, byrow = TRUE)
   cons_vec <- c(1, 0, -1)
 
   val <- Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, 0, cons_mat, cons_vec)
@@ -1123,15 +1192,15 @@ test_that("Checking verbose", {
   keep_constant <- c(0, 0, 0, 1, 0)
   a_n <- list(c(1, 2, 3, 4, 5))
   names <- c("a", "a", "a", "a", "a")
-  cons_mat <- matrix(c(1:12), nrow = 3, byrow = T)
+  cons_mat <- matrix(c(1:12), nrow = 3, byrow = TRUE)
   cons_vec <- c(1, 0, -1)
 
   expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, 0, cons_mat, cons_vec, verbose = -1))
   expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, 0, cons_mat, cons_vec, verbose = 5))
   expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, 0, cons_mat, cons_vec, verbose = "bad"))
 
-  expect_no_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, 0, cons_mat, cons_vec, verbose = T))
-  expect_no_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, 0, cons_mat, cons_vec, verbose = F))
+  expect_no_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, 0, cons_mat, cons_vec, verbose = TRUE))
+  expect_no_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, 0, cons_mat, cons_vec, verbose = FALSE))
   expect_no_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, 0, cons_mat, cons_vec, verbose = 4))
   expect_no_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, 0, cons_mat, cons_vec, verbose = 3))
   expect_no_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, 0, cons_mat, cons_vec, verbose = 2))
@@ -1145,11 +1214,11 @@ test_that("Checking keep_constant limits", {
   a_n <- list(c(1, 2, 3, 4, 5), c(2, 3, 4, 5, 6))
   names <- c("a", "a", "a", "a", "a")
   keep_constant <- c(0, 0, 0, -1, 0)
-  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
   keep_constant <- c(0, 0, 0, 10, 0)
-  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
   keep_constant <- c(0, 0, 0, 1, 0.5)
-  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
 })
 test_that("Checking term_n limits", {
   term_n <- c(0, 1, 1, 0, 0)
@@ -1159,11 +1228,11 @@ test_that("Checking term_n limits", {
   names <- c("a", "a", "a", "a", "a")
   term_n <- c(0, 0, 0, -1, 0)
   options(warn = -1)
-  expect_no_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_no_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
   term_n <- c(0, 0, 0, 1, 0.5)
-  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
   term_n <- c(0, 1, 1, 1, 3)
-  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
 })
 test_that("Checking tform values", {
   term_n <- c(0, 1, 1, 0, 0)
@@ -1174,9 +1243,55 @@ test_that("Checking tform values", {
   term_n <- c(0, 0, 0, -1, 0)
   options(warn = -1)
   tform <- c("loglin", "fake", "loglin", "loglin", "loglin")
-  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
   tform <- c("loglin", "fake", "bad", "loglin", "loglin")
-  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T))
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE))
+})
+test_that("tform order, der_iden out of bounds", {
+  term_n <- c(0, 0, 0, 0, 0)
+  tform <- c("loglin", "quad_slope", "lin", "lin_int", "lin_slope")
+  keep_constant <- c(0, 0, 0, 0, 0)
+  a_n <- c(1, 2, 3, 4, 5)
+  names <- c("a", "a", "a", "a", "a")
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, der_iden = -1))
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, der_iden = 100))
+})
+test_that("tform order, matrix errors", {
+  term_n <- c(0, 0, 0, 0, 0)
+  tform <- c("loglin", "quad_slope", "lin", "lin_int", "lin_slope")
+  keep_constant <- c(0, 0, 0, 0, 0)
+  a_n <- c(1, 2, 3, 4, 5)
+  names <- c("a", "a", "a", "a", "a")
+  cons_mat <- matrix(c(1, 2, 3, 4, 5), nrow = 1, byrow = TRUE)
+  cons_vec <- c(1)
+
+  expect_no_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, 0, cons_mat, cons_vec))
+  cons_mat <- matrix(c(1, 2, 3), nrow = 1, byrow = TRUE)
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, 0, cons_mat, cons_vec))
+  cons_mat <- matrix(c(1, 2, 3, 4, 5), nrow = 1, byrow = TRUE)
+  cons_vec <- c(1, 1, 1)
+  expect_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, 0, cons_mat, cons_vec))
+})
+test_that("tform order, keep_constant errors", {
+  term_n <- c(0, 0, 0, 0, 0)
+  tform <- c("loglin", "quad_slope", "lin", "lin_int", "lin_slope")
+  keep_constant <- c(0, 0, 0)
+  a_n <- c(1, 2, 3, 4, 5)
+  names <- c("a", "a", "a", "a", "a")
+  cons_mat <- matrix(c(1, 2, 3, 4, 5), nrow = 1, byrow = TRUE)
+  cons_vec <- c(1)
+  expect_no_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, 0, cons_mat, cons_vec))
+  keep_constant <- c(0, 0, 0, 0, 0, 0, 0, 0)
+  expect_no_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, 0, cons_mat, cons_vec))
+  #
+  keep_constant <- c(0, 0, 0)
+  a_n <- list(c(1, 2, 3, 4, 5), c(4, 2, 3, 4, 5), c(1, 2, 7, 4, 5))
+  names <- c("a", "a", "a", "a", "a")
+  cons_mat <- matrix(c(1, 2, 3, 4, 5), nrow = 1, byrow = TRUE)
+  cons_vec <- c(1)
+  expect_no_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, 0, cons_mat, cons_vec))
+  keep_constant <- c(0, 0, 0, 0, 0, 0, 0, 0)
+  expect_no_error(Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, 0, cons_mat, cons_vec))
 })
 
 # ------------------------------------- ##
@@ -1201,7 +1316,7 @@ test_that("Gather Guesses no error", {
   fir <- 0
   der_iden <- 0
   options(warn = -1)
-  val <- Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T)
+  val <- Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE)
   term_n <- val$term_n
   tform <- val$tform
   keep_constant <- val$keep_constant
@@ -1248,7 +1363,7 @@ test_that("Gather Guesses error, many a_n", {
   fir <- 0
   der_iden <- 0
 
-  val <- Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T)
+  val <- Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE)
   term_n <- val$term_n
   tform <- val$tform
   keep_constant <- val$keep_constant
@@ -1294,7 +1409,7 @@ test_that("Gather Guesses error, few term numbers", {
   fir <- 0
   der_iden <- 0
 
-  val <- Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T)
+  val <- Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE)
   term_n <- val$term_n
   tform <- val$tform
   keep_constant <- val$keep_constant
@@ -1339,7 +1454,7 @@ test_that("Gather Guesses error, many term numbers", {
   fir <- 0
   der_iden <- 0
 
-  val <- Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T)
+  val <- Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE)
   term_n <- val$term_n
   tform <- val$tform
   keep_constant <- val$keep_constant
@@ -1384,7 +1499,7 @@ test_that("Gather Guesses error, few term formula", {
   fir <- 0
   der_iden <- 0
 
-  val <- Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T)
+  val <- Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE)
   term_n <- val$term_n
   tform <- val$tform
   keep_constant <- val$keep_constant
@@ -1429,7 +1544,7 @@ test_that("Gather Guesses error, many term formula", {
   fir <- 0
   der_iden <- 0
 
-  val <- Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, T)
+  val <- Correct_Formula_Order(term_n, tform, keep_constant, a_n, names, TRUE)
   term_n <- val$term_n
   tform <- val$tform
   keep_constant <- val$keep_constant
@@ -1454,4 +1569,392 @@ test_that("Gather Guesses error, many term formula", {
   model_control <- Def_model_control(model_control)
 
   expect_error(Gather_Guesses_CPP(df, dfc, names, term_n, tform, keep_constant, a_n, x_all, a_n_default, modelform, fir, control, guesses_control))
+})
+test_that("Gather Guesses, different a_n and names list", {
+  a <- c(0, 1, 2, 3, 4, 5, 6)
+  b <- c(1, 2, 3, 4, 5, 6, 7)
+  c <- c(0, 1, 0, 0, 0, 1, 0)
+  d <- c(3, 4, 5, 6, 7, 8, 9)
+  df <- data.table("a" = a, "b" = b, "c" = c, "d" = d)
+  time1 <- "a"
+  time2 <- "b"
+  event <- "c"
+  names <- c("d", "d", "d", "d")
+  term_n <- c(0, 0, 0, 0)
+  tform <- c("loglin", "loglin", "loglin", "loglin")
+  keep_constant <- c(0, 0)
+  a_n <- list(c(-0.1, 6, 0.1, 0.1))
+  a_n_default <- unlist(a_n[1])
+  modelform <- "M"
+  fir <- 0
+  der_iden <- 0
+  #
+  #
+  control <- list("ncores" = 2, "lr" = 0.75, "maxiter" = -1, "halfmax" = 5, "epsilon" = 1e-9, "deriv_epsilon" = 1e-9, "abs_max" = 1.0, "change_all" = TRUE, "dose_abs_max" = 100.0, "verbose" = 0, "ties" = "breslow", "double_step" = 1)
+  guesses_control <- list()
+  model_control <- list()
+
+  all_names <- unique(names(df))
+  #
+  dfc <- match(names, all_names)
+
+  term_tot <- max(term_n) + 1
+  x_all <- as.matrix(df[, all_names, with = FALSE])
+  #
+  control <- Def_Control(control)
+  guesses_control <- Def_Control_Guess(guesses_control, a_n_default)
+  guesses_control$verbose <- TRUE
+  model_control <- Def_model_control(model_control)
+  #
+  names <- c("d")
+  expect_error(Gather_Guesses_CPP(df, dfc, names, term_n, tform, keep_constant, a_n, x_all, a_n_default, modelform, fir, control, guesses_control))
+})
+test_that("Gather Guesses list, incorrect keep_constant length and rmin/rmax not used", {
+  a <- c(0, 1, 2, 3, 4, 5, 6)
+  b <- c(1, 2, 3, 4, 5, 6, 7)
+  c <- c(0, 1, 0, 0, 0, 1, 0)
+  d <- c(3, 4, 5, 6, 7, 8, 9)
+  df <- data.table("a" = a, "b" = b, "c" = c, "d" = d)
+  time1 <- "a"
+  time2 <- "b"
+  event <- "c"
+  names <- c("d", "d", "d", "d")
+  term_n <- c(0, 0, 0, 0)
+  tform <- c("loglin", "loglin", "loglin", "loglin")
+  keep_constant <- c(0, 0)
+  a_n <- list(c(-0.1, 6, 0.1, 0.1))
+  a_n_default <- unlist(a_n[1])
+  modelform <- "M"
+  fir <- 0
+  der_iden <- 0
+  #
+  #
+  control <- list("ncores" = 2, "lr" = 0.75, "maxiter" = -1, "halfmax" = 5, "epsilon" = 1e-9, "deriv_epsilon" = 1e-9, "abs_max" = 1.0, "change_all" = TRUE, "dose_abs_max" = 100.0, "verbose" = 0, "ties" = "breslow", "double_step" = 1)
+  guesses_control <- list()
+  model_control <- list()
+
+  all_names <- unique(names(df))
+  #
+  dfc <- match(names, all_names)
+
+  term_tot <- max(term_n) + 1
+  x_all <- as.matrix(df[, all_names, with = FALSE])
+  #
+  control <- Def_Control(control)
+  guesses_control <- Def_Control_Guess(guesses_control, a_n_default)
+  guesses_control$verbose <- TRUE
+  model_control <- Def_model_control(model_control)
+  #
+  options(warn = -1)
+  expect_no_error(Gather_Guesses_CPP(df, dfc, names, term_n, tform, keep_constant, a_n, x_all, a_n_default, modelform, fir, control, guesses_control))
+  keep_constant <- c(1, 0, 0, 0, 0, 0, 0)
+  guesses_control$rmin <- c(-0.1, -1, -0.1, 0)
+  guesses_control$rmax <- c(0.1, 1, 0.1, 0.1)
+  expect_no_error(Gather_Guesses_CPP(df, dfc, names, term_n, tform, keep_constant, a_n, x_all, a_n_default, modelform, fir, control, guesses_control))
+})
+test_that("Gather Guesses list, negative risk found", {
+  a <- c(0, 1, 2, 3, 4, 5, 6)
+  b <- c(1, 2, 3, 4, 5, 6, 7)
+  c <- c(0, 1, 0, 0, 0, 1, 0)
+  d <- c(3, 4, 5, 6, 7, 8, 9)
+  df <- data.table("a" = a, "b" = b, "c" = c, "d" = d)
+  time1 <- "a"
+  time2 <- "b"
+  event <- "c"
+  names <- c("d", "d", "d", "d")
+  term_n <- c(0, 0, 0, 0)
+  tform <- c("lin", "loglin", "loglin", "loglin")
+  keep_constant <- c(0, 0)
+  a_n <- list(c(-0.1, 6, 0.1, 0.1))
+  a_n_default <- unlist(a_n[1])
+  modelform <- "M"
+  fir <- 0
+  der_iden <- 0
+  #
+  #
+  control <- list("ncores" = 2, "lr" = 0.75, "maxiter" = -1, "halfmax" = 5, "epsilon" = 1e-9, "deriv_epsilon" = 1e-9, "abs_max" = 1.0, "change_all" = TRUE, "dose_abs_max" = 100.0, "verbose" = 0, "ties" = "breslow", "double_step" = 1)
+  guesses_control <- list()
+  model_control <- list()
+
+  all_names <- unique(names(df))
+  #
+  dfc <- match(names, all_names)
+
+  term_tot <- max(term_n) + 1
+  x_all <- as.matrix(df[, all_names, with = FALSE])
+  #
+  control <- Def_Control(control)
+  guesses_control <- Def_Control_Guess(guesses_control, a_n_default)
+  guesses_control$verbose <- TRUE
+  model_control <- Def_model_control(model_control)
+  #
+  options(warn = -1)
+  expect_no_error(Gather_Guesses_CPP(df, dfc, names, term_n, tform, keep_constant, a_n, x_all, a_n_default, modelform, fir, control, guesses_control))
+})
+test_that("Gather Guesses list, bad tform", {
+  a <- c(0, 1, 2, 3, 4, 5, 6)
+  b <- c(1, 2, 3, 4, 5, 6, 7)
+  c <- c(0, 1, 0, 0, 0, 1, 0)
+  d <- c(3, 4, 5, 6, 7, 8, 9)
+  df <- data.table("a" = a, "b" = b, "c" = c, "d" = d)
+  time1 <- "a"
+  time2 <- "b"
+  event <- "c"
+  names <- c("d", "d", "d", "d")
+  term_n <- c(0, 0, 0, 0)
+  tform <- c("loglin", "loglin", "loglin", "bad_bad")
+  keep_constant <- c(0, 0)
+  a_n <- list(c(-0.1, 6, 0.1, 0.1))
+  a_n_default <- unlist(a_n[1])
+  modelform <- "M"
+  fir <- 0
+  der_iden <- 0
+  #
+  #
+  control <- list("ncores" = 2, "lr" = 0.75, "maxiter" = -1, "halfmax" = 5, "epsilon" = 1e-9, "deriv_epsilon" = 1e-9, "abs_max" = 1.0, "change_all" = TRUE, "dose_abs_max" = 100.0, "verbose" = 0, "ties" = "breslow", "double_step" = 1)
+  guesses_control <- list()
+  model_control <- list()
+
+  all_names <- unique(names(df))
+  #
+  dfc <- match(names, all_names)
+
+  term_tot <- max(term_n) + 1
+  x_all <- as.matrix(df[, all_names, with = FALSE])
+  #
+  control <- Def_Control(control)
+  guesses_control <- Def_Control_Guess(guesses_control, a_n_default)
+  guesses_control$verbose <- TRUE
+  model_control <- Def_model_control(model_control)
+  #
+  guesses_control$rmin <- c(-0.1, -1, -0.1, 0)
+  guesses_control$rmax <- c(0.1, 1, 0.1, 0.1, 0, 0, 0)
+  expect_error(Gather_Guesses_CPP(df, dfc, names, term_n, tform, keep_constant, a_n, x_all, a_n_default, modelform, fir, control, guesses_control))
+})
+test_that("Gather Guesses list combinations", {
+  a <- c(0, 1, 2, 3, 4, 5, 6)
+  b <- c(1, 2, 3, 4, 5, 6, 7)
+  c <- c(0, 1, 0, 0, 0, 1, 0)
+  d <- c(3, 4, 5, 6, 7, 8, 9)
+  df <- data.table("a" = a, "b" = b, "c" = c, "d" = d)
+  time1 <- "a"
+  time2 <- "b"
+  event <- "c"
+  names <- c("d", "d", "d", "d")
+  term_n <- c(0, 0, 0, 0)
+  tform <- c("loglin", "loglin", "loglin", "loglin")
+  keep_constant <- c(0, 0)
+  a_n <- list(c(-0.1, 6, 0.1, 0.1))
+  a_n_default <- unlist(a_n[1])
+  modelform <- "M"
+  fir <- 0
+  der_iden <- 0
+  #
+  #
+  control <- list("ncores" = 2, "lr" = 0.75, "maxiter" = -1, "halfmax" = 5, "epsilon" = 1e-9, "deriv_epsilon" = 1e-9, "abs_max" = 1.0, "change_all" = TRUE, "dose_abs_max" = 100.0, "verbose" = 0, "ties" = "breslow", "double_step" = 1)
+  guesses_control <- list()
+  model_control <- list()
+
+  all_names <- unique(names(df))
+  #
+  dfc <- match(names, all_names)
+
+  term_tot <- max(term_n) + 1
+  x_all <- as.matrix(df[, all_names, with = FALSE])
+  #
+  control <- Def_Control(control)
+  guesses_control <- Def_Control_Guess(guesses_control, a_n_default)
+  guesses_control$verbose <- TRUE
+  model_control <- Def_model_control(model_control)
+  #
+  options(warn = -1)
+  names <- c("d", "d", "d", "d", "d", "d")
+  expect_error(Gather_Guesses_CPP(df, dfc, names, term_n, tform, keep_constant, a_n, x_all, a_n_default, modelform, fir, control, guesses_control))
+  names <- c("d", "d", "d", "d")
+  tform <- c("plin", "plin", "lin", "lin")
+  expect_no_error(Gather_Guesses_CPP(df, dfc, names, term_n, tform, keep_constant, a_n, x_all, a_n_default, modelform, fir, control, guesses_control))
+  tform <- c("Not", "Implemented", "Currently", "Error")
+  expect_error(Gather_Guesses_CPP(df, dfc, names, term_n, tform, keep_constant, a_n, x_all, a_n_default, modelform, fir, control, guesses_control))
+  keep_constant <- c(0, 1)
+  names <- c("d", "d", "d", "d")
+  term_n <- c(0, 0, 0, 0)
+  tform <- c("loglin", "loglin", "loglin", "loglin")
+  expect_no_error(Gather_Guesses_CPP(df, dfc, names, term_n, tform, keep_constant, a_n, x_all, a_n_default, modelform, fir, control, guesses_control))
+})
+
+## ------------------------------------- ##
+## Verify equation expression code
+## ------------------------------------- ##
+test_that("Check basic input/output works", {
+  a <- c(0, 1, 2, 3, 4, 5, 6)
+  b <- c(1, 2, 3, 4, 5, 6, 7)
+  c <- c(0, 1, 0, 0, 0, 1, 0)
+  d <- c(1, 2, 3, 4, 5, 6, 7)
+  e <- c(2, 3, 2, 2, 2, 3, 3)
+  table <- data.table::data.table(
+    "a" = a, "b" = b, "c" = c,
+    "d" = d, "e" = e
+  )
+  # cox
+  Model_Eq <- "cox(a,b, c) ~ loglinear(d, factor(e), 0) + multiplicative()"
+  eq_out <- Convert_Model_Eq(Model_Eq, table)
+  expect_equal(eq_out$names, c("d", "e_2", "e_3"))
+  expect_equal(eq_out$survival_model_type, "cox")
+  expect_equal(eq_out$person_year, "NONE")
+  expect_equal(eq_out$modelform, "M")
+  Model_Eq <- "cox(a,b, c) ~ loglinear(d, factor(e), 0)"
+  eq_out <- Convert_Model_Eq(Model_Eq, table)
+  expect_equal(eq_out$modelform, "M")
+  expect_equal(eq_out$end_age, "b")
+  Model_Eq <- "cox(b, c) ~ loglinear(d, factor(e), 0)"
+  eq_out <- Convert_Model_Eq(Model_Eq, table)
+  expect_equal(eq_out$end_age, "b")
+  Model_Eq <- "cox_strata(a,b, c,e) ~ loglinear(d, 0)"
+  eq_out <- Convert_Model_Eq(Model_Eq, table)
+  expect_equal(eq_out$end_age, "b")
+  Model_Eq <- "cox_strata(b, c,e) ~ loglinear(d, 0)"
+  eq_out <- Convert_Model_Eq(Model_Eq, table)
+  expect_equal(eq_out$end_age, "b")
+  # poisson
+  Model_Eq <- "poisson(b, c) ~ loglinear(d, factor(e), 0)"
+  eq_out <- Convert_Model_Eq(Model_Eq, table)
+  expect_equal(eq_out$start_age, "NONE")
+  expect_equal(eq_out$person_year, "b")
+  Model_Eq <- "poisson_strata(b, c,e) ~ loglinear(d, 0)"
+  eq_out <- Convert_Model_Eq(Model_Eq, table)
+  expect_equal(eq_out$person_year, "b")
+  # factor baseline check
+  Model_Eq <- "cox(a,b, c) ~ loglinear(d, factor(e), 0) + multiplicative()"
+  eq_out <- Convert_Model_Eq(Model_Eq, table)
+  expect_equal(eq_out$names, c("d", "e_2", "e_3"))
+  Model_Eq <- "cox(a,b, c) ~ loglinear(d, factor(e;baseline=2), 0) + multiplicative()"
+  eq_out <- Convert_Model_Eq(Model_Eq, table)
+  expect_equal(eq_out$names, c("d", "e_3"))
+  options(warn = -1)
+  Model_Eq <- "cox(a,b, c) ~ loglinear(d, factor(e; baseline = 10), 0) + multiplicative()"
+  eq_out <- Convert_Model_Eq(Model_Eq, table)
+  expect_equal(eq_out$names, c("d", "e_2", "e_3"))
+})
+test_that("Check basic survival formula errors", {
+  a <- c(0, 1, 2, 3, 4, 5, 6)
+  b <- c(1, 2, 3, 4, 5, 6, 7)
+  c <- c(0, 1, 0, 0, 0, 1, 0)
+  d <- c(1, 2, 3, 4, 5, 6, 7)
+  e <- c(2, 3, 2, 2, 2, 3, 3)
+  table <- data.table::data.table(
+    "a" = a, "b" = b, "c" = c,
+    "d" = d, "e" = e
+  )
+  Model_Eq <- "cox(a) ~ loglinear(d, factor(e), 0) + multiplicative()"
+  expect_error(Convert_Model_Eq(Model_Eq, table))
+  Model_Eq <- "cox_strata(a) ~ loglinear(d, factor(e), 0) + multiplicative()"
+  expect_error(Convert_Model_Eq(Model_Eq, table))
+  Model_Eq <- "poisson(a) ~ loglinear(d, factor(e), 0) + multiplicative()"
+  expect_error(Convert_Model_Eq(Model_Eq, table))
+  Model_Eq <- "poisson_strata(a) ~ loglinear(d, factor(e), 0) + multiplicative()"
+  expect_error(Convert_Model_Eq(Model_Eq, table))
+  Model_Eq <- "unknown(a) ~ loglinear(d, factor(e), 0) + multiplicative()"
+  expect_error(Convert_Model_Eq(Model_Eq, table))
+  #
+  Model_Eq <- "poisson(b, c) - loglinear(d, factor(e), 0)"
+  expect_error(Convert_Model_Eq(Model_Eq, table))
+  Model_Eq <- "poisson b, c ~ loglinear(d, factor(e), 0)"
+  expect_error(Convert_Model_Eq(Model_Eq, table))
+  Model_Eq <- "poisson(b, c) ~ loglinear d, 0 "
+  expect_error(Convert_Model_Eq(Model_Eq, table))
+  #
+  Model_Eq <- "poisson(b, c) ~ loglinear(d, factor(e), 0) + multiplicative() + multiplicative()"
+  expect_error(Convert_Model_Eq(Model_Eq, table))
+  Model_Eq <- "poisson(b, c) ~ loglinear(d, factor(e), 0) + unknown()"
+  expect_error(Convert_Model_Eq(Model_Eq, table))
+})
+test_that("Check basic modelform conversion works", {
+  a <- c(0, 1, 2, 3, 4, 5, 6)
+  b <- c(1, 2, 3, 4, 5, 6, 7)
+  c <- c(0, 1, 0, 0, 0, 1, 0)
+  d <- c(1, 2, 3, 4, 5, 6, 7)
+  e <- c(2, 3, 2, 2, 2, 3, 3)
+  table <- data.table::data.table(
+    "a" = a, "b" = b, "c" = c,
+    "d" = d, "e" = e
+  )
+  # cox
+  eq_out <- Convert_Model_Eq("cox(a,b, c) ~ loglinear(d, factor(e), 0) + multiplicative()", table)
+  expect_equal(eq_out$modelform, "M")
+  eq_out <- Convert_Model_Eq("cox(a,b, c) ~ loglinear(d, factor(e), 0) + multiplicative-excess()", table)
+  expect_equal(eq_out$modelform, "M")
+  eq_out <- Convert_Model_Eq("cox(a,b, c) ~ loglinear(d, factor(e), 0) + additive()", table)
+  expect_equal(eq_out$modelform, "A")
+  eq_out <- Convert_Model_Eq("cox(a,b, c) ~ loglinear(d, factor(e), 0) + product-additive()", table)
+  expect_equal(eq_out$modelform, "PA")
+  eq_out <- Convert_Model_Eq("cox(a,b, c) ~ loglinear(d, factor(e), 0) + product-additive-excess()", table)
+  expect_equal(eq_out$modelform, "PAE")
+  eq_out <- Convert_Model_Eq("cox(a,b, c) ~ loglinear(d, factor(e), 0) + A()", table)
+  expect_equal(eq_out$modelform, "A")
+  eq_out <- Convert_Model_Eq("cox(a,b, c) ~ loglinear(d, factor(e), 0) + PA()", table)
+  expect_equal(eq_out$modelform, "PA")
+  eq_out <- Convert_Model_Eq("cox(a,b, c) ~ loglinear(d, factor(e), 0) + PAE()", table)
+  expect_equal(eq_out$modelform, "PAE")
+  eq_out <- Convert_Model_Eq("cox(a,b, c) ~ loglinear(d, factor(e), 0) + M()", table)
+  expect_equal(eq_out$modelform, "M")
+  eq_out <- Convert_Model_Eq("cox(a,b, c) ~ loglinear(d, factor(e), 0) + ME()", table)
+  expect_equal(eq_out$modelform, "M")
+})
+test_that("Check basic subterm conversion works", {
+  a <- c(0, 1, 2, 3, 4, 5, 6)
+  b <- c(1, 2, 3, 4, 5, 6, 7)
+  c <- c(0, 1, 0, 0, 0, 1, 0)
+  d <- c(1, 2, 3, 4, 5, 6, 7)
+  e <- c(2, 3, 2, 2, 2, 3, 3)
+  table <- data.table::data.table(
+    "a" = a, "b" = b, "c" = c,
+    "d" = d, "e" = e
+  )
+  # cox
+  full <- "cox(a,b, c) ~ plin(d) + lin(d) + loglin(d) + loglin-dose(d) + lin_dose(d) + quad_dose(d) + step_dose(d) + lin_quad_dose(d) + lin_exp_dose(d) + plinear(d) + product-linear(d) + linear(d) + loglinear(d) + log-linear(d) + loglinear-dose(d) + log-linear-dose(d) + linear-dose(d) + linear-piecewise(d) + quadratic(d) + quad(d) + quad-dose(d) + quadratic-dose(d) + step-dose(d) + step-piecewise(d) + linear-quadratic-dose(d) + linear-quadratic-piecewise(d) + linear-exponential-dose(d) + linear-exponential-piecewise(d)"
+
+  base_eq <- "cox(a,b, c) ~ plin(d) + lin(d) + loglin(d) + plinear(d) + product-linear(d) + linear(d) + loglinear(d) + log-linear(d)"
+  base_out <- c("plin", "lin", "loglin", "plin", "plin", "lin", "loglin", "loglin")
+  eq_out <- Convert_Model_Eq(base_eq, table)
+  expect_equal(eq_out$tform, base_out)
+
+  base_dose_eq <- "cox(a,b, c) ~ loglin-dose(d) + lin_dose(d) + quad_dose(d) + step_dose(d) + loglinear-dose(d) + log-linear-dose(d) + linear-dose(d) + linear-piecewise(d) + quadratic(d) + quad(d) + quad-dose(d) + quadratic-dose(d) + step-dose(d) + step-piecewise(d)"
+  base_dose_out <- c("loglin_slope", "loglin_top", "lin_slope", "lin_int", "quad_slope", "step_slope", "step_int", "loglin_slope", "loglin_top", "loglin_slope", "loglin_top", "lin_slope", "lin_int", "lin_slope", "lin_int", "quad_slope", "quad_slope", "quad_slope", "quad_slope", "step_slope", "step_int", "step_slope", "step_int")
+  eq_out <- Convert_Model_Eq(base_dose_eq, table)
+  expect_equal(eq_out$tform, base_dose_out)
+
+  complx_dose_eq <- "cox(a,b, c) ~ lin_quad_dose(d) + lin_exp_dose(d) + linear-quadratic-dose(d) + linear-quadratic-piecewise(d) + linear-exponential-dose(d) + linear-exponential-piecewise(d)"
+  complx_dose_out <- c("lin_quad_slope", "lin_quad_int", "lin_exp_slope", "lin_exp_int", "lin_exp_exp_slope", "lin_quad_slope", "lin_quad_int", "lin_quad_slope", "lin_quad_int", "lin_exp_slope", "lin_exp_int", "lin_exp_exp_slope", "lin_exp_slope", "lin_exp_int", "lin_exp_exp_slope")
+  eq_out <- Convert_Model_Eq(complx_dose_eq, table)
+  expect_equal(eq_out$tform, complx_dose_out)
+})
+
+## ---------------------- ##
+## Censoring Weight Tests ##
+## ---------------------- ##
+
+test_that("Coxph loglin_M CENSOR Default various_fixes", {
+  fname <- "ll_cens_0.csv"
+  colTypes <- c("double", "double", "double", "integer", "integer")
+  df <- fread(fname, nThread = min(c(detectCores(), 2)), data.table = TRUE, header = TRUE, colClasses = colTypes, verbose = FALSE, fill = TRUE)
+  time1 <- "t0"
+  time2 <- "t1"
+  event <- "lung"
+  names <- c("dose", "fac")
+  term_n <- c(0, 0)
+  tform <- c("loglin", "loglin")
+  keep_constant <- c(0, 0)
+  a_n <- c(0, 0)
+  modelform <- "M"
+  fir <- 0
+  der_iden <- 0
+  control <- list("ncores" = 2, "lr" = 0.75, "maxiter" = -1, "halfmax" = -1, "epsilon" = 1e-6, "deriv_epsilon" = 1e-6, "abs_max" = 1.0, "change_all" = TRUE, "dose_abs_max" = 100.0, "verbose" = 0, "ties" = "breslow", "double_step" = 1)
+  plot_options <- list("name" = paste(tempfile(), "run", sep = ""), "verbose" = TRUE, "studyid" = "studyid", "age_unit" = "years")
+  expect_no_error(GetCensWeight(df, time1, time2, event, names, term_n, tform, keep_constant, a_n, modelform, fir, control, plot_options))
+  keep_constant <- c(1, 1)
+  expect_error(GetCensWeight(df, time1, time2, event, names, term_n, tform, keep_constant, a_n, modelform, fir, control, plot_options))
+  keep_constant <- c(0, 0)
+  df$lung <- rep(0, nrow(df))
+  expect_error(GetCensWeight(df, time1, time2, event, names, term_n, tform, keep_constant, a_n, modelform, fir, control, plot_options))
+  #
 })

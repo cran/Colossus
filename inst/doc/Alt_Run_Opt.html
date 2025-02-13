@@ -432,10 +432,11 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <p>In which r denotes hazard ratios, the denominator is the sum of hazard ratios of intervals containing the event time, and each term is raised to the power of 1 if the interval has an event and 0 otherwise. Different tie methods modify the denominator based on how the order of events is assumed, but the general form still stands. The goal is to compare each event interval to intervals within a similar time span. Stratification adds in an additional condition. If the user stratifies over a covariate “F” then each risk group is split into subgroups with the same value of “F”. So the goal becomes to compare event intervals to intervals with similar strata AND time. This is done to remove the influence of the stratification variables from the calculations.</p>
 <p>In code this is done by adding in an additional parameter for the stratification column and using a different function to call the regression.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>Strat_Col &lt;-<span class="st"> &quot;e&quot;</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">RunCoxRegression_STRATA</span>(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">RunCoxRegression_Strata</span>(</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>  df, time1, time2, event, names, term_n, tform, keep_constant,</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>  a_n, modelform, fir, der_iden, control, Strat_Col</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>)</span></code></pre></div>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>  a_n, modelform,</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>  <span class="dt">control =</span> control, <span class="dt">strat_col =</span> Strat_Col</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a>)</span></code></pre></div>
 </div>
 <div id="poisson-regression" class="section level3">
 <h3>Poisson Regression</h3>
@@ -458,10 +459,11 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <p>Only results associated with the non-stratified parameters are returned by default. An average event rate is calculated for every strata level, which weights the calculated risks.</p>
 <p>In code this is done by adding in a list of stratification columns and using a different function to call the regression. Colossus combines the list of stratification columns into a single interaction, so it does not matter if the user provides a list or combines them themselves.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>Strat_Col &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;e&quot;</span>)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">RunPoissonRegression_STRATA</span>(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">RunPoissonRegression_Strata</span>(</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>  df, pyr, event, names, term_n, tform, keep_constant,</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a>  a_n, modelform, fir, der_iden, control, Strat_Col</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true"></a>)</span></code></pre></div>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a>  a_n, modelform,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true"></a>  <span class="dt">control =</span> control, <span class="dt">strat_col =</span> Strat_Col</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true"></a>)</span></code></pre></div>
 </div>
 </div>
 <div id="simplified-model" class="section level2">
@@ -470,8 +472,9 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <p>Assuming the same general parameters in the other vignettes, the code is as follows:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">RunCoxRegression_Basic</span>(</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a>  df, time1, time2, event, names,</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a>  keep_constant, a_n, der_iden, control</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true"></a>)</span></code></pre></div>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a>  keep_constant, a_n,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true"></a>  <span class="dt">control =</span> control</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true"></a>)</span></code></pre></div>
 </div>
 <div id="non-derivative-calculation" class="section level2">
 <h2>Non-Derivative Calculation</h2>
@@ -479,18 +482,20 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <p>The code is similar to previous examples:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">RunCoxRegression_Single</span>(</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a>  df, time1, time2, event, names, term_n, tform,</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a>  a_n, modelform, fir, control</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a>)</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">RunPoissonRegression_Single</span>(</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true"></a>  df, pyr, event, names, term_n, tform,</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true"></a>  a_n, modelform, fir, control</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true"></a>)</span></code></pre></div>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a>  a_n, modelform,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a>  <span class="dt">control =</span> control</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">RunPoissonRegression_Single</span>(</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true"></a>  df, pyr, event, names, term_n, tform,</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true"></a>  a_n, modelform,</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true"></a>  <span class="dt">control =</span> control</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true"></a>)</span></code></pre></div>
 </div>
 <div id="competing-risks" class="section level2">
 <h2>Competing Risks</h2>
-<div id="fine-grey" class="section level3">
-<h3>Fine-Grey</h3>
+<div id="fine-gray" class="section level3">
+<h3>Fine-Gray</h3>
 <p>In Cox PH there is an assumption that every individual is recorded until they have an event or they are naturally censored, and the same censoring rates are assumed to apply to every individual. These are violated when there is a competing event occurring. In sensitivity analysis there are two extremes that can be tested. Either every person with a competing event is treated as having the event of interest instead, or they are assumed to never experience the event of interest. However there are methods to find a more realistic alternative. Colossus applies the Fine-Gray model for competing risks, which instead weights the contribution of competing event intervals in future intervals by the probability they would not have been censored.</p>
 <p>As previously established, the risk groups are formed to measure the probability that an individual survived up to the time and experienced the event of interest, given that they did not experience an event up to that time:</p>
 <p class="text-center" style="background-color: aliceblue">
@@ -521,23 +526,28 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a>df<span class="op">$</span>censor &lt;-<span class="st"> </span>(df<span class="op">$</span>lung <span class="op">==</span><span class="st"> </span><span class="dv">0</span>) <span class="co"># censoring column made</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a>event &lt;-<span class="st"> &quot;censor&quot;</span> <span class="co"># event type switched to censoring</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a>plot_options &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="st">&quot;name&quot;</span> =<span class="st"> &quot;run_2&quot;</span>, <span class="st">&quot;verbose&quot;</span> =<span class="st"> </span><span class="ot">FALSE</span>, <span class="st">&quot;studyID&quot;</span> =<span class="st"> &quot;studyID&quot;</span>, <span class="st">&quot;age_unit&quot;</span> =<span class="st"> &quot;years&quot;</span>)</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a><span class="co"># modified plotting function used to get censoring weights</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a>dft &lt;-<span class="st"> </span><span class="kw">GetCensWeight</span>(</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true"></a>  df, time1, time2, event, names, term_n, tform, keep_constant,</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true"></a>  a_n, modelform, fir, control, plot_options</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true"></a>) <span class="co"># generates a survival curve</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true"></a>t_ref &lt;-<span class="st"> </span>dft<span class="op">$</span>t</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true"></a>surv_ref &lt;-<span class="st"> </span>dft<span class="op">$</span>surv</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true"></a>t_c &lt;-<span class="st"> </span>df<span class="op">$</span>t1</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true"></a>cens_weight &lt;-<span class="st"> </span><span class="kw">approx</span>(t_ref, surv_ref, t_c, <span class="dt">rule =</span> <span class="dv">2</span>)<span class="op">$</span>y</span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true"></a><span class="co"># the surviving proportions used as censoring weight</span></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true"></a>event &lt;-<span class="st"> &quot;lung&quot;</span> <span class="co"># event switched back</span></span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true"></a></span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">RunCoxRegression_CR</span>(</span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true"></a>  df, time1, time2, event, names, term_n, tform, keep_constant,</span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true"></a>  a_n, modelform, fir, der_iden, control, cens_weight</span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true"></a>)</span></code></pre></div>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a>plot_options &lt;-<span class="st"> </span><span class="kw">list</span>(</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a>  <span class="st">&quot;name&quot;</span> =<span class="st"> &quot;run_2&quot;</span>, <span class="st">&quot;verbose&quot;</span> =<span class="st"> </span><span class="ot">FALSE</span>,</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a>  <span class="st">&quot;studyID&quot;</span> =<span class="st"> &quot;studyID&quot;</span>, <span class="st">&quot;age_unit&quot;</span> =<span class="st"> &quot;years&quot;</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true"></a>)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true"></a><span class="co"># modified plotting function used to get censoring weights</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true"></a>dft &lt;-<span class="st"> </span><span class="kw">GetCensWeight</span>(</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true"></a>  df, time1, time2, event, names, term_n, tform, keep_constant,</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true"></a>  a_n, modelform,</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true"></a>  <span class="dt">control =</span> control, <span class="dt">plot_options =</span> plot_options</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true"></a>) <span class="co"># generates a survival curve</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true"></a>t_ref &lt;-<span class="st"> </span>dft<span class="op">$</span>t</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true"></a>surv_ref &lt;-<span class="st"> </span>dft<span class="op">$</span>surv</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true"></a>t_c &lt;-<span class="st"> </span>df<span class="op">$</span>t1</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true"></a>cens_weight &lt;-<span class="st"> </span><span class="kw">approx</span>(t_ref, surv_ref, t_c, <span class="dt">rule =</span> <span class="dv">2</span>)<span class="op">$</span>y</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true"></a><span class="co"># the surviving proportions used as censoring weight</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true"></a>event &lt;-<span class="st"> &quot;lung&quot;</span> <span class="co"># event switched back</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true"></a></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">RunCoxRegression_CR</span>(</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true"></a>  df, time1, time2, event, names, term_n, tform, keep_constant,</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true"></a>  a_n, modelform,</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true"></a>  <span class="dt">control =</span> control, <span class="dt">cens_weight =</span> cens_weight</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true"></a>)</span></code></pre></div>
 </div>
 <div id="poisson-joint-analysis" class="section level3">
 <h3>Poisson Joint Analysis</h3>
@@ -710,66 +720,29 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb10-12"><a href="#cb10-12" aria-hidden="true"></a>  <span class="dt">strata =</span> <span class="ot">FALSE</span></span>
 <span id="cb10-13"><a href="#cb10-13" aria-hidden="true"></a>)</span>
 <span id="cb10-14"><a href="#cb10-14" aria-hidden="true"></a>Strat_Col &lt;-<span class="st"> &quot;f&quot;</span></span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true"></a><span class="kw">RunPoissonRegression_Joint_Omnibus</span>(</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">RunPoissonRegression_Joint_Omnibus</span>(</span>
 <span id="cb10-16"><a href="#cb10-16" aria-hidden="true"></a>  df, pyr, events, name_list, term_n_list,</span>
 <span id="cb10-17"><a href="#cb10-17" aria-hidden="true"></a>  tform_list, keep_constant_list, a_n_list,</span>
-<span id="cb10-18"><a href="#cb10-18" aria-hidden="true"></a>  modelform, fir, der_iden, control, Strat_Col</span>
-<span id="cb10-19"><a href="#cb10-19" aria-hidden="true"></a>)</span>
-<span id="cb10-20"><a href="#cb10-20" aria-hidden="true"></a><span class="co">#&gt; $LogLik</span></span>
-<span id="cb10-21"><a href="#cb10-21" aria-hidden="true"></a><span class="co">#&gt; [1] -10.44542</span></span>
-<span id="cb10-22"><a href="#cb10-22" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb10-23"><a href="#cb10-23" aria-hidden="true"></a><span class="co">#&gt; $First_Der</span></span>
-<span id="cb10-24"><a href="#cb10-24" aria-hidden="true"></a><span class="co">#&gt; [1]  0.0002673781 -0.0001428182  0.0004757472  0.0004853580</span></span>
-<span id="cb10-25"><a href="#cb10-25" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb10-26"><a href="#cb10-26" aria-hidden="true"></a><span class="co">#&gt; $Second_Der</span></span>
-<span id="cb10-27"><a href="#cb10-27" aria-hidden="true"></a><span class="co">#&gt;           [,1]      [,2]      [,3]      [,4]</span></span>
-<span id="cb10-28"><a href="#cb10-28" aria-hidden="true"></a><span class="co">#&gt; [1,] -4.999733  0.000000 -2.404049 -2.452614</span></span>
-<span id="cb10-29"><a href="#cb10-29" aria-hidden="true"></a><span class="co">#&gt; [2,]  0.000000 -1.000143  0.000000  0.000000</span></span>
-<span id="cb10-30"><a href="#cb10-30" aria-hidden="true"></a><span class="co">#&gt; [3,] -2.404049  0.000000 -7.223837 -7.370253</span></span>
-<span id="cb10-31"><a href="#cb10-31" aria-hidden="true"></a><span class="co">#&gt; [4,] -2.452614  0.000000 -7.370253 -7.519142</span></span>
-<span id="cb10-32"><a href="#cb10-32" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb10-33"><a href="#cb10-33" aria-hidden="true"></a><span class="co">#&gt; $beta_0</span></span>
-<span id="cb10-34"><a href="#cb10-34" aria-hidden="true"></a><span class="co">#&gt; [1]  0.5742600 -1.0349816 -0.0200000 -0.1647421</span></span>
-<span id="cb10-35"><a href="#cb10-35" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb10-36"><a href="#cb10-36" aria-hidden="true"></a><span class="co">#&gt; $Standard_Deviation</span></span>
-<span id="cb10-37"><a href="#cb10-37" aria-hidden="true"></a><span class="co">#&gt; [1] 0.4879656 0.9999286       NaN       NaN</span></span>
-<span id="cb10-38"><a href="#cb10-38" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb10-39"><a href="#cb10-39" aria-hidden="true"></a><span class="co">#&gt; $AIC</span></span>
-<span id="cb10-40"><a href="#cb10-40" aria-hidden="true"></a><span class="co">#&gt; [1] 14.43602</span></span>
-<span id="cb10-41"><a href="#cb10-41" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb10-42"><a href="#cb10-42" aria-hidden="true"></a><span class="co">#&gt; $BIC</span></span>
-<span id="cb10-43"><a href="#cb10-43" aria-hidden="true"></a><span class="co">#&gt; [1] 30.83046</span></span>
-<span id="cb10-44"><a href="#cb10-44" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb10-45"><a href="#cb10-45" aria-hidden="true"></a><span class="co">#&gt; $Deviation</span></span>
-<span id="cb10-46"><a href="#cb10-46" aria-hidden="true"></a><span class="co">#&gt; [1] 6.436015</span></span>
-<span id="cb10-47"><a href="#cb10-47" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb10-48"><a href="#cb10-48" aria-hidden="true"></a><span class="co">#&gt; $Parameter_Lists</span></span>
-<span id="cb10-49"><a href="#cb10-49" aria-hidden="true"></a><span class="co">#&gt; $Parameter_Lists$term_n</span></span>
-<span id="cb10-50"><a href="#cb10-50" aria-hidden="true"></a><span class="co">#&gt; [1] 0 0 0 0</span></span>
-<span id="cb10-51"><a href="#cb10-51" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb10-52"><a href="#cb10-52" aria-hidden="true"></a><span class="co">#&gt; $Parameter_Lists$tforms</span></span>
-<span id="cb10-53"><a href="#cb10-53" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;loglin&quot;     &quot;loglin&quot;     &quot;loglin_top&quot; &quot;quad_slope&quot;</span></span>
-<span id="cb10-54"><a href="#cb10-54" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb10-55"><a href="#cb10-55" aria-hidden="true"></a><span class="co">#&gt; $Parameter_Lists$names</span></span>
-<span id="cb10-56"><a href="#cb10-56" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;fac_e0&quot; &quot;fac_e1&quot; &quot;t0&quot;     &quot;t0&quot;    </span></span>
-<span id="cb10-57"><a href="#cb10-57" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb10-58"><a href="#cb10-58" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb10-59"><a href="#cb10-59" aria-hidden="true"></a><span class="co">#&gt; $Control_List</span></span>
-<span id="cb10-60"><a href="#cb10-60" aria-hidden="true"></a><span class="co">#&gt; $Control_List$Iteration</span></span>
-<span id="cb10-61"><a href="#cb10-61" aria-hidden="true"></a><span class="co">#&gt; [1] 9</span></span>
-<span id="cb10-62"><a href="#cb10-62" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb10-63"><a href="#cb10-63" aria-hidden="true"></a><span class="co">#&gt; $Control_List$`Maximum Step`</span></span>
-<span id="cb10-64"><a href="#cb10-64" aria-hidden="true"></a><span class="co">#&gt; [1] 1</span></span>
-<span id="cb10-65"><a href="#cb10-65" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb10-66"><a href="#cb10-66" aria-hidden="true"></a><span class="co">#&gt; $Control_List$`Derivative Limiting`</span></span>
-<span id="cb10-67"><a href="#cb10-67" aria-hidden="true"></a><span class="co">#&gt; [1] 0.000485358</span></span>
-<span id="cb10-68"><a href="#cb10-68" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb10-69"><a href="#cb10-69" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb10-70"><a href="#cb10-70" aria-hidden="true"></a><span class="co">#&gt; $Converged</span></span>
-<span id="cb10-71"><a href="#cb10-71" aria-hidden="true"></a><span class="co">#&gt; [1] TRUE</span></span>
-<span id="cb10-72"><a href="#cb10-72" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb10-73"><a href="#cb10-73" aria-hidden="true"></a><span class="co">#&gt; $Status</span></span>
-<span id="cb10-74"><a href="#cb10-74" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;PASSED&quot;</span></span></code></pre></div>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true"></a>  modelform,</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true"></a>  <span class="dt">control =</span> control, <span class="dt">strat_col =</span> Strat_Col</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true"></a>)</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true"></a><span class="kw">Interpret_Output</span>(e)</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true"></a><span class="co">#&gt; Final Results</span></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true"></a><span class="co">#&gt;    Covariate    Subterm Term Number Central Estimate Standard Deviation</span></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true"></a><span class="co">#&gt;       &lt;char&gt;     &lt;char&gt;       &lt;int&gt;            &lt;num&gt;              &lt;num&gt;</span></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true"></a><span class="co">#&gt; 1:    fac_e0     loglin           0        0.5742948          0.4676073</span></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true"></a><span class="co">#&gt; 2:    fac_e1     loglin           0       -1.0346366          1.0090321</span></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true"></a><span class="co">#&gt; 3:        t0 loglin_top           0       -0.0200000                NaN</span></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true"></a><span class="co">#&gt; 4:        t0 quad_slope           0       -0.1646741                NaN</span></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true"></a><span class="co">#&gt; Poisson Model Used</span></span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true"></a><span class="co">#&gt; -2*Log-Likelihood: 20.89,  Deviation: 6.44,  AIC: 14.44,  BIC: 30.83</span></span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true"></a><span class="co">#&gt; Iterations run: 6</span></span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true"></a><span class="co">#&gt; maximum step size: 1.00e+00, maximum first derivative: 5.12e-04</span></span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true"></a><span class="co">#&gt; Analysis converged</span></span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.18 seconds</span></span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span></code></pre></div>
 </div>
 </div>
 <div id="distributed-starts" class="section level2">
