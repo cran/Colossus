@@ -6,8 +6,8 @@
 \usage{
 CoxCurveSolver(
   df,
-  time1 = "start",
-  time2 = "end",
+  time1 = "\%trunc\%",
+  time2 = "\%trunc\%",
   event0 = "event",
   names = c("CONST"),
   term_n = c(0),
@@ -15,8 +15,6 @@ CoxCurveSolver(
   keep_constant = c(0),
   a_n = c(0),
   modelform = "M",
-  fir = 0,
-  der_iden = 0,
   control = list(),
   strat_col = "null",
   cens_weight = "null",
@@ -42,13 +40,9 @@ CoxCurveSolver(
 
 \item{keep_constant}{binary values to denote which parameters to change}
 
-\item{a_n}{list of initial parameter values, used to determine number of parameters. May be either a list of vectors or a single vector.}
+\item{a_n}{list of initial parameter values, used to determine the number of parameters. May be either a list of vectors or a single vector.}
 
 \item{modelform}{string specifying the model type: M, ME, A, PA, PAE, GMIX, GMIX-R, GMIX-E}
-
-\item{fir}{term number for the initial term, used for models of the form T0*f(Ti) in which the order matters}
-
-\item{der_iden}{number for the subterm to test derivative at, only used for testing runs with a single varying parameter, should be smaller than total number of parameters. indexed starting at 0}
 
 \item{control}{list of parameters controlling the convergence, see Def_Control() for options or vignette("Control_Options")}
 
@@ -58,9 +52,9 @@ CoxCurveSolver(
 
 \item{model_control}{controls which alternative model options are used, see Def_model_control() for options and vignette("Control_Options") for further details}
 
-\item{cons_mat}{Matrix containing coefficients for system of linear constraints, formatted as matrix}
+\item{cons_mat}{Matrix containing coefficients for a system of linear constraints, formatted as matrix}
 
-\item{cons_vec}{Vector containing constants for system of linear constraints, formatted as vector}
+\item{cons_vec}{Vector containing constants for a system of linear constraints, formatted as vector}
 }
 \value{
 returns a list of the final results
@@ -71,6 +65,7 @@ iteratively optimizing end-points of intervals. Intervals updated using the bise
 }
 \seealso{
 Other Cox Wrapper Functions: 
+\code{\link{RunCaseControlRegression_Omnibus}()},
 \code{\link{RunCoxNull}()},
 \code{\link{RunCoxRegression}()},
 \code{\link{RunCoxRegression_Basic}()},

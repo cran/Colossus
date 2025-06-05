@@ -32,7 +32,7 @@ gen_time_dep(
 
 \item{dt}{spacing in time for new rows}
 
-\item{new_names}{list of new names to use instead of default, default used if entry is ''}
+\item{new_names}{list of new names to use instead of default, default used if entry is ''"}
 
 \item{dep_cols}{columns that are not needed in the new dataframe}
 
@@ -62,7 +62,7 @@ time2 <- "a"
 event <- "c"
 control <- list(
   "lr" = 0.75, "maxiter" = -1, "halfmax" = 5, "epsilon" = 1e-9,
-  "deriv_epsilon" = 1e-9, "abs_max" = 1.0, "change_all" = TRUE,
+  "deriv_epsilon" = 1e-9, "abs_max" = 1.0,
   "dose_abs_max" = 100.0,
   "verbose" = FALSE, "ties" = "breslow", "double_step" = 1
 )

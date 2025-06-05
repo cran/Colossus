@@ -26,12 +26,10 @@
 #' a_n <- c(-0.1)
 #' a_n_default <- a_n
 #' modelform <- "M"
-#' fir <- 0
-#' der_iden <- 0
 #' control <- list(
 #'   "ncores" = 2, "lr" = 0.75, "maxiter" = -1,
 #'   "halfmax" = 5, "epsilon" = 1e-9,
-#'   "deriv_epsilon" = 1e-9, "abs_max" = 1.0, "change_all" = TRUE,
+#'   "deriv_epsilon" = 1e-9, "abs_max" = 1.0,
 #'   "dose_abs_max" = 100.0, "verbose" = FALSE, "ties" = "breslow",
 #'   "double_step" = 1
 #' )
@@ -48,10 +46,18 @@
 #' Gather_Guesses_CPP(
 #'   df, dfc, names, term_n, tform, keep_constant,
 #'   a_n, x_all, a_n_default,
-#'   modelform, fir, control, guesses_control
+#'   modelform, control, guesses_control
 #' )
 #' @importFrom rlang .data
-Gather_Guesses_CPP <- function(df, dfc, names, term_n, tform, keep_constant, a_n, x_all, a_n_default, modelform, fir, control, guesses_control, model_control = list()) {
+Gather_Guesses_CPP <- function(df, dfc, names, term_n, tform, keep_constant, a_n, x_all, a_n_default, modelform, control, guesses_control, model_control = list()) {
+  tryCatch(
+    {
+      df <- setDT(df)
+    },
+    error = function(e) {
+      df <- data.table(df)
+    }
+  )
   if (typeof(a_n) != "list") {
     a_n <- list(a_n)
   }
@@ -137,7 +143,7 @@ Gather_Guesses_CPP <- function(df, dfc, names, term_n, tform, keep_constant, a_n
     }
     keep <- risk_check_transition(
       term_n, tform, a_n0, dfc, x_all,
-      fir, modelform,
+      0, modelform,
       control, model_control,
       keep_constant, term_tot
     )
@@ -215,8 +221,8 @@ Gather_Guesses_CPP <- function(df, dfc, names, term_n, tform, keep_constant, a_n
       }
     }
     keep <- risk_check_transition(
-      term_n, tform, a_n0, dfc, x_all, fir,
-      modelform, control, model_control,
+      term_n, tform, a_n0, dfc, x_all,
+      0, modelform, control, model_control,
       keep_constant, term_tot
     )
     if (keep) {
@@ -258,21 +264,15 @@ Gather_Guesses_CPP <- function(df, dfc, names, term_n, tform, keep_constant, a_n
 #' tform <- val$tform
 #' keep_constant <- val$keep_constant
 #' a_n <- val$a_n
-#' der_iden <- val$der_iden
 #' names <- val$names
 #'
-Correct_Formula_Order <- function(term_n, tform, keep_constant, a_n, names, der_iden = 0, cons_mat = matrix(c(0)), cons_vec = c(0), verbose = FALSE, model_control = list()) {
+Correct_Formula_Order <- function(term_n, tform, keep_constant, a_n, names, cons_mat = matrix(c(0)), cons_vec = c(0), verbose = FALSE, model_control = list()) {
   #
   verbose <- Check_Verbose(verbose)
   if ("para_number" %in% names(model_control)) {
     # pass
   } else {
     model_control["para_number"] <- 0
-  }
-  if (der_iden %in% (seq_len(length(tform)) - 1)) {
-    # pass
-  } else {
-    stop("Error: der_iden should be within 0:(length(tform)-1)")
   }
   if (is.matrix(cons_mat)) {
     # pass
@@ -304,12 +304,14 @@ Correct_Formula_Order <- function(term_n, tform, keep_constant, a_n, names, der_
     ))
   }
   if (min(term_n) != 0) {
-    warning(paste("Warning: term_n expects nonnegative integer values and a minimum of 0, minimum value was ",
-      min(term_n),
-      ". Minimum value set to 0, others shifted by ",
-      -1 * min(term_n),
-      sep = ""
-    ))
+    if (verbose >= 2) {
+      warning(paste("Warning: term_n expects nonnegative integer values and a minimum of 0, minimum value was ",
+        min(term_n),
+        ". Minimum value set to 0, others shifted by ",
+        -1 * min(term_n),
+        sep = ""
+      ))
+    }
     term_n <- term_n - min(term_n)
   }
   if (length(sort(unique(term_n))) != length(min(term_n):max(term_n))) {
@@ -327,26 +329,40 @@ Correct_Formula_Order <- function(term_n, tform, keep_constant, a_n, names, der_
     keep_constant <- keep_constant[seq_len(length(names))]
   }
   if (length(term_n) < length(names)) {
-    stop(paste("Error: Terms used: ", length(term_n),
-      ", Covariates used: ", length(names),
-      sep = ""
-    ))
+    if (verbose >= 2) {
+      warning(paste("Warning: Terms used: ", length(term_n),
+        ", Covariates used: ", length(names),
+        sep = ""
+      ))
+    }
+    term_n <- c(term_n, rep(0, length(names) -
+      length(term_n)))
   } else if (length(term_n) > length(names)) {
-    stop(paste("Error: Terms used: ", length(term_n),
-      ", Covariates used: ", length(names),
-      sep = ""
-    ))
+    if (verbose >= 2) {
+      warning(paste("Warning: Terms used: ", length(term_n),
+        ", Covariates used: ", length(names),
+        sep = ""
+      ))
+    }
+    term_n <- term_n[seq_len(length(names))]
   }
   if (length(tform) < length(names)) {
-    stop(paste("Error: Term types used: ", length(tform),
-      ", Covariates used: ", length(names),
-      sep = ""
-    ))
+    if (verbose >= 2) {
+      warning(paste("Warning: Term types used: ", length(tform),
+        ", Covariates used: ", length(names),
+        sep = ""
+      ))
+    }
+    tform <- c(tform, rep("loglin", length(names) -
+      length(tform)))
   } else if (length(tform) > length(names)) {
-    stop(paste("Error: Term types used: ", length(tform),
-      ", Covariates used: ", length(names),
-      sep = ""
-    ))
+    if (verbose >= 2) {
+      warning(paste("Warning: Term types used: ", length(tform),
+        ", Covariates used: ", length(names),
+        sep = ""
+      ))
+    }
+    tform <- tform[seq_len(length(names))]
   }
   col_to_cons <- c()
   for (i in keep_constant) {
@@ -371,6 +387,16 @@ Correct_Formula_Order <- function(term_n, tform, keep_constant, a_n, names, der_
   if (min(keep_constant) > 0) {
     stop("Error: Atleast one parameter must be free")
   }
+  tform <- tolower(tform)
+  for (i in 1:length(tform)) {
+    if (tform[i] %in% c("plin", "plinear", "product-linear")) {
+      tform[i] <- "plin"
+    } else if (tform[i] %in% c("lin", "linear")) {
+      tform[i] <- "lin"
+    } else if (tform[i] %in% c("loglin", "loglinear", "log-linear")) {
+      tform[i] <- "loglin"
+    }
+  }
   tform_order <- c(
     "loglin", "lin", "plin", "loglin_slope", "loglin_top",
     "lin_slope", "lin_int", "quad_slope",
@@ -390,11 +416,13 @@ Correct_Formula_Order <- function(term_n, tform, keep_constant, a_n, names, der_
       a_n <- a_n[[1]]
     }
     if (length(a_n) < length(names)) {
-      warning(paste("Warning: Parameters used: ",
-        length(a_n), ", Covariates used: ",
-        length(names), ", Remaining filled with 0.01",
-        sep = ""
-      ))
+      if (verbose >= 2) {
+        warning(paste("Warning: Parameters used: ",
+          length(a_n), ", Covariates used: ",
+          length(names), ", Remaining filled with 0.01",
+          sep = ""
+        ))
+      }
       a_n <- c(a_n, rep(0.01, length(names) - length(a_n)))
     } else if (length(a_n) > length(names)) {
       stop(paste("Error: Parameters used: ", length(a_n),
@@ -411,7 +439,6 @@ Correct_Formula_Order <- function(term_n, tform, keep_constant, a_n, names, der_
       "current_order" = seq_len(length(tform)),
       "constraint_order" = col_to_cons
     )
-    df$iden_const[[der_iden + 1]] <- 1
     df$para_num[[model_control[["para_number"]] + 1]] <- 1
     df$tform_order <- tform_iden
     keycol <- c("term_n", "names", "tform_order")
@@ -431,11 +458,13 @@ Correct_Formula_Order <- function(term_n, tform, keep_constant, a_n, names, der_
       }
     }
     if (length(a_0) < length(names)) {
-      warning(paste("Warning: Parameters used: ", length(a_0),
-        ", Covariates used: ", length(names),
-        ", Remaining filled with 0.01",
-        sep = ""
-      ))
+      if (verbose >= 2) {
+        warning(paste("Warning: Parameters used: ", length(a_0),
+          ", Covariates used: ", length(names),
+          ", Remaining filled with 0.01",
+          sep = ""
+        ))
+      }
       for (i in seq_len(length(a_n))) {
         a_n[[i]] <- c(
           a_n[[i]],
@@ -456,7 +485,6 @@ Correct_Formula_Order <- function(term_n, tform, keep_constant, a_n, names, der_
       "current_order" = seq_along(tform),
       "constraint_order" = col_to_cons
     )
-    df$iden_const[[der_iden + 1]] <- 1
     df$para_num[[model_control[["para_number"]] + 1]] <- 1
     for (i in seq_len(length(a_n))) {
       df[[paste("a_", i, sep = "")]] <- a_n[[i]]
@@ -543,11 +571,10 @@ Correct_Formula_Order <- function(term_n, tform, keep_constant, a_n, names, der_
   }
   a_temp <- df$iden_const
   b_temp <- df$para_num
-  der_iden <- which(a_temp == 1) - 1
   para_num <- which(b_temp == 1) - 1
   list(
     "term_n" = df$term_n, "tform" = df$tform, "keep_constant" = df$keep_constant,
-    "a_n" = a_n, "der_iden" = der_iden, "names" = df$names,
+    "a_n" = a_n, "names" = df$names,
     "Permutation" = df$current_order,
     "cons_mat" = unname(cons_mat), "cons_vec" = cons_vec,
     "para_num" = para_num
@@ -573,6 +600,14 @@ Correct_Formula_Order <- function(term_n, tform, keep_constant, a_n, names, der_
 #' )
 #' df <- Replace_Missing(df, c("Starting_Age", "Ending_Age"), 70)
 Replace_Missing <- function(df, name_list, msv, verbose = FALSE) {
+  tryCatch(
+    {
+      df <- setDT(df)
+    },
+    error = function(e) {
+      df <- data.table(df)
+    }
+  )
   verbose <- Check_Verbose(verbose)
   if (is.na(msv)) {
     stop("Error: The missing-value replacement is also NA")
@@ -663,6 +698,7 @@ Def_Control <- function(control) {
       control[nm] <- control_def[nm]
     }
   }
+  control["ties"] <- tolower(control["ties"])
   control_min <- list(
     "verbose" = 0, "lr" = 0.0, "maxiter" = -1,
     "halfmax" = 0, "epsilon" = 0.0,
@@ -710,19 +746,19 @@ Def_Control <- function(control) {
 Def_modelform_fix <- function(control, model_control, modelform, term_n) {
   term_tot <- max(term_n) + 1
   modelform <- toupper(modelform)
-  acceptable <- c(
+  acceptable <- toupper(c(
     "A", "PA", "PAE", "M", "ME", "GMIX", "GMIX-R", "GMIX-E",
     "multiplicative", "multiplicative-excess", "additive",
     "product-additive", "product-additive-excess"
-  )
+  ))
   if (modelform %in% acceptable) {
-    if (modelform %in% c("ME", "multiplicative", "multiplicative-excess")) {
+    if (modelform %in% c("ME", "MULTIPLICATIVE", "MULTIPLICATIVE-EXCESS")) {
       modelform <- "M"
-    } else if (modelform == "additive") {
+    } else if (modelform == "ADDITIVE") {
       modelform <- "A"
-    } else if (modelform == "product-additive") {
+    } else if (modelform == "PRODUCT-ADDITIVE") {
       modelform <- "PA"
-    } else if (modelform == "product-additive-excess") {
+    } else if (modelform == "PRODUCT-ADDITIVE-EXCESS") {
       modelform <- "PAE"
     } else if (modelform == "GMIX-R") {
       model_control$gmix_term <- rep(0, term_tot)
@@ -770,7 +806,7 @@ Def_model_control <- function(control) {
     "gradient", "constraint", "strata", "surv",
     "schoenfeld", "risk",
     "risk_subset", "log_bound", "pearson", "deviance",
-    "mcml", "oberved_info"
+    "mcml", "oberved_info", "time_risk"
   )
   for (nm in control_def_names) {
     if (nm %in% names(control)) {
@@ -778,6 +814,9 @@ Def_model_control <- function(control) {
     } else {
       control[nm] <- FALSE
     }
+  }
+  if (control["null"] == TRUE) {
+    control["single"] <- TRUE
   }
   if ("step_size" %in% names(control)) {
     # fine
@@ -798,6 +837,11 @@ Def_model_control <- function(control) {
     # fine
   } else {
     control["gmix_term"] <- c(0)
+  }
+  if ("conditional_threshold" %in% names(control)) {
+    # fine
+  } else {
+    control["conditional_threshold"] <- 50
   }
   if (control[["log_bound"]]) {
     if ("qchi" %in% names(control)) {
@@ -1119,7 +1163,14 @@ Linked_Lin_Exp_Para <- function(y, a0, a1_goal, verbose = 0) {
 #' new_col <- val$cols
 #'
 factorize <- function(df, col_list, verbose = 0) {
-  df <- data.table(df)
+  tryCatch(
+    {
+      df <- setDT(df)
+    },
+    error = function(e) {
+      df <- data.table(df)
+    }
+  )
   verbose <- Check_Verbose(verbose)
   cols <- c()
   col0 <- names(df)
@@ -1167,7 +1218,14 @@ factorize <- function(df, col_list, verbose = 0) {
 #' new_col <- val$cols
 #'
 factorize_par <- function(df, col_list, verbose = 0, nthreads = as.numeric(detectCores())) {
-  df <- data.table(df)
+  tryCatch(
+    {
+      df <- setDT(df)
+    },
+    error = function(e) {
+      df <- data.table(df)
+    }
+  )
   verbose <- Check_Verbose(verbose)
   cols <- c()
   vals <- c()
@@ -1220,6 +1278,14 @@ factorize_par <- function(df, col_list, verbose = 0, nthreads = as.numeric(detec
 #' df <- vals$df
 #' new_col <- vals$cols
 interact_them <- function(df, interactions, new_names, verbose = 0) {
+  tryCatch(
+    {
+      df <- setDT(df)
+    },
+    error = function(e) {
+      df <- data.table(df)
+    }
+  )
   verbose <- Check_Verbose(verbose)
   cols <- c()
   for (i in seq_len(length(interactions))) {
@@ -1238,12 +1304,16 @@ interact_them <- function(df, interactions, new_names, verbose = 0) {
     col1 <- formula[1]
     col2 <- formula[3]
     if (paste(formula[1], "?", formula[2], "?", formula[3], sep = "") %in% interactions[i + seq_len(length(interactions))]) {
-      warning(paste("Warning: interation ", i, "is duplicated")) # nocov
+      if (verbose >= 2) {
+        warning(paste("Warning: interation ", i, "is duplicated")) # nocov
+      }
     } else if (paste(formula[3], "?", formula[2], "?", formula[1], sep = "") %in% interactions[i + seq_len(length(interactions))]) {
-      warning(paste(
-        "Warning: the reverse of interation ", i,
-        "is duplicated"
-      )) # nocov
+      if (verbose >= 2) {
+        warning(paste(
+          "Warning: the reverse of interation ", i,
+          "is duplicated"
+        )) # nocov
+      }
     } else {
       if (formula[2] == "+") {
         df[, newcol] <- df[, col1, with = FALSE] +
@@ -1304,6 +1374,14 @@ Likelihood_Ratio_Test <- function(alternative_model, null_model) {
 #' unique_cols <- Check_Dupe_Columns(df, cols, term_n)
 #'
 Check_Dupe_Columns <- function(df, cols, term_n, verbose = 0, factor_check = FALSE) {
+  tryCatch(
+    {
+      df <- setDT(df)
+    },
+    error = function(e) {
+      df <- data.table(df)
+    }
+  )
   verbose <- Check_Verbose(verbose)
   if (length(cols) > 1) {
     features_pair <- combn(cols, 2, simplify = FALSE) # list all column pairs
@@ -1336,10 +1414,12 @@ Check_Dupe_Columns <- function(df, cols, term_n, verbose = 0, factor_check = FAL
       if ((t1 == t2) && (checked_factor)) {
         if (!(f1 %in% toRemove) && !(f2 %in% toRemove)) {
           if (all(df[[f1]] == df[[f2]])) { # test for duplicates
-            warning(paste("Warning: ", f1, " and ", f2,
-              " are equal",
-              sep = ""
-            ))
+            if (verbose >= 2) {
+              warning(paste("Warning: ", f1, " and ", f2,
+                " are equal",
+                sep = ""
+              ))
+            }
             toRemove <- c(toRemove, f2) # build the list of duplicates
           }
           if (min(df[[f2]]) == max(df[[f2]])) {
@@ -1404,6 +1484,14 @@ Check_Dupe_Columns <- function(df, cols, term_n, verbose = 0, factor_check = FAL
 #' ce <- val$ce
 #'
 Check_Trunc <- function(df, ce, verbose = 0) {
+  tryCatch(
+    {
+      df <- setDT(df)
+    },
+    error = function(e) {
+      df <- data.table(df)
+    }
+  )
   verbose <- Check_Verbose(verbose)
   if (ce[1] == "%trunc%") {
     if (ce[2] == "%trunc%") {
@@ -1446,7 +1534,7 @@ Check_Trunc <- function(df, ce, verbose = 0) {
 #' event <- "c"
 #' control <- list(
 #'   "lr" = 0.75, "maxiter" = -1, "halfmax" = 5, "epsilon" = 1e-9,
-#'   "deriv_epsilon" = 1e-9, "abs_max" = 1.0, "change_all" = TRUE,
+#'   "deriv_epsilon" = 1e-9, "abs_max" = 1.0,
 #'   "dose_abs_max" = 100.0,
 #'   "verbose" = FALSE, "ties" = "breslow", "double_step" = 1
 #' )
@@ -1461,6 +1549,14 @@ Check_Trunc <- function(df, ce, verbose = 0) {
 #' file.remove("test_new.csv")
 #'
 gen_time_dep <- function(df, time1, time2, event0, iscox, dt, new_names, dep_cols, func_form, fname, tform, nthreads = as.numeric(detectCores())) {
+  tryCatch(
+    {
+      df <- setDT(df)
+    },
+    error = function(e) {
+      df <- data.table(df)
+    }
+  )
   dfn <- names(df)
   ce <- c(time1, time2, event0)
   t_check <- Check_Trunc(df, ce)
@@ -1557,6 +1653,14 @@ gen_time_dep <- function(df, time1, time2, event0, iscox, dt, new_names, dep_col
 #' df <- Date_Shift(df, c("m0", "d0", "y0"), c("m1", "d1", "y1"), "date_since")
 #'
 Date_Shift <- function(df, dcol0, dcol1, col_name, units = "days") {
+  tryCatch(
+    {
+      df <- setDT(df)
+    },
+    error = function(e) {
+      df <- data.table(df)
+    }
+  )
   def_cols <- names(df)
   df$dt0 <- paste(df[[match(dcol0[1], names(df))]],
     df[[match(dcol0[2], names(df))]],
@@ -1609,6 +1713,14 @@ Date_Shift <- function(df, dcol0, dcol1, col_name, units = "days") {
 #' df <- Time_Since(df, c("m1", "d1", "y1"), tref, "date_since")
 #'
 Time_Since <- function(df, dcol0, tref, col_name, units = "days") {
+  tryCatch(
+    {
+      df <- setDT(df)
+    },
+    error = function(e) {
+      df <- data.table(df)
+    }
+  )
   def_cols <- names(df)
   df$dt0 <- paste(df[[match(dcol0[1], names(df))]], df[[match(
     dcol0[2],
@@ -1682,6 +1794,14 @@ Time_Since <- function(df, dcol0, tref, col_name, units = "days") {
 #' )
 #'
 Joint_Multiple_Events <- function(df, events, name_list, term_n_list = list(), tform_list = list(), keep_constant_list = list(), a_n_list = list()) {
+  tryCatch(
+    {
+      df <- setDT(df)
+    },
+    error = function(e) {
+      df <- data.table(df)
+    }
+  )
   # filling missing values
   for (i in names(name_list)) {
     temp0 <- unlist(name_list[i], use.names = FALSE)
@@ -1918,45 +2038,6 @@ System_Version <- function() {
     "Operating System" = os, "Default c++" = gcc, "R Compiler" = Rcomp,
     "OpenMP Enabled" = OMP
   )
-}
-
-#' Saves information about a run to a log file
-#'
-#' \code{Model_Results_Log} saves information about the data, results, model, computer, software, and date to an external file. Intended to make reproduction of results easier
-#'
-#' @param noprint boolean, if true the file is saved to the log file, if false the output is printed to the console INSTEAD of being saved.
-#' @inheritParams R_template
-#' @family Output and Information Functions
-#' @return null, prints to screen or saves to file
-#' @export
-Model_Results_Log <- function(log_file = "out.log", df = data.table(), out_list = list(), noprint = TRUE) {
-  if (noprint) {
-    try(message_file <- file(log_file, open = "wt"))
-    sink(message_file, type = "message")
-    sink(message_file, type = "output")
-  }
-  message("| ---------------- Data Summary ---------------- |")
-  if (nrow(df) > 0) {
-    print(summary(df))
-  } else {
-    print("No dataframe provided")
-  }
-  message("| ---------------- Results Summary ---------------- |")
-  if (length(out_list) > 0) {
-    Interpret_Output(out_list)
-  } else {
-    print("No results provided")
-  }
-  message("| ---------------- System Summary ---------------- |")
-  print(System_Version())
-  message("| ---------------- Session Summary ---------------- |")
-  print(sessionInfo())
-  message("| ---------------- Date ---------------- |")
-  print(Sys.Date())
-  if (noprint) {
-    sink(NULL)
-  }
-  return(NULL)
 }
 
 #' General purpose verbosity check
@@ -2605,6 +2686,14 @@ Event_Time_Gen <- function(table, pyr, categ, summaries, events, verbose = FALSE
 #' e <- Convert_Model_Eq(Model_Eq, table)
 #'
 Convert_Model_Eq <- function(Model_Eq, df) {
+  tryCatch(
+    {
+      df <- setDT(df)
+    },
+    error = function(e) {
+      df <- data.table(df)
+    }
+  )
   # values to assign to
   term_n <- c()
   tform <- c()
@@ -2844,19 +2933,17 @@ Convert_Model_Eq <- function(Model_Eq, df) {
 #' term_n <- c(0, 1, 1, 2)
 #' tform <- c("loglin", "lin", "lin", "plin")
 #' modelform <- "M"
-#' fir <- 0
 #' keep_constant <- c(0, 0, 0, 0)
-#' der_iden <- 0
 #' control <- list(
 #'   "ncores" = 2, "lr" = 0.75, "maxiters" = c(5, 5, 5),
 #'   "halfmax" = 5, "epsilon" = 1e-3, "deriv_epsilon" = 1e-3,
-#'   "abs_max" = 1.0, "change_all" = TRUE, "dose_abs_max" = 100.0,
+#'   "abs_max" = 1.0, "dose_abs_max" = 100.0,
 #'   "verbose" = FALSE,
 #'   "ties" = "breslow", "double_step" = 1, "guesses" = 2
 #' )
 #' e <- RunCoxRegression_Omnibus(df, time1, time2, event,
 #'   names, term_n, tform, keep_constant,
-#'   a_n, modelform, fir, der_iden, control,
+#'   a_n, modelform, control,
 #'   model_control = list(
 #'     "single" = FALSE,
 #'     "basic" = FALSE, "cr" = FALSE, "null" = FALSE
@@ -2865,6 +2952,14 @@ Convert_Model_Eq <- function(Model_Eq, df) {
 #' Interpret_Output(e)
 #'
 Interpret_Output <- function(out_list, digits = 2) {
+  tryCatch(
+    {
+      df <- setDT(df)
+    },
+    error = function(e) {
+      df <- data.table(df)
+    }
+  )
   # make sure the output isn't an error
   passed <- out_list$Status
   message("|-------------------------------------------------------------------|")
@@ -2898,6 +2993,47 @@ Interpret_Output <- function(out_list, digits = 2) {
     } else {
       # Check if its a multidose problem
       if (out_list$Survival_Type == "Cox_Multidose") {
+        message("Currently the multiple realization code is not setup for printing results, due to the potentially large number of realizations")
+      } else if (out_list$Survival_Type == "CaseControl") {
+        # case control output
+        # get the model details
+        names <- out_list$Parameter_Lists$names
+        tforms <- out_list$Parameter_Lists$tforms
+        term_n <- out_list$Parameter_Lists$term_n
+        beta_0 <- out_list$beta_0
+        stdev <- out_list$Standard_Deviation
+        pval <- pnorm(-abs(beta_0 / stdev))
+        strata_odds <- out_list$StrataOdds
+        res_table <- data.table(
+          "Covariate" = names,
+          "Subterm" = tforms,
+          "Term Number" = term_n,
+          "Central Estimate" = beta_0,
+          "Standard Error" = stdev,
+          "1-tail p-value" = pval
+        )
+        message("Final Results")
+        print(res_table)
+        deviance <- out_list$Deviance
+        iteration <- out_list$Control_List$Iteration
+        step_max <- out_list$Control_List$`Maximum Step`
+        deriv_max <- out_list$Control_List$`Derivative Limiting`
+        converged <- out_list$Converged
+        #
+        freepara <- out_list$FreeParameters
+        freestrata <- out_list$FreeSets
+        #
+        message("\nMatched Case-Control Model Used")
+        message(paste("Deviance: ", round(deviance, digits), sep = ""))
+        message(paste(freestrata, " out of ", length(strata_odds), " matched sets used Unconditional Likelihood", sep = ""))
+        if (!is.null(converged)) {
+          message(paste("Iterations run: ", iteration, "\nmaximum step size: ", formatC(step_max, format = "e", digits = digits), ", maximum first derivative: ", formatC(deriv_max, format = "e", digits = digits), sep = ""))
+          if (converged) {
+            message("Analysis converged")
+          } else {
+            message("Analysis did not converge, check convergence criteria or run further")
+          }
+        }
       } else {
         # get the model details
         names <- out_list$Parameter_Lists$names
@@ -2905,12 +3041,14 @@ Interpret_Output <- function(out_list, digits = 2) {
         term_n <- out_list$Parameter_Lists$term_n
         beta_0 <- out_list$beta_0
         stdev <- out_list$Standard_Deviation
+        pval <- 2 * pnorm(-abs(beta_0 / stdev))
         res_table <- data.table(
           "Covariate" = names,
           "Subterm" = tforms,
           "Term Number" = term_n,
           "Central Estimate" = beta_0,
-          "Standard Deviation" = stdev
+          "Standard Error" = stdev,
+          "2-tail p-value" = pval
         )
         message("Final Results")
         print(res_table)

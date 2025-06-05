@@ -6,13 +6,12 @@
 \usage{
 RunCoxRegression_Basic(
   df,
-  time1 = "start",
-  time2 = "end",
+  time1 = "\%trunc\%",
+  time2 = "\%trunc\%",
   event0 = "event",
   names = c("CONST"),
   keep_constant = c(0),
   a_n = c(0),
-  der_iden = 0,
   control = list()
 )
 }
@@ -29,9 +28,7 @@ RunCoxRegression_Basic(
 
 \item{keep_constant}{binary values to denote which parameters to change}
 
-\item{a_n}{list of initial parameter values, used to determine number of parameters. May be either a list of vectors or a single vector.}
-
-\item{der_iden}{number for the subterm to test derivative at, only used for testing runs with a single varying parameter, should be smaller than total number of parameters. indexed starting at 0}
+\item{a_n}{list of initial parameter values, used to determine the number of parameters. May be either a list of vectors or a single vector.}
 
 \item{control}{list of parameters controlling the convergence, see Def_Control() for options or vignette("Control_Options")}
 }
@@ -61,22 +58,22 @@ event <- "Cancer_Status"
 names <- c("a", "b", "c", "d")
 a_n <- c(1.1, -0.1, 0.2, 0.5) # used to test at a specific point
 keep_constant <- c(0, 0, 0, 0)
-der_iden <- 0
 control <- list(
   "ncores" = 2, "lr" = 0.75, "maxiter" = 5, "halfmax" = 5,
   "epsilon" = 1e-3, "deriv_epsilon" = 1e-3, "abs_max" = 1.0,
-  "change_all" = TRUE, "dose_abs_max" = 100.0, "verbose" = FALSE,
+  "dose_abs_max" = 100.0, "verbose" = FALSE,
   "ties" = "breslow", "double_step" = 1
 )
 e <- RunCoxRegression_Basic(
   df, time1, time2, event, names, keep_constant,
-  a_n, der_iden, control
+  a_n, control
 )
 
 }
 \seealso{
 Other Cox Wrapper Functions: 
 \code{\link{CoxCurveSolver}()},
+\code{\link{RunCaseControlRegression_Omnibus}()},
 \code{\link{RunCoxNull}()},
 \code{\link{RunCoxRegression}()},
 \code{\link{RunCoxRegression_CR}()},

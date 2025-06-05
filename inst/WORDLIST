@@ -1,11 +1,13 @@
 ACI
 adadelta
 adam
+al
 Beocat
 breslow
 breslow's
 CMD
 codecov
+cond
 config
 CoxCurveSolver
 cr
@@ -20,8 +22,10 @@ df
 dlimits
 DMC
 efron
+et
 extrema
 FITOPT
+finegray
 func
 gcc
 ggplot
@@ -32,6 +36,7 @@ halfmax
 iden
 infty
 iteratively
+Karnofsky
 LEXP
 lin
 linux
@@ -83,7 +88,9 @@ subterms
 surv
 Surv
 tform
+thres
 trunc
 unshared
 UserID
+vec
 Venzon

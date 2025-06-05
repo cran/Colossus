@@ -6,8 +6,8 @@
 \usage{
 RunCoxRegression_Guesses_CPP(
   df,
-  time1 = "start",
-  time2 = "end",
+  time1 = "\%trunc\%",
+  time2 = "\%trunc\%",
   event0 = "event",
   names = c("CONST"),
   term_n = c(0),
@@ -15,8 +15,6 @@ RunCoxRegression_Guesses_CPP(
   keep_constant = c(0),
   a_n = c(0),
   modelform = "M",
-  fir = 0,
-  der_iden = 0,
   control = list(),
   guesses_control = list(),
   strat_col = "null",
@@ -41,13 +39,9 @@ RunCoxRegression_Guesses_CPP(
 
 \item{keep_constant}{binary values to denote which parameters to change}
 
-\item{a_n}{list of initial parameter values, used to determine number of parameters. May be either a list of vectors or a single vector.}
+\item{a_n}{list of initial parameter values, used to determine the number of parameters. May be either a list of vectors or a single vector.}
 
 \item{modelform}{string specifying the model type: M, ME, A, PA, PAE, GMIX, GMIX-R, GMIX-E}
-
-\item{fir}{term number for the initial term, used for models of the form T0*f(Ti) in which the order matters}
-
-\item{der_iden}{number for the subterm to test derivative at, only used for testing runs with a single varying parameter, should be smaller than total number of parameters. indexed starting at 0}
 
 \item{control}{list of parameters controlling the convergence, see Def_Control() for options or vignette("Control_Options")}
 
@@ -88,13 +82,11 @@ a_n <- c(1.1, -0.1, 0.2, 0.5) # used to test at a specific point
 term_n <- c(0, 1, 1, 2)
 tform <- c("loglin", "lin", "lin", "plin")
 modelform <- "M"
-fir <- 0
 keep_constant <- c(0, 0, 0, 0)
-der_iden <- 0
 control <- list(
   "ncores" = 2, "lr" = 0.75, "maxiter" = 5,
   "halfmax" = 5, "epsilon" = 1e-3,
-  "deriv_epsilon" = 1e-3, "abs_max" = 1.0, "change_all" = TRUE,
+  "deriv_epsilon" = 1e-3, "abs_max" = 1.0,
   "dose_abs_max" = 100.0, "verbose" = FALSE, "ties" = "breslow",
   "double_step" = 1
 )
@@ -109,13 +101,14 @@ strat_col <- "e"
 options(warn = -1)
 e <- RunCoxRegression_Guesses_CPP(
   df, time1, time2, event, names, term_n,
-  tform, keep_constant, a_n, modelform, fir,
-  der_iden, control, guesses_control, strat_col
+  tform, keep_constant, a_n, modelform,
+  control, guesses_control, strat_col
 )
 }
 \seealso{
 Other Cox Wrapper Functions: 
 \code{\link{CoxCurveSolver}()},
+\code{\link{RunCaseControlRegression_Omnibus}()},
 \code{\link{RunCoxNull}()},
 \code{\link{RunCoxRegression}()},
 \code{\link{RunCoxRegression_Basic}()},

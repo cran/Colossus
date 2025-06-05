@@ -364,7 +364,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </div>
 <div id="model-structure" class="section level2">
 <h2>Model Structure</h2>
-<p>At its full potential, Colossus is able to analyze a vast number of possible risk/rate models. Specifically Colossus is designed to allow for a combination of linear and non-linear models to estimate cox proportional hazard ratios, Poisson model rates, and Fine-Gray Competing risks ratios. The simplest of which is an exponential model. The simplest model generally used for hazard ratios in survival analysis is the exponential of a linear function of covariates.</p>
+<p>At its full potential, Colossus can analyze a vast number of possible risk/rate models. Specifically, Colossus is designed to allow for a combination of linear and non-linear models to estimate Cox proportional hazard ratios, Poisson model rates, and Fine-Gray Competing risk ratios. The simplest of which is an exponential model. The simplest model generally used for hazard ratios in survival analysis is the exponential of a linear function of covariates.</p>
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
@@ -407,7 +407,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </div>
 <div id="using-the-standard-model" class="section level2">
 <h2>Using The Standard Model</h2>
-<p>In Colossus every equation is defined in a very similar fashion. On the user side of the code, elements of the risk equation can be viewed as rows of a table. The columns store covariate names, term numbers, subterms types, and a starting point. For more complex regression most parameters can be also be set to remain constant over the regression. Doing so forces the parameter value to remain constant but not remove the element from the risk calculations. Constant elements are used for risk calculation, but are not used for calculating steps or standard deviations. For a multiplicative excess risk model the following table and equation are equivalent.</p>
+<p>In Colossus, every equation is defined in a very similar fashion. On the user side of the code, elements of the risk equation can be viewed as rows of a table: the columns store covariate names, term numbers, subterms types, and a starting point. For more complex regression most parameters can also be set to remain constant over the regression. Doing so forces the parameter value to be constant but not remove the element from the risk calculations. Constant elements are used for risk calculation but are not used for calculating steps or standard deviations. For a multiplicative excess risk model, the following table and equation are equivalent.</p>
 <table>
 <thead>
 <tr class="header">
@@ -481,21 +481,20 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 \]</span>
 </p>
 <p>Note that the multiplicative model is taking the product of terms, each of which is the product of subterms. The same equation may be written with subterms distributed over different terms in the multiplicative model without changing the final value. The only exception is subterms moved from or into the “first” term in the multiplicative excess model. The same equation could be expressed in ways with different computational complexity.</p>
-<p>The specific model options are passed to the code as separate variables. The model identifier (A, M, PA, PAE, GMIX) is passed as a string. Every model except the additive model has a distinction between the first and remaining terms. Colossus defaults to term 0 being the unique term, however it can be set to any used term number without producing an error.</p>
-<p>The final table is also equivalent to the following code</p>
+<p>The specific model options are passed to the code as separate variables. The model identifier (A, M, PA, PAE, GMIX) is passed as a string. Every model except the additive model has a distinction between the first and remaining terms. Colossus defaults to term 0 being the unique term.</p>
+<p>The final table is also equivalent to the following code.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>names &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;a&quot;</span>, <span class="st">&quot;b&quot;</span>, <span class="st">&quot;c&quot;</span>, <span class="st">&quot;d&quot;</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>term_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>tform &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;loglin&quot;</span>, <span class="st">&quot;lin&quot;</span>, <span class="st">&quot;lin&quot;</span>, <span class="st">&quot;plin&quot;</span>)</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>modelform &lt;-<span class="st"> &quot;M&quot;</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>fir &lt;-<span class="st"> </span><span class="dv">0</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a>a_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>)</span></code></pre></div>
-<p><em>names</em> denotes the column names used, <em>term_n</em> denotes the term numbers, <em>tform</em> denotes the subterm formula, <em>modelform</em> denotes the term formula, <em>fir</em> denotes the “first” term indexed from zero which defaults to 0, and <em>a_n</em> denotes the initial guesses for the parameter values. All of which are assumed to be in the same order. A function is called prior to regression that reorders the inputs in order of terms, subterm types, etc.</p>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a>a_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>)</span></code></pre></div>
+<p><em>names</em> denotes the column names used, <em>term_n</em> denotes the term numbers, <em>tform</em> denotes the subterm formula, <em>modelform</em> denotes the term formula, <em>fir</em> denotes the “first” term indexed from zero which defaults to 0, and <em>a_n</em> denotes the initial guesses for the parameter values. All of which are assumed to be in the same order. A function is called before regression that reorders the inputs in order of terms, subterm types, etc.</p>
 </div>
 <div id="survival-time-and-event-data" class="section level2">
 <h2>Survival Time and Event Data</h2>
-<p>Colossus performs survival analysis via either a Cox Proportional Hazards or a Poisson model regression. In both cases the user specifies which columns contain time duration and events of interest. For the Poisson model regression these would be which column contains the person-years and number of events for each row of data. For the Cox Proportional Hazards regression the user identifies which columns provide starting and ending times, and what column gives the event status. The event status is assumed to be a binary covariate which is 1 for intervals containing an event. Colossus supports left censored data, right censored data, and interval censored data. The data is interval censored by default, so left and right censoring are handled by defining interval endpoints outside the minimum or maximum event times. For Poisson model regression the user only provides columns for the person-years per row and number of events. Poisson model regression supports any non-negative number of events.</p>
-<p>On the user side, the names of columns containing the time and events need to be given. Lets assume we have a dataframe organized as follows:</p>
+<p>Colossus performs survival analysis via either a Cox Proportional Hazards or a Poisson model regression. In both cases, the user specifies which columns contain time duration and events of interest. For the Poisson model regression, these would be which column contains the person-years and number of events for each row of data. For the Cox Proportional Hazards regression, the user identifies which columns provide starting and ending times, and what column gives the event status. The event status is assumed to be a binary covariate which is 1 for intervals containing an event. Colossus supports left-censored data, right-censored data, and interval-censored data. The data is interval censored by default, so left and right censoring are handled by defining interval endpoints outside the minimum or maximum event times. For Poisson model regression the user only provides columns for the person-years per row and number of events. Poisson model regression supports any non-negative number of events.</p>
+<p>On the user side, the names of columns containing the time and events need to be given. Let us assume we have a dataframe organized as follows:</p>
 <table>
 <thead>
 <tr class="header">
@@ -532,7 +531,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </tr>
 </tbody>
 </table>
-<p>For a Cox Proportional Hazard we need to provide three column names: the starting age, the ending age, and if an event happened during the interval. In this case that would be “Starting_Age”, “Ending_Age”, and “Cancer_Status”. In this example we have interval data, however that may not always be the case. Colossus is designed to allow for the user to input “%trunc%” in-place of a missing side of the interval. Colossus assumes that this means that the person has the missing endpoint outside of the available data range and creates a dummy column to reference as the interval endpoint. So in code these variables would look like this:</p>
+<p>For Cox proportional hazard, we need to provide three column names: the starting age, the ending age, and if an event happened during the interval. In this case that would be “Starting_Age”, “Ending_Age”, and “Cancer_Status”. In this example, we have interval data but that may not always be the case. Colossus is designed to allow the user to input “%trunc%” in place of a missing side of the interval. Colossus assumes that this means that the person has the missing endpoint outside of the available data range and creates a dummy column to reference as the interval endpoint. So in code, these variables would look like this:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>df &lt;-<span class="st"> </span><span class="kw">data.table</span>(</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>  <span class="st">&quot;UserID&quot;</span> =<span class="st"> </span><span class="kw">c</span>(<span class="dv">112</span>, <span class="dv">114</span>, <span class="dv">213</span>, <span class="dv">214</span>, <span class="dv">115</span>, <span class="dv">116</span>, <span class="dv">117</span>),</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>  <span class="st">&quot;Starting_Age&quot;</span> =<span class="st"> </span><span class="kw">c</span>(<span class="dv">18</span>, <span class="dv">20</span>, <span class="dv">18</span>, <span class="dv">19</span>, <span class="dv">21</span>, <span class="dv">20</span>, <span class="dv">18</span>),</span>
@@ -559,7 +558,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb3-24"><a href="#cb3-24" aria-hidden="true"></a><span class="co"># setting back to normal</span></span>
 <span id="cb3-25"><a href="#cb3-25" aria-hidden="true"></a>time1 &lt;-<span class="st"> &quot;Starting_Age&quot;</span></span>
 <span id="cb3-26"><a href="#cb3-26" aria-hidden="true"></a>time2 &lt;-<span class="st"> &quot;Ending_Age&quot;</span></span></code></pre></div>
-<p>Suppose instead we were interested in a Poisson model regression, the only difference is instead of providing interval endpoints we give a column of interval lengths. In this case we need to define a new column, but that may not be the case in general. Suppose we are now working with the following table:</p>
+<p>Suppose instead we were interested in a Poisson model regression, the only difference is instead of providing interval endpoints we give a column of interval lengths. In this case, we need to define a new column, but that may not be the case in general. Suppose we are now working with the following table:</p>
 <table>
 <thead>
 <tr class="header">
@@ -601,14 +600,14 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </tr>
 </tbody>
 </table>
-<p>we would just provide the duration column and event column, or “Person_Years” and “Cancer_Status”. Which in code looks like the following:</p>
+<p>We would just provide the duration column and event column, or “Person_Years” and “Cancer_Status”. Which in code looks like the following:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a>df<span class="op">$</span>Person_Years &lt;-<span class="st"> </span>df<span class="op">$</span>Ending_Age <span class="op">-</span><span class="st"> </span>df<span class="op">$</span>Starting_Age</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a>pyr &lt;-<span class="st"> &quot;Person_Years&quot;</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a>event &lt;-<span class="st"> &quot;Cancer_Status&quot;</span></span></code></pre></div>
 </div>
 <div id="control-and-verbosity" class="section level2">
 <h2>Control and Verbosity</h2>
-<p>Colossus offers several options that control how the input data is used and returned. This can be split into two general categories. The first category is convergence parameters. These cover the number of iterations used, limits on parameter changes, and stopping criteria. The second category is parameters used for debugging and additional information. A more common option is the verbosity. The verbose mode prints time-steps and intermediate values for the sum of terms, sum of risks, and log-likelihood each iteration. A less common option is the <em>der_iden</em> parameter, which is used change only one parameter at a time by a set amount. This was used in the debugging process for recording intermediate values on a plane. This option could be used by the user in conjunction with the verbose option to plot intermediate values by parameter value.</p>
+<p>Colossus offers several options that control how the input data is used and returned. This can be split into two general categories. The first category is convergence parameters. These cover the number of iterations used, limits on parameter changes, and stopping criteria. The second category is parameters used for debugging and additional information.</p>
 <p>The convergence parameters currently supported in general are as follows:</p>
 <table>
 <colgroup>
@@ -624,7 +623,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <tbody>
 <tr class="odd">
 <td align="center">lr</td>
-<td align="center">learning rate applied to steps taken, smaller values avoid overshooting at the risk of slower convergence. Applied to the solution for setting first derivative of Log-Likelihood to zero</td>
+<td align="center">learning rate applied to steps taken, smaller values avoid overshooting at the risk of slower convergence. Applied to the solution for setting the first derivative of Log-Likelihood to zero</td>
 </tr>
 <tr class="even">
 <td align="center">maxiter</td>
@@ -640,11 +639,11 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </tr>
 <tr class="odd">
 <td align="center">epsilon</td>
-<td align="center">Minimum parameter change above convergence. If change is below this, the regression exits</td>
+<td align="center">Minimum parameter change above convergence. If the change is below this, the regression exits</td>
 </tr>
 <tr class="even">
 <td align="center">dbeta_max</td>
-<td align="center">learning rate applied to limit on steps taken. Applied to solution to zero Log-Likelihood, for double_step=0</td>
+<td align="center">learning rate applied to limit on the steps taken. Applied to solution to zero Log-Likelihood, for double_step=0</td>
 </tr>
 <tr class="odd">
 <td align="center">deriv_epsilon</td>
@@ -686,16 +685,12 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <td align="center">integer valued 0-4 controlling what information is printed to the terminal. Each level includes the lower levels. 0: silent, 1: errors printed, 2: warnings printed, 3: notes printed, 4: debug information printed. Errors are situations that stop the regression, warnings are situations that assume default values that the user might not have intended, notes provide information on regression progress, and debug prints out C++ progress and intermediate results. The default level is 2 and True/False is converted to 3/0.</td>
 </tr>
 <tr class="even">
-<td align="center">change_all</td>
-<td align="center">TRUE/FALSE flag to choose if the user wants a regression or to calculate log-likelihoods on a grid changing only one parameter at a time</td>
-</tr>
-<tr class="odd">
 <td align="center">ncores</td>
 <td align="center">Number of physical cores assigned, cannot be greater than the number of cores available</td>
 </tr>
 </tbody>
 </table>
-<p>The previous options are all contained within a list of parameters, however there are additional standalone parameters which control the convergence and information. They are as follows:</p>
+<p>The previous options are all contained within a list of parameters, however, there are additional standalone parameters that control the convergence and information. They are as follows:</p>
 <table>
 <colgroup>
 <col width="47%"></col>
@@ -709,10 +704,6 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </thead>
 <tbody>
 <tr class="odd">
-<td align="center">der_iden</td>
-<td align="center">If change_all is used, selects which parameter number indexed from 0 to change. The parameter is changed by abs_max or dose_abs_max every iteration over the maximum number of iterations</td>
-</tr>
-<tr class="even">
 <td align="center">keep_constant</td>
 <td align="center">a vector of 0/1 to denote if any parameters should be held constant over the calculations. 0 denoting false and 1 denoting true</td>
 </tr>
@@ -720,40 +711,39 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </table>
 <p>Going back to our example, the code may look like the following:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a>keep_constant &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a>der_iden &lt;-<span class="st"> </span><span class="dv">0</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a>control &lt;-<span class="st"> </span><span class="kw">list</span>(</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a>  <span class="st">&quot;ncores&quot;</span> =<span class="st"> </span><span class="dv">1</span>, <span class="st">&quot;lr&quot;</span> =<span class="st"> </span><span class="fl">0.75</span>, <span class="st">&quot;maxiter&quot;</span> =<span class="st"> </span><span class="dv">100</span>, <span class="st">&quot;halfmax&quot;</span> =<span class="st"> </span><span class="dv">5</span>, <span class="st">&quot;epsilon&quot;</span> =<span class="st"> </span><span class="fl">1e-3</span>,</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a>  <span class="st">&quot;dbeta_max&quot;</span> =<span class="st"> </span><span class="fl">0.5</span>, <span class="st">&quot;deriv_epsilon&quot;</span> =<span class="st"> </span><span class="fl">1e-3</span>, <span class="st">&quot;abs_max&quot;</span> =<span class="st"> </span><span class="fl">1.0</span>, <span class="st">&quot;change_all&quot;</span> =<span class="st"> </span><span class="ot">TRUE</span>,</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true"></a>  <span class="st">&quot;dose_abs_max&quot;</span> =<span class="st"> </span><span class="fl">100.0</span>, <span class="st">&quot;verbose&quot;</span> =<span class="st"> </span><span class="ot">FALSE</span>, <span class="st">&quot;ties&quot;</span> =<span class="st"> &quot;breslow&quot;</span>, <span class="st">&quot;double_step&quot;</span> =<span class="st"> </span><span class="dv">1</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true"></a>)</span></code></pre></div>
-<p>In this example, no parameters are held constant, 100 iterations with 5 half-steps are used, a regression is performed with matrix step solutions, and breslow’s method for tied event times is used. There are no errors for unused control parameters being used, they will simply be ignored. Every commonly required control parameter has a default value which is automatically used if not declared. This includes an optional list of model control options. These are used for nonstandard model options not covered in this vignette.</p>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a>control &lt;-<span class="st"> </span><span class="kw">list</span>(</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a>  <span class="st">&quot;ncores&quot;</span> =<span class="st"> </span><span class="dv">1</span>, <span class="st">&quot;lr&quot;</span> =<span class="st"> </span><span class="fl">0.75</span>, <span class="st">&quot;maxiter&quot;</span> =<span class="st"> </span><span class="dv">100</span>, <span class="st">&quot;halfmax&quot;</span> =<span class="st"> </span><span class="dv">5</span>, <span class="st">&quot;epsilon&quot;</span> =<span class="st"> </span><span class="fl">1e-3</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a>  <span class="st">&quot;dbeta_max&quot;</span> =<span class="st"> </span><span class="fl">0.5</span>, <span class="st">&quot;deriv_epsilon&quot;</span> =<span class="st"> </span><span class="fl">1e-3</span>, <span class="st">&quot;abs_max&quot;</span> =<span class="st"> </span><span class="fl">1.0</span>,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a>  <span class="st">&quot;dose_abs_max&quot;</span> =<span class="st"> </span><span class="fl">100.0</span>, <span class="st">&quot;verbose&quot;</span> =<span class="st"> </span><span class="dv">2</span>, <span class="st">&quot;ties&quot;</span> =<span class="st"> &quot;breslow&quot;</span>, <span class="st">&quot;double_step&quot;</span> =<span class="st"> </span><span class="dv">1</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true"></a>)</span></code></pre></div>
+<p>In this example, no parameters are held constant, 100 iterations with 5 half-steps are used, a regression is performed with matrix step solutions, and Breslow’s method for tied event times is used. There are no errors for unused control parameters being used, they will simply be ignored. Every commonly required control parameter has a default value which is automatically used if not declared. This includes an optional list of model control options. These are used for nonstandard model options not covered in this vignette.</p>
 </div>
 <div id="running-the-regression-and-output" class="section level2">
 <h2>Running the Regression and Output</h2>
-<p>Finally the user calls the regression function they need. The names used throughout this vignette are the defaults assumed. Both the Cox PH regression and Poisson model regression are called directly and return a list of results. Colossus contains a suite of additional checks it runs on the inputs prior to starting and calculations, which are designed to output explicit details on any issues. Printing error details may require the verbose option to be TRUE. In code the functions are called as follows:</p>
+<p>Finally, the user calls the regression function they need. The names used throughout this vignette are the defaults assumed. Both the Cox PH regression and Poisson model regression are called directly and return a list of results. Colossus contains a suite of additional checks it runs on the inputs before starting any calculations, which are designed to output explicit details on any issues. Printing error details may require the verbose option to be TRUE. In code, the functions are called as follows:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a><span class="co"># assuming the table of covariates is stored in a data.table &quot;df&quot;</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">RunCoxRegression</span>(</span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a>  df, time1, time2, event, names, term_n, tform, keep_constant,</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a>  a_n, modelform, fir, der_iden, control</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a>  a_n, modelform, control</span>
 <span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a>)</span>
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true"></a><span class="kw">Interpret_Output</span>(e)</span>
 <span id="cb6-8"><a href="#cb6-8" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
 <span id="cb6-9"><a href="#cb6-9" aria-hidden="true"></a><span class="co">#&gt; Final Results</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true"></a><span class="co">#&gt;    Covariate Subterm Term Number Central Estimate Standard Deviation</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true"></a><span class="co">#&gt;       &lt;char&gt;  &lt;char&gt;       &lt;int&gt;            &lt;num&gt;              &lt;num&gt;</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true"></a><span class="co">#&gt; 1:         a  loglin           0         40.29492                NaN</span></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true"></a><span class="co">#&gt; 2:         b     lin           1         40.72266          3322.3606</span></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true"></a><span class="co">#&gt; 3:         c     lin           1         38.82311           628.5925</span></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true"></a><span class="co">#&gt; 4:         d    plin           2         43.10000           588.7424</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true"></a><span class="co">#&gt;    Covariate Subterm Term Number Central Estimate Standard Error 2-tail p-value</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true"></a><span class="co">#&gt;       &lt;char&gt;  &lt;char&gt;       &lt;int&gt;            &lt;num&gt;          &lt;num&gt;          &lt;num&gt;</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true"></a><span class="co">#&gt; 1:         a  loglin           0         40.29492            NaN            NaN</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true"></a><span class="co">#&gt; 2:         b     lin           1         40.72266      3322.3606      0.9902205</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true"></a><span class="co">#&gt; 3:         c     lin           1         38.82311       628.5925      0.9507524</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true"></a><span class="co">#&gt; 4:         d    plin           2         43.10000       588.7424      0.9416415</span></span>
 <span id="cb6-16"><a href="#cb6-16" aria-hidden="true"></a><span class="co">#&gt; </span></span>
 <span id="cb6-17"><a href="#cb6-17" aria-hidden="true"></a><span class="co">#&gt; Cox Model Used</span></span>
 <span id="cb6-18"><a href="#cb6-18" aria-hidden="true"></a><span class="co">#&gt; -2*Log-Likelihood: 1.4,  AIC: 9.4</span></span>
 <span id="cb6-19"><a href="#cb6-19" aria-hidden="true"></a><span class="co">#&gt; Iterations run: 42</span></span>
 <span id="cb6-20"><a href="#cb6-20" aria-hidden="true"></a><span class="co">#&gt; maximum step size: 1.00e+00, maximum first derivative: 9.82e-04</span></span>
 <span id="cb6-21"><a href="#cb6-21" aria-hidden="true"></a><span class="co">#&gt; Analysis converged</span></span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.19 seconds</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.2 seconds</span></span>
 <span id="cb6-23"><a href="#cb6-23" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
 <span id="cb6-24"><a href="#cb6-24" aria-hidden="true"></a></span>
 <span id="cb6-25"><a href="#cb6-25" aria-hidden="true"></a><span class="co"># or a Poisson model regression</span></span>
@@ -766,12 +756,12 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb6-32"><a href="#cb6-32" aria-hidden="true"></a><span class="kw">Interpret_Output</span>(e)</span>
 <span id="cb6-33"><a href="#cb6-33" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
 <span id="cb6-34"><a href="#cb6-34" aria-hidden="true"></a><span class="co">#&gt; Final Results</span></span>
-<span id="cb6-35"><a href="#cb6-35" aria-hidden="true"></a><span class="co">#&gt;    Covariate Subterm Term Number Central Estimate Standard Deviation</span></span>
-<span id="cb6-36"><a href="#cb6-36" aria-hidden="true"></a><span class="co">#&gt;       &lt;char&gt;  &lt;char&gt;       &lt;int&gt;            &lt;num&gt;              &lt;num&gt;</span></span>
-<span id="cb6-37"><a href="#cb6-37" aria-hidden="true"></a><span class="co">#&gt; 1:         a  loglin           0      -0.40680015        0.381634898</span></span>
-<span id="cb6-38"><a href="#cb6-38" aria-hidden="true"></a><span class="co">#&gt; 2:         b     lin           1      -0.01846667        0.035174231</span></span>
-<span id="cb6-39"><a href="#cb6-39" aria-hidden="true"></a><span class="co">#&gt; 3:         c     lin           1      -0.07585910        0.007685371</span></span>
-<span id="cb6-40"><a href="#cb6-40" aria-hidden="true"></a><span class="co">#&gt; 4:         d    plin           2      -0.70133825        0.405384920</span></span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true"></a><span class="co">#&gt;    Covariate Subterm Term Number Central Estimate Standard Error 2-tail p-value</span></span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true"></a><span class="co">#&gt;       &lt;char&gt;  &lt;char&gt;       &lt;int&gt;            &lt;num&gt;          &lt;num&gt;          &lt;num&gt;</span></span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true"></a><span class="co">#&gt; 1:         a  loglin           0      -0.40680015    0.381634898   2.864505e-01</span></span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true"></a><span class="co">#&gt; 2:         b     lin           1      -0.01846667    0.035174231   5.995792e-01</span></span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true"></a><span class="co">#&gt; 3:         c     lin           1      -0.07585910    0.007685371   5.583838e-23</span></span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true"></a><span class="co">#&gt; 4:         d    plin           2      -0.70133825    0.405384920   8.362043e-02</span></span>
 <span id="cb6-41"><a href="#cb6-41" aria-hidden="true"></a><span class="co">#&gt; </span></span>
 <span id="cb6-42"><a href="#cb6-42" aria-hidden="true"></a><span class="co">#&gt; Poisson Model Used</span></span>
 <span id="cb6-43"><a href="#cb6-43" aria-hidden="true"></a><span class="co">#&gt; -2*Log-Likelihood: 89.48,  Deviation: 85.48,  AIC: 93.48,  BIC: 97.26</span></span>
@@ -819,7 +809,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </tr>
 <tr class="odd">
 <td align="center">Deviation</td>
-<td align="center">Deviance calculated using the difference in log-likelihood contributions between the saturated model and current model</td>
+<td align="center">Deviance calculated using the difference in log-likelihood contributions between the saturated model and the current model</td>
 </tr>
 <tr class="even">
 <td align="center">Parameter_Lists</td>

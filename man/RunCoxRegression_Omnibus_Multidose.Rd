@@ -6,8 +6,8 @@
 \usage{
 RunCoxRegression_Omnibus_Multidose(
   df,
-  time1 = "start",
-  time2 = "end",
+  time1 = "\%trunc\%",
+  time2 = "\%trunc\%",
   event0 = "event",
   names = c("CONST"),
   term_n = c(0),
@@ -15,8 +15,6 @@ RunCoxRegression_Omnibus_Multidose(
   keep_constant = c(0),
   a_n = c(0),
   modelform = "M",
-  fir = 0,
-  der_iden = 0,
   realization_columns = matrix(c("temp00", "temp01", "temp10", "temp11"), nrow = 2),
   realization_index = c("temp0", "temp1"),
   control = list(),
@@ -44,17 +42,13 @@ RunCoxRegression_Omnibus_Multidose(
 
 \item{keep_constant}{binary values to denote which parameters to change}
 
-\item{a_n}{list of initial parameter values, used to determine number of parameters. May be either a list of vectors or a single vector.}
+\item{a_n}{list of initial parameter values, used to determine the number of parameters. May be either a list of vectors or a single vector.}
 
 \item{modelform}{string specifying the model type: M, ME, A, PA, PAE, GMIX, GMIX-R, GMIX-E}
 
-\item{fir}{term number for the initial term, used for models of the form T0*f(Ti) in which the order matters}
-
-\item{der_iden}{number for the subterm to test derivative at, only used for testing runs with a single varying parameter, should be smaller than total number of parameters. indexed starting at 0}
-
 \item{realization_columns}{used for multi-realization regressions. Matrix of column names with rows for each column with realizations, columns for each realization}
 
-\item{realization_index}{used for multi-realization regressions. Vector of column names, one for each column with realizations. each name should be used in the "names" variable in the equation definition}
+\item{realization_index}{used for multi-realization regressions. Vector of column names, one for each column with realizations. Each name should be used in the "names" variable in the equation definition}
 
 \item{control}{list of parameters controlling the convergence, see Def_Control() for options or vignette("Control_Options")}
 
@@ -64,9 +58,9 @@ RunCoxRegression_Omnibus_Multidose(
 
 \item{model_control}{controls which alternative model options are used, see Def_model_control() for options and vignette("Control_Options") for further details}
 
-\item{cons_mat}{Matrix containing coefficients for system of linear constraints, formatted as matrix}
+\item{cons_mat}{Matrix containing coefficients for a system of linear constraints, formatted as matrix}
 
-\item{cons_vec}{Vector containing constants for system of linear constraints, formatted as vector}
+\item{cons_vec}{Vector containing constants for a system of linear constraints, formatted as vector}
 }
 \value{
 returns a list of the final results for each realization
@@ -105,8 +99,6 @@ realization_index <- c("rand")
 keep_constant <- c(1, 0)
 a_n <- c(0, 0)
 modelform <- "M"
-fir <- 0
-der_iden <- 0
 cens_weight <- c(0)
 event <- "lung"
 a_n <- c(-0.1, -0.1)
@@ -115,14 +107,14 @@ control <- list(
   "ncores" = 2, "lr" = 0.75, "maxiter" = 1,
   "halfmax" = 2, "epsilon" = 1e-6,
   "deriv_epsilon" = 1e-6, "abs_max" = 1.0,
-  "change_all" = TRUE, "dose_abs_max" = 100.0,
+  "dose_abs_max" = 100.0,
   "verbose" = 0, "ties" = "breslow", "double_step" = 1
 )
 e <- RunCoxRegression_Omnibus_Multidose(df, time1, time2, event,
   names,
   term_n = term_n, tform = tform,
   keep_constant = keep_constant, a_n = a_n,
-  modelform = modelform, fir = fir, der_iden = der_iden,
+  modelform = modelform,
   realization_columns = realization_columns,
   realization_index = realization_index,
   control = control, strat_col = "fac",
@@ -132,6 +124,7 @@ e <- RunCoxRegression_Omnibus_Multidose(df, time1, time2, event,
 \seealso{
 Other Cox Wrapper Functions: 
 \code{\link{CoxCurveSolver}()},
+\code{\link{RunCaseControlRegression_Omnibus}()},
 \code{\link{RunCoxNull}()},
 \code{\link{RunCoxRegression}()},
 \code{\link{RunCoxRegression_Basic}()},

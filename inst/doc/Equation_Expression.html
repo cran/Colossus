@@ -360,11 +360,11 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="kw">library</span>(data.table)</span></code></pre></div>
 <div id="prospective-feature-presented-for-user-suggestion" class="section level1">
 <h1>Prospective feature, presented for user suggestion</h1>
-<p>The default method to specify a survival model using a series of vectors can be overly complicated at times. I felt that it wasn’t straight-forward for typical R users, and made it too complicated to translate from a model to a script input. My plan is to add two functions: a conversion from a simple string expression of the model into the regression call, and a function to plot the hazard ratio or rate equation in LaTeX.</p>
+<p>The default method to specify a survival model using a series of vectors can be overly complicated at times. This may not be straightforward for typical R users and made it complicated to translate from a model to a script input. A function is provided with Colossus to help this process by converting from a simple string expression of the model into the required vectors.</p>
 <div id="equation-expression" class="section level2">
 <h2>Equation Expression</h2>
-<p>The basic idea of the first function is to take a string expression, similar to the model objects in the Survival package, which contains all of the information required in a more easily read format. This is intended to serve three functions: simplify the required input, make it easier to add multiple elements to each subterm, and make it easier to add factors.</p>
-<p>Generally a survival model is defined by using a Surv object, initialized with the interval and event columns, and a list of columns. Because Colossus can handle much more complicated models, the definition has to be more complicated. Instead of a Surv object, the model is specified with ‘cox’ or ‘poisson’. Based on the number of entries, the format of the time interval is assumed. The right side of the equation is listed similarly. Columns are added to subterm types (loglinear, linear, plinear). Each subterm has a list of columns and a term number. Finally the method to combine terms is added as a separate item (multiplicative, additive). To prevent any issues with function definitions, the model equation is stored in a string.</p>
+<p>The basic idea of this function is to take a string expression, similar to the model objects in the Survival package, which contains all of the information required in a more easily read format. This is intended to serve three functions: simplify the required input, make it easier to add multiple elements to each subterm, and make it easier to add factors.</p>
+<p>Generally, a survival model is defined by using a Surv object, initialized with the interval and event columns, and a list of columns. Because Colossus can handle much more complicated models, the definition has to be more complicated. Instead of a Surv object, the model is specified with ‘cox’ or ‘poisson’. Based on the number of entries, the format of the time interval is assumed. The right side of the equation is listed similarly. Columns are added to subterm types (loglinear, linear, plinear). Each subterm has a list of columns and a term number. Finally, the method to combine terms is added as a separate item (multiplicative, additive). To prevent any issues with function definitions, the model equation is stored in a string.</p>
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
@@ -373,7 +373,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 \end{aligned}
 \]</span>
 </p>
-<p>The factor option can be used with or without a baseline specified. By default no baseline is used. A baseline can be added by changing ‘factor(name)’ to ‘factor(name;baseline=level)’. If a valid baseline is used, the proper factor will not be included in the model expression or the final datatable returned. If an invalid baseline is used a warning is thrown and the functions runs without a baseline.</p>
+<p>The factor option can be used with or without a baseline specified. By default, no baseline is used. A baseline can be added by changing ‘factor(name)’ to ‘factor(name;baseline=level)’. If a valid baseline is used, the proper factor will not be included in the model expression or the final datatable returned. If an invalid baseline is used a warning is thrown and no baseline is used.</p>
 <p>The following expressions are equivalent.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>term_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>tform &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;loglin&quot;</span>, <span class="st">&quot;loglin&quot;</span>, <span class="st">&quot;lin&quot;</span>)</span>
@@ -425,7 +425,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb2-48"><a href="#cb2-48" aria-hidden="true"></a><span class="co">#&gt; 2:     2     3     4</span></span>
 <span id="cb2-49"><a href="#cb2-49" aria-hidden="true"></a><span class="co">#&gt; 3:     3     4     5</span></span>
 <span id="cb2-50"><a href="#cb2-50" aria-hidden="true"></a><span class="co">#&gt; 4:     4     5     6</span></span></code></pre></div>
-<p>Different model formulas and subterm types are being added as need. Please contact the developer if the methods you want to use are not yet added. The following tables cover the subterms and term models that are currently implemented. Every option listed has multiple equivalent aliases that all refer to the same subterm or model formula.</p>
+<p>Different model formulas and subterm types are being added as needed. Please contact the developer if the methods you want to use have not yet been added. The following tables cover the subterms and term models that are currently implemented. Every option listed has multiple equivalent aliases that all refer to the same subterm or model formula.</p>
 <table>
 <colgroup>
 <col width="47%"></col>
@@ -514,10 +514,6 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </tr>
 </tbody>
 </table>
-</div>
-<div id="model-visualization" class="section level2">
-<h2>Model Visualization</h2>
-<p>The second function will be intended to display the equation. This function is currently being developed. Based on required packages the current formats being considered are: plain-text output, LaTeX code output, or directly plotting the equation in a graph display. This method is not currently implemented for use.</p>
 </div>
 </div>
 

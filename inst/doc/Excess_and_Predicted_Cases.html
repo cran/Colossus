@@ -360,7 +360,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="kw">library</span>(data.table)</span></code></pre></div>
 <div id="general-theory" class="section level2">
 <h2>General Theory</h2>
-<p>In the field of radiation epidemiology, a common question is “How many additional cancer cases occurred due to radiation exposures?”. This is often generalized to the question of how many cases are background cases and how many cases are excess cases. These are calculated by splitting a poisson model into a background term and an excess term. In Colossus the background term is assumed to be the first term, and every other term is assumed to be causing excess cases. Colossus has a function, RunPoissonEventAssignment, which calculates the number of background/excess cases for both average predicted counts and true counts. Let us assume we have the following model for event rate:</p>
+<p>In the field of radiation epidemiology, a common question is “How many additional cancer cases occurred due to radiation exposures?”. This is often generalized to the question of how many cases are background cases and how many cases are excess cases. These are calculated by splitting a poisson model into a background term and an excess term. In Colossus, the background term is assumed to be the first term, and every other term is assumed to be causing excess cases. Colossus has a function, RunPoissonEventAssignment, which calculates the number of background/excess cases for both average predicted counts and true counts. Let us assume we have the following model for event rate:</p>
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
@@ -372,10 +372,9 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>term_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>tform &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;loglin&quot;</span>, <span class="st">&quot;lin&quot;</span>)</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>modelform &lt;-<span class="st"> &quot;M&quot;</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>fir &lt;-<span class="st"> </span><span class="dv">0</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a>a_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.1</span>, <span class="fl">0.1</span>)</span></code></pre></div>
-<p>Our total rate (<span class="math inline">\(R\)</span>) is composed of a background rate (<span class="math inline">\(R_{BK}\)</span>) and excess rate (<span class="math inline">\(R_{EX}\)</span>). The cases each row have a total (<span class="math inline">\(c\)</span>) and background/excess count (<span class="math inline">\(c_{BK}, c_{EX}\)</span>). Additionally, every row has a measure of person-time (<span class="math inline">\(t\)</span>). Colossus also computes the predicted number of total, background, and excess cases (<span class="math inline">\(P, P_{BK}. P_{EX}\)</span>). For every model we assume the average number of background cases are the background rate multiplied by time, the remaining cases are excess, and the true number of background/excess cases are proportional to the predicted cases.</p>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a>a_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.1</span>, <span class="fl">0.1</span>)</span></code></pre></div>
+<p>Our total rate (<span class="math inline">\(R\)</span>) is composed of a background rate (<span class="math inline">\(R_{BK}\)</span>) and excess rate (<span class="math inline">\(R_{EX}\)</span>). The cases each row have a total (<span class="math inline">\(c\)</span>) and background/excess count (<span class="math inline">\(c_{BK}, c_{EX}\)</span>). Additionally, every row has a measure of person-time (<span class="math inline">\(t\)</span>). Colossus also computes the predicted number of total, background, and excess cases (<span class="math inline">\(P, P_{BK}. P_{EX}\)</span>). For every model we assume the average number of background cases is the background rate multiplied by time, the remaining cases are excess, and the true number of background/excess cases is proportional to the predicted cases.</p>
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
@@ -391,24 +390,22 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 \end{aligned}
 \]</span>
 </p>
-<p>Colossus returns two matrices, one for the true cases and one for the predicted cases. Each matrix has three columns for the events assigned to background, excess, and total.</p>
+<p>Colossus returns two matrices, one for the true cases and one for the predicted cases. Each matrix has three columns for the events assigned to background, excess, and total. This provides information on both the relative amount of background and excess cases, as well as differences between the expected and true number of cases.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>names &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;x&quot;</span>, <span class="st">&quot;D&quot;</span>)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>term_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>tform &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;loglin&quot;</span>, <span class="st">&quot;lin&quot;</span>)</span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a>modelform &lt;-<span class="st"> &quot;M&quot;</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true"></a>fir &lt;-<span class="st"> </span><span class="dv">0</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true"></a>a_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.1</span>, <span class="fl">0.1</span>)</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true"></a>keep_constant &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="dv">0</span>, <span class="kw">length</span>(names))</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true"></a>der_iden &lt;-<span class="st"> </span><span class="dv">0</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true"></a>control &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="st">&quot;Ncores&quot;</span> =<span class="st"> </span><span class="dv">2</span>, <span class="st">&quot;verbose&quot;</span> =<span class="st"> </span>F)</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">RunPoissonEventAssignment</span>(df, pyr, event, names, Term_n, tform, keep_constant, a_n, modelform, <span class="dt">control =</span> control)</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true"></a></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true"></a>e0 &lt;-<span class="st"> </span>e<span class="op">$</span>predict</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true"></a>e1 &lt;-<span class="st"> </span>e<span class="op">$</span>caused</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true"></a></span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true"></a>BK &lt;-<span class="st"> </span>e0[, <span class="dv">1</span>]</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true"></a>EX &lt;-<span class="st"> </span>e0[, <span class="dv">2</span>]</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true"></a>Total &lt;-<span class="st"> </span>e0[, <span class="dv">3</span>]</span></code></pre></div>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true"></a>a_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.1</span>, <span class="fl">0.1</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true"></a>keep_constant &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="dv">0</span>, <span class="kw">length</span>(names))</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true"></a>control &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="st">&quot;Ncores&quot;</span> =<span class="st"> </span><span class="dv">2</span>, <span class="st">&quot;verbose&quot;</span> =<span class="st"> </span><span class="dv">2</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">RunPoissonEventAssignment</span>(df, pyr, event, names, Term_n, tform, keep_constant, a_n, modelform, <span class="dt">control =</span> control)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true"></a>e0 &lt;-<span class="st"> </span>e<span class="op">$</span>predict</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true"></a>e1 &lt;-<span class="st"> </span>e<span class="op">$</span>caused</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true"></a>BK &lt;-<span class="st"> </span>e0[, <span class="dv">1</span>]</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true"></a>EX &lt;-<span class="st"> </span>e0[, <span class="dv">2</span>]</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true"></a>Total &lt;-<span class="st"> </span>e0[, <span class="dv">3</span>]</span></code></pre></div>
 </div>
 
 

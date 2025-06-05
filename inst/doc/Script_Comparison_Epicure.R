@@ -28,10 +28,11 @@ library(parallel)
 #   "YOB_CAT_3", "YOB_CAT_4", "sexm"
 # )
 # tform <- c("plin", rep("loglin", length(names) - 1))
-# control <- list("Ncores" = 8, "maxiter" = 50, "verbose" = F)
+# control <- list("Ncores" = 8, "maxiter" = 100, "verbose" = 2, "epsilon" = 1e-9, "der_epsilon" = 1e-9)
 
 ## ----eval=FALSE---------------------------------------------------------------
 # e <- RunCoxRegression(df_Dose, t0, t1, event, names, tform = tform, control = control)
+# Interpret_Output(e)
 
 ## ----eval=FALSE---------------------------------------------------------------
 # # HR
@@ -41,6 +42,7 @@ library(parallel)
 # )
 # tform <- rep("loglin", length(names))
 # e <- RunCoxRegression(df_Dose, t0, t1, event, names, tform = tform, control = control)
+# Interpret_Output(e)
 # 
 # # Categorical
 # names <- c(
@@ -50,4 +52,5 @@ library(parallel)
 # )
 # tform <- rep("loglin", length(names))
 # e <- RunCoxRegression(df_Dose, t0, t1, event, names, tform = tform, control = control)
+# Interpret_Output(e)
 

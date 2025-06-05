@@ -14,8 +14,6 @@ RunPoissonRegression_Joint_Omnibus(
   keep_constant_list = list(),
   a_n_list = list(),
   modelform = "M",
-  fir = 0,
-  der_iden = 0,
   control = list(),
   strat_col = "null",
   model_control = list(),
@@ -42,19 +40,15 @@ RunPoissonRegression_Joint_Omnibus(
 
 \item{modelform}{string specifying the model type: M, ME, A, PA, PAE, GMIX, GMIX-R, GMIX-E}
 
-\item{fir}{term number for the initial term, used for models of the form T0*f(Ti) in which the order matters}
-
-\item{der_iden}{number for the subterm to test derivative at, only used for testing runs with a single varying parameter, should be smaller than total number of parameters. indexed starting at 0}
-
 \item{control}{list of parameters controlling the convergence, see Def_Control() for options or vignette("Control_Options")}
 
 \item{strat_col}{column to stratify by if needed}
 
 \item{model_control}{controls which alternative model options are used, see Def_model_control() for options and vignette("Control_Options") for further details}
 
-\item{cons_mat}{Matrix containing coefficients for system of linear constraints, formatted as matrix}
+\item{cons_mat}{Matrix containing coefficients for a system of linear constraints, formatted as matrix}
 
-\item{cons_vec}{Vector containing constants for system of linear constraints, formatted as vector}
+\item{cons_vec}{Vector containing constants for a system of linear constraints, formatted as vector}
 }
 \value{
 returns a list of the final results
@@ -102,13 +96,11 @@ keep_constant_list <- list(
   "e0" = keep_constant_e0, "e1" = keep_constant_e1
 )
 a_n_list <- list("shared" = a_n_shared, "e0" = a_n_e0, "e1" = a_n_e1)
-der_iden <- 0
 modelform <- "M"
-fir <- 0
 control <- list(
   "ncores" = 2, "lr" = 0.75, "maxiter" = 5,
   "halfmax" = 5, "epsilon" = 1e-3,
-  "deriv_epsilon" = 1e-3, "abs_max" = 1.0, "change_all" = TRUE,
+  "deriv_epsilon" = 1e-3, "abs_max" = 1.0,
   "dose_abs_max" = 100.0, "verbose" = FALSE,
   "ties" = "breslow", "double_step" = 1
 )
@@ -124,7 +116,7 @@ e <- RunPoissonRegression_Joint_Omnibus(
   term_n_list,
   tform_list, keep_constant_list,
   a_n_list,
-  modelform, fir, der_iden,
+  modelform,
   control, strat_col
 )
 }

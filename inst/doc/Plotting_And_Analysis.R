@@ -24,18 +24,17 @@ event <- "status"
 
 names <- c("age", "sex")
 tform <- c("loglin", "loglin")
-control <- list("Ncores" = 1, "maxiter" = 2, "verbose" = 0)
+control <- list("Ncores" = 1, "maxiter" = 2, "verbose" = 2)
 
 a_n <- c(0.01701289, -0.51256478)
 term_n <- c(0, 0)
 keep_constant <- c(0, 0)
 modelform <- "M"
-fir <- 0
 
 ## ----eval=TRUE, fig.width=7,fig.height=4--------------------------------------
 plot_options <- list(
   "type" = c("surv", paste(tempfile(), "run", sep = "")), "studyid" = "UserID",
-  "verbose" = 0, "surv_curv" = T, "martingale" = F, "strat_haz" = F, "km" = F
+  "verbose" = 2, "surv_curv" = T, "martingale" = F, "strat_haz" = F, "km" = F
 )
 
 e <- RunCoxPlots(
@@ -59,7 +58,7 @@ g <- ggplot2::ggplot(norm_surv, ggplot2::aes(x = .data$t, y = .data$surv)) +
 g
 plot_options <- list(
   "type" = c("surv", paste(tempfile(), "run", sep = "")), "studyid" = "UserID",
-  "verbose" = 0, "surv_curv" = F, "martingale" = F, "strat_haz" = F, "km" = T
+  "verbose" = 2, "surv_curv" = F, "martingale" = F, "strat_haz" = F, "km" = T
 )
 
 e <- RunCoxPlots(
@@ -75,7 +74,7 @@ g
 ## ----eval=TRUE, fig.width=7,fig.height=4--------------------------------------
 plot_options <- list(
   "type" = c("schoenfeld", paste(tempfile(), "run", sep = "")),
-  "studyid" = "UserID", "verbose" = 0
+  "studyid" = "UserID", "verbose" = 2
 )
 
 res_all <- RunCoxPlots(
@@ -120,7 +119,7 @@ g
 ## ----eval=TRUE, fig.width=7,fig.height=4--------------------------------------
 plot_options <- list(
   "type" = c("surv", paste(tempfile(), "run", sep = "")),
-  "studyid" = "UserID", "verbose" = 0, "surv_curv" = F,
+  "studyid" = "UserID", "verbose" = 2, "surv_curv" = F,
   "martingale" = T, "strat_haz" = F, "km" = F, "cov_cols" = c("age", "sex")
 )
 res_all <- RunCoxPlots(
@@ -158,7 +157,7 @@ g
 ## ----eval=TRUE, fig.width=7,fig.height=4--------------------------------------
 plot_options <- list(
   "type" = c("risk", paste(tempfile(), "run", sep = "")), "studyid" = "UserID",
-  "verbose" = 0
+  "verbose" = 2
 )
 res_all <- RunCoxPlots(
   df, t0, t1, event, names, term_n, tform, keep_constant, a_n,

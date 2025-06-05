@@ -6,8 +6,8 @@
 \usage{
 RunCoxNull(
   df,
-  time1 = "start",
-  time2 = "end",
+  time1 = "\%trunc\%",
+  time2 = "\%trunc\%",
   event0 = "event",
   control = list()
 )
@@ -53,6 +53,7 @@ e <- RunCoxNull(df, time1, time2, event, control)
 \seealso{
 Other Cox Wrapper Functions: 
 \code{\link{CoxCurveSolver}()},
+\code{\link{RunCaseControlRegression_Omnibus}()},
 \code{\link{RunCoxRegression}()},
 \code{\link{RunCoxRegression_Basic}()},
 \code{\link{RunCoxRegression_CR}()},

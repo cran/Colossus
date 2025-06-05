@@ -4,8 +4,3 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 
-## ----setup--------------------------------------------------------------------
-library(Colossus)
-library(data.table)
-library(ggplot2)
-

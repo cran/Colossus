@@ -45,30 +45,12 @@ library(data.table)
 # )
 
 ## ----eval=FALSE---------------------------------------------------------------
-# df$censor <- (df$lung == 0) # censoring column made
-# event <- "censor" # event type switched to censoring
-# 
-# plot_options <- list(
-#   "name" = "run_2", "verbose" = FALSE,
-#   "studyID" = "studyID", "age_unit" = "years"
-# )
-# # modified plotting function used to get censoring weights
-# dft <- GetCensWeight(
-#   df, time1, time2, event, names, term_n, tform, keep_constant,
-#   a_n, modelform,
-#   control = control, plot_options = plot_options
-# ) # generates a survival curve
-# t_ref <- dft$t
-# surv_ref <- dft$surv
-# t_c <- df$t1
-# cens_weight <- approx(t_ref, surv_ref, t_c, rule = 2)$y
-# # the surviving proportions used as censoring weight
-# event <- "lung" # event switched back
+# pdata <- finegray(Surv(time2, event) ~ ., data = df)
 # 
 # e <- RunCoxRegression_CR(
-#   df, time1, time2, event, names, term_n, tform, keep_constant,
+#   pdata, "fgstart", "fgstop", "fgstatus", names, term_n, tform, keep_constant,
 #   a_n, modelform,
-#   control = control, cens_weight = cens_weight
+#   control = control, cens_weight = "fgwt"
 # )
 
 ## ----eval=TRUE----------------------------------------------------------------
@@ -116,18 +98,10 @@ Joint_Multiple_Events(
 )
 
 ## ----eval=TRUE----------------------------------------------------------------
-der_iden <- 0
 modelform <- "M"
-fir <- 0
 control <- list(
-  "ncores" = 1, "lr" = 0.75, "maxiter" = 10, "halfmax" = 5, "epsilon" = 1e-3,
-  "dbeta_max" = 0.5, "deriv_epsilon" = 1e-3, "abs_max" = 1.0, "change_all" = TRUE,
-  "dose_abs_max" = 100.0, "verbose" = FALSE, "ties" = "breslow", "double_step" = 1
-)
-guesses_control <- list(
-  "maxiter" = 10, "guesses" = 10, "lin_min" = 0.001, "lin_max" = 1,
-  "loglin_min" = -1, "loglin_max" = 1, "lin_method" = "uniform", "loglin_method" = "uniform",
-  strata = FALSE
+  "ncores" = 1, "lr" = 0.75, "maxiter" = 10, "halfmax" = 5, "epsilon" = 1e-6,
+  "deriv_epsilon" = 1e-6, "verbose" = 2
 )
 Strat_Col <- "f"
 e <- RunPoissonRegression_Joint_Omnibus(
@@ -141,9 +115,12 @@ Interpret_Output(e)
 ## ----eval=FALSE---------------------------------------------------------------
 # a_n <- list(c(1, 1, 1), c(1, 2, 1), c(1, 2, 2), c(2, 1, 1))
 # 
-# control$maxiter <- 5 # runs each (4) starts 1 iteration, and then runs the best 5 iterations
-# control$maxiters <- c(1, 1, 1, 1, 5) # runs each (4) starts 1 iteration, and then runs the best 5 iterations
-# control$maxiters <- c(5, 5, 5, 5, 5) # runs each (4) starts 5 iterations, and then runs the best 5 iterations
+# # runs each (4) starts 1 iteration, and then runs the best 5 iterations
+# control$maxiter <- 5
+# # runs each (4) starts 1 iteration, and then runs the best 5 iterations
+# control$maxiters <- c(1, 1, 1, 1, 5)
+# # runs each (4) starts 5 iterations, and then runs the best 5 iterations
+# control$maxiters <- c(5, 5, 5, 5, 5)
 # 
 # e <- RunCoxRegression_Omnibus(df, time1, time2, event,
 #   names, term_n, tform, keep_constant,
