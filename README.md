@@ -11,15 +11,19 @@ models allowed are sums or products of linear, log-linear, or several
 other radiation dose response formulas highlighted in the vignettes.
 Additional plotting capabilities are available.
 
+From versions 1.3.1 to 1.4.1 the expected inputs changed. Regressions
+are now run with CoxRun and PoisRun and formula inputs. Please see the
+‘Unified Equation Representation’ vignette for more details.
+
 By default, a fully portable version of the code is compiled, which does
 not support OpenMP on every system. Note that Colossus requires OpenMP
 support to perform parallel calculations. The environment variable
-“R\_COLOSSUS\_NOT\_CRAN” is checked to determine if OpenMP should be
+“R_COLOSSUS_NOT_CRAN” is checked to determine if OpenMP should be
 disabled for linux compiling with clang. The number of cores is set to 1
 if the environment variable is empty, the operating system is detected
 as linux, and the default compiler or R compiler is clang. Colossus
-testing checks for the “NOT\_CRAN” variable to determine if additional
-tests should be run. Setting “NOT\_CRAN” to “false” will disable the
+testing checks for the “NOT_CRAN” variable to determine if additional
+tests should be run. Setting “NOT_CRAN” to “false” will disable the
 longer tests. Currently, OpenMP support is not configured for linux
 compiling with clang.
 
@@ -43,29 +47,21 @@ df <- data.table(
   "c" = c(10, 11, 10, 11, 12, 9, 11),
   "d" = c(0, 0, 0, 1, 1, 1, 1)
 )
-# For the interval case
-time1 <- "Starting_Age"
-time2 <- "Ending_Age"
-event <- "Cancer_Status"
 
-names <- c("a", "b", "c", "d")
-term_n <- c(0, 1, 1, 2)
-tform <- c("loglin", "lin", "lin", "plin")
-modelform <- "M"
+model <- Cox(Starting_Age, Ending_Age, Cancer_Status) ~ loglinear(a, 0) + linear(b, c, 1) + plinear(d, 2) + multiplicative()
 
 a_n <- c(0.1, 0.1, 0.1, 0.1)
 
 keep_constant <- c(0, 0, 0, 0)
-der_iden <- 0
 
 control <- list(
   "lr" = 0.75, "maxiter" = 100, "halfmax" = 5, "epsilon" = 1e-9,
-  "deriv_epsilon" = 1e-9, "abs_max" = 1.0,
+  "deriv_epsilon" = 1e-9, "step_max" = 1.0,
   "verbose" = 2, "ties" = "breslow"
 )
 
-e <- RunCoxRegression(df, time1, time2, event, names, term_n, tform, keep_constant, a_n, modelform, control = control)
-Interpret_Output(e)
+e <- CoxRun(model, df, a_n = a_n, control = control)
+print(e)
 #> |-------------------------------------------------------------------|
 #> Final Results
 #>    Covariate Subterm Term Number Central Estimate Standard Error 2-tail p-value
@@ -80,6 +76,6 @@ Interpret_Output(e)
 #> Iterations run: 100
 #> maximum step size: 1.00e+00, maximum first derivative: 1.92e-04
 #> Analysis did not converge, check convergence criteria or run further
-#> Run finished in 0.25 seconds
+#> Run finished in 0.07 seconds
 #> |-------------------------------------------------------------------|
 ```

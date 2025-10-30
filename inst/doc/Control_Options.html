@@ -27,31 +27,15 @@ document.addEventListener('DOMContentLoaded', function(e) {
   }
 });
 </script>
-<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
-// v0.0.1
-// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
-
-document.addEventListener('DOMContentLoaded', function() {
-  const codeList = document.getElementsByClassName("sourceCode");
-  for (var i = 0; i < codeList.length; i++) {
-    var linkList = codeList[i].getElementsByTagName('a');
-    for (var j = 0; j < linkList.length; j++) {
-      if (linkList[j].innerHTML === "") {
-        linkList[j].setAttribute('aria-hidden', 'true');
-      }
-    }
-  }
-});
-</script>
 
 <style type="text/css">
-  code{white-space: pre-wrap;}
-  span.smallcaps{font-variant: small-caps;}
-  span.underline{text-decoration: underline;}
-  div.column{display: inline-block; vertical-align: top; width: 50%;}
-  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-  ul.task-list{list-style: none;}
-    </style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
 
 
 
@@ -257,14 +241,22 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <div id="general-use" class="section level2">
 <h2>General Use</h2>
-<p>There are three control lists used in Colossus that the user can use to customize the regression, all three of which have functions defined that assign default values to any missing list items. The following sections will go through each control list, how it is used, and what every item assigned to it means.</p>
+<p>There are several control lists used in Colossus that the user can
+use to customize the regression, all of which have functions defined
+that assign default values to any missing list items. The following
+sections will go through each control list, how it is used, and what
+every item assigned to it means.</p>
 <div id="standard-control-list" class="section level3">
 <h3>Standard Control List</h3>
-<p>This is the “control” variable used by every regression function. This list focuses on options that control the convergence criteria and standard Cox proportional hazards options.</p>
+<p>This is the “control” variable used by every regression function.
+This list focuses on options that control the convergence criteria and
+standard Cox proportional hazards options. They can be input through the
+control argument, given as named arguments to the function, or a
+combination of the two.</p>
 <table>
 <colgroup>
-<col width="47%"></col>
-<col width="52%"></col>
+<col width="47%" />
+<col width="52%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -275,62 +267,82 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <tbody>
 <tr class="odd">
 <td align="center">verbose</td>
-<td align="center">integer valued 0-4 controlling what information is printed to the terminal. Each level includes the lower levels. 0: silent, 1: errors printed, 2: warnings printed, 3: notes printed, 4: debug information printed. Errors are situations that stop the regression, warnings are situations that assume default values that the user might not have intended, notes provide information on regression progress, and debug prints out C++ progress and intermediate results. The default level is 2 and True/False is converted to 3/0.</td>
+<td align="center">integer valued 0-4 controlling what information is
+printed to the terminal. Each level includes the lower levels. 0:
+silent, 1: errors printed, 2: warnings printed, 3: notes printed, 4:
+debug information printed. Errors are situations that stop the
+regression, warnings are situations that assume default values that the
+user might not have intended, notes provide information on regression
+progress, and debug prints out C++ progress and intermediate results.
+The default level is 2 and True/False is converted to 3/0.</td>
 </tr>
 <tr class="even">
 <td align="center">ncores</td>
-<td align="center">Number of cores used for parallel operations. The user can not assign more cores than are available. Defaults to the number of detected cores</td>
+<td align="center">Number of cores used for parallel operations. The
+user can not assign more cores than are available. Defaults to the
+number of detected cores</td>
 </tr>
 <tr class="odd">
 <td align="center">lr</td>
-<td align="center">Learning rate used. Every step is multiplied by the learning rate. The default is 0.75.</td>
+<td align="center">Learning rate used. Every step is multiplied by the
+learning rate. The default is 0.75.</td>
 </tr>
 <tr class="even">
 <td align="center">maxiter</td>
-<td align="center">Maximum iterations run for a single initial position. Defaults to 20.</td>
+<td align="center">Maximum iterations run for a single initial position.
+Defaults to 20.</td>
 </tr>
 <tr class="odd">
 <td align="center">maxiters</td>
-<td align="center">Used for multiple starting positions. List the maximum number of iterations per starting point and the maximum number of iterations for the final guess. Assumes N values for N guesses and 1 value for the final solution. Defaults to c(1,maxiter), running 1 iteration per provided guess.</td>
+<td align="center">Used for multiple starting positions. List the
+maximum number of iterations per starting point and the maximum number
+of iterations for the final guess. Assumes N values for N guesses and 1
+value for the final solution. Defaults to c(1,maxiter), running 1
+iteration per provided guess.</td>
 </tr>
 <tr class="even">
 <td align="center">halfmax</td>
-<td align="center">Maximum number of half-steps taken per iteration. Defaults to 5.</td>
+<td align="center">Maximum number of half-steps taken per iteration.
+Defaults to 5.</td>
 </tr>
 <tr class="odd">
 <td align="center">epsilon</td>
-<td align="center">Minimum step size before convergence is assumed. Defaults to 1e-4</td>
+<td align="center">Maximum step size before convergence is assumed.
+Defaults to 1e-4. Regression exits if the predicted step sizes are all
+below this threshold.</td>
 </tr>
 <tr class="even">
 <td align="center">deriv_epsilon</td>
-<td align="center">Smallest maximum first derivative before convergence is assumed. Defaults to 1e-4.</td>
+<td align="center">Largest maximum first derivative before convergence
+is assumed. Defaults to 1e-4.</td>
 </tr>
 <tr class="odd">
-<td align="center">abs_max</td>
-<td align="center">Largest acceptable step size for non-intercept parameters. Defaults to 1.0.</td>
+<td align="center">step_max</td>
+<td align="center">Largest acceptable step size for non-intercept
+parameters. Defaults to 1.0.</td>
 </tr>
 <tr class="even">
-<td align="center">dose_abs_max</td>
-<td align="center">Largest acceptable step size for intercept parameters. Defaults to 100.0.</td>
+<td align="center">thres_step_max</td>
+<td align="center">Largest acceptable step size for intercept
+parameters. Defaults to 100.0.</td>
 </tr>
 <tr class="odd">
 <td align="center">ties</td>
-<td align="center">Chooses between ‘breslow’ and ‘efron’ methods for tied event times in Cox proportional hazards regressions. Defaults to ‘breslow’.</td>
-</tr>
-<tr class="even">
-<td align="center">double_step</td>
-<td align="center">0/1 Choosing if the model should be optimized by solving the inversion hessian (1) or optimizing each parameter independently (0). Defaults to 1.</td>
+<td align="center">Chooses between ‘breslow’ and ‘efron’ methods for
+tied event times in Cox proportional hazards regressions. Defaults to
+‘breslow’.</td>
 </tr>
 </tbody>
 </table>
 </div>
-<div id="model-control-list" class="section level3">
-<h3>Model Control List</h3>
-<p>This is the “model_control” variable primarily used by the omnibus functions. The non-omnibus functions use this list to select non-standard modeling options.</p>
+<div id="other-control-lists" class="section level3">
+<h3>Other Control Lists</h3>
+<p>The following options can be used by the cox plotting function to
+select difference types of plots:</p>
 <table>
 <colgroup>
-<col width="47%"></col>
-<col width="52%"></col>
+<col width="47%" />
+<col width="52%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -340,76 +352,39 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </thead>
 <tbody>
 <tr class="odd">
-<td align="center">single</td>
-<td align="center">Boolean used by both Cox and Poisson functions to calculate score without derivatives. This method can be used to quickly test multiple starting points. Defaults to FALSE.</td>
-</tr>
-<tr class="even">
-<td align="center">basic</td>
-<td align="center">Boolean used by Cox functions to use the single-term log-linear model. This method can apply simplifications which reduce the time and memory requirements. Defaults to FALSE.</td>
-</tr>
-<tr class="odd">
-<td align="center">null</td>
-<td align="center">Boolean used by Cox functions to calculate the null model, which assumes a constant hazard ratio. Defaults to FALSE.</td>
-</tr>
-<tr class="even">
-<td align="center">cr</td>
-<td align="center">Boolean used by Cox functions to apply competing risks model options to use a Fine-Gray model. Defaults to FALSE.</td>
-</tr>
-<tr class="odd">
-<td align="center">constraint</td>
-<td align="center">Boolean used by both Cox and Poisson functions to apply a system of linear constraints. Defaults to FALSE.</td>
-</tr>
-<tr class="even">
-<td align="center">strata</td>
-<td align="center">Boolean used by both Cox and Poisson functions to apply stratification. Cox functions use stratified risk groups and Poisson functions apply an average event rate per strata. Defaults to FALSE.</td>
-</tr>
-<tr class="odd">
 <td align="center">surv</td>
-<td align="center">Boolean used by Cox plotting function to choose survival curve plotting. Defaults to FALSE</td>
+<td align="center">Boolean used by Cox plotting function to choose
+survival curve plotting. Defaults to FALSE</td>
 </tr>
 <tr class="even">
 <td align="center">schoenfeld</td>
-<td align="center">Boolean used by Cox plotting function to choose schoenfeld residual curve plotting. Defaults to FALSE</td>
+<td align="center">Boolean used by Cox plotting function to choose
+schoenfeld residual curve plotting. Defaults to FALSE</td>
 </tr>
 <tr class="odd">
 <td align="center">risk</td>
-<td align="center">Boolean used by Cox plotting function to choose hazard ratio plotting by a single parameter. Defaults to FALSE</td>
+<td align="center">Boolean used by Cox plotting function to choose
+hazard ratio plotting by a single parameter. Defaults to FALSE</td>
 </tr>
 <tr class="even">
 <td align="center">unique_values</td>
-<td align="center">integer used by the risk plotting option to select how many values calculate risk at. Depending on function, either defaults to the number of unique values in the column or 2.</td>
-</tr>
-<tr class="odd">
-<td align="center">risk_subset</td>
-<td align="center">Boolean used by Cox_Relative_Risk function to calculate a relative risk for every row. Not directly used by the user, Defaults to FALSE.</td>
-</tr>
-<tr class="even">
-<td align="center">log_bound</td>
-<td align="center">Boolean used by Cox and Poisson functions to select calculating likelihood-based confidence bounds. Defaults to FALSE.</td>
-</tr>
-<tr class="odd">
-<td align="center">pearson</td>
-<td align="center">Boolean used by RunPoissonRegression_Residual to select calculating pearson residuals. Defaults to FALSE.</td>
-</tr>
-<tr class="even">
-<td align="center">deviance</td>
-<td align="center">Boolean used by RunPoissonRegression_Residual to select calculating deviance residuals. Defaults to FALSE.</td>
-</tr>
-<tr class="odd">
-<td align="center">gmix_theta</td>
-<td align="center">Theta value for the geometric mixture model, double between 0-1. Defaults to 0.5.</td>
-</tr>
-<tr class="even">
-<td align="center">gmix_term</td>
-<td align="center">Integer vector indicating if each term in the geometric mixture model is a relative risk (0) or excess risk (1). Defaults to c(0), should be provided if used.</td>
+<td align="center">integer used by the risk plotting option to select
+how many values calculate risk at. Depending on function, either
+defaults to the number of unique values in the column or 2.</td>
 </tr>
 </tbody>
 </table>
-<p>If the log_bound method is used, there are several additional control options used:</p>
+<p>The following options can be used by the poisson residual function to
+select difference types of residuals: | pearson | Boolean used by
+Residual.poisres to select calculating pearson residuals. Defaults to
+FALSE. | | deviance | Boolean used by Residual.poisres to select
+calculating deviance residuals. Defaults to FALSE. |</p>
+<p>If a likelihood boundary is being calculated, there are several
+additional control options used:</p>
 <table>
 <colgroup>
-<col width="47%"></col>
-<col width="52%"></col>
+<col width="47%" />
+<col width="52%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -420,140 +395,52 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <tbody>
 <tr class="odd">
 <td align="center">alpha</td>
-<td align="center">Confidence level to use, valued 0-1. Defaults to 0.05.</td>
+<td align="center">Confidence level to use, valued 0-1. Defaults to
+0.05.</td>
 </tr>
 <tr class="even">
 <td align="center">qchi</td>
-<td align="center">Two-tailed Chi-squared value at one degree of freedom and the provided alpha. Defaults to the value corresponding to alpha.</td>
+<td align="center">Two-tailed Chi-squared value at one degree of freedom
+and the provided alpha. Defaults to the value corresponding to
+alpha.</td>
 </tr>
 <tr class="odd">
 <td align="center">para_number</td>
-<td align="center">Parameter number to solve the boundary for. Indexed starting at 0. Defaults to 0.</td>
+<td align="center">Parameter number to solve the boundary for. Indexed
+starting at 1. Defaults to 1.</td>
 </tr>
 <tr class="even">
 <td align="center">manual</td>
-<td align="center">Boolean which selects if the standard Venzon-Moolgavkar algorithm (FALSE) or if a modified version is used which starts by optimizing multiple points (TRUE). The manual mode is beneficial for problems with linear terms, which may have issues with local optimums. Defaults to FALSE.</td>
+<td align="center">Boolean which selects if the standard
+Venzon-Moolgavkar algorithm (FALSE) or if a modified version is used
+which starts by optimizing multiple points (TRUE). The manual mode is
+beneficial for problems with linear terms, which may have issues with
+local optimums. Defaults to FALSE.</td>
 </tr>
 <tr class="odd">
 <td align="center">maxstep</td>
-<td align="center">Integer used by the manual search option, splits the initial step into maxstep points. Then each point is optimized with a constant boundary parameter. This is done to find the closest estimate for the boundary point. Defaults to 10.</td>
+<td align="center">Integer used by the manual search option, splits the
+initial step into maxstep points. Then each point is optimized with a
+constant boundary parameter. This is done to find the closest estimate
+for the boundary point. Defaults to 10.</td>
 </tr>
 <tr class="even">
 <td align="center">search_mult</td>
-<td align="center">Double used by manual search option, scales the initial step by that amount. This can be done to widen or narrow the scope of the search if the initial quadratic assumption made by the Venzon-Moolgavkar algorithm is incorrect.</td>
+<td align="center">Double used by manual search option, scales the
+initial step by that amount. This can be done to widen or narrow the
+scope of the search if the initial quadratic assumption made by the
+Venzon-Moolgavkar algorithm is incorrect.</td>
 </tr>
 <tr class="odd">
 <td align="center">step_size</td>
-<td align="center">Double used by the Curve Search functions. Sets the initial interval length used. Defaults to 0.5</td>
-</tr>
-</tbody>
-</table>
-<p>Several options are available for matched case-control conditional logistic regression:</p>
-<table>
-<colgroup>
-<col width="47%"></col>
-<col width="52%"></col>
-</colgroup>
-<thead>
-<tr class="header">
-<th align="center">Option</th>
-<th align="center">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="center">time_risk</td>
-<td align="center">Boolean used to denote if rows should be matched by time at risk, similar to a Cox proportional hazards model risk group. Defaults to FALSE.</td>
+<td align="center">Double used by the Curve Search functions. Sets the
+initial interval length used. Defaults to 0.5</td>
 </tr>
 <tr class="even">
-<td align="center">strata</td>
-<td align="center">Boolean used to denote matching by stratification. Defaults to FALSE.</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div id="guess-control-list" class="section level3">
-<h3>Guess Control List</h3>
-<p>This is the “guesses_control” variable used by the distributed start functions. These options are used to control the number and scope of distributed initial parameter sets used.</p>
-<table>
-<colgroup>
-<col width="47%"></col>
-<col width="52%"></col>
-</colgroup>
-<thead>
-<tr class="header">
-<th align="center">Option</th>
-<th align="center">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="center">maxiter</td>
-<td align="center">Iterations run for every random starting point</td>
-</tr>
-<tr class="even">
-<td align="center">guesses</td>
-<td align="center">Number of starting points to test</td>
-</tr>
-<tr class="odd">
-<td align="center">guesses_start</td>
-<td align="center">Number of starting points tested for Tiered or Strata First regressions</td>
-</tr>
-<tr class="even">
-<td align="center">guess_constant</td>
-<td align="center">Binary values to denote if any parameter values should not be randomized</td>
-</tr>
-<tr class="odd">
-<td align="center">exp_min</td>
-<td align="center">minimum exponential parameter change</td>
-</tr>
-<tr class="even">
-<td align="center">exp_max</td>
-<td align="center">maximum exponential parameter change</td>
-</tr>
-<tr class="odd">
-<td align="center">intercept_min</td>
-<td align="center">minimum intercept parameter change</td>
-</tr>
-<tr class="even">
-<td align="center">intercept_max</td>
-<td align="center">maximum intercept parameter change</td>
-</tr>
-<tr class="odd">
-<td align="center">lin_min</td>
-<td align="center">minimum linear slope parameter change</td>
-</tr>
-<tr class="even">
-<td align="center">lin_max</td>
-<td align="center">maximum linear slope parameter change</td>
-</tr>
-<tr class="odd">
-<td align="center">exp_slope_min</td>
-<td align="center">minimum linear-exponential, exponential slope parameter change</td>
-</tr>
-<tr class="even">
-<td align="center">exp_slope_max</td>
-<td align="center">maximum linear-exponential, exponential slope parameter change</td>
-</tr>
-<tr class="odd">
-<td align="center">strata</td>
-<td align="center">True/False if stratification is used</td>
-</tr>
-<tr class="even">
-<td align="center">term_initial</td>
-<td align="center">List of term numbers to run first if Tiered guessing is used</td>
-</tr>
-<tr class="odd">
-<td align="center">rmin</td>
-<td align="center">list of minimum changes below the central estimate for each parameter guess</td>
-</tr>
-<tr class="even">
-<td align="center">rmax</td>
-<td align="center">list of maximum changes above the central estimate for each parameter guess</td>
-</tr>
-<tr class="odd">
-<td align="center">verbose</td>
-<td align="center">integer valued 0-4 controlling what information is printed to the terminal. Each level includes the lower levels. 0: silent, 1: errors printed, 2: warnings printed, 3: notes printed, 4: debug information printed. Errors are situations that stop the regression, warnings are situations that assume default values that the user might not have intended, notes provide information on regression progress, and debug prints out C++ progress and intermediate results. The default level is 2 and True/False is converted to 3/0.</td>
+<td align="center">bisect</td>
+<td align="center">Boolean to denote the bisection method of boundary
+solution. Solves for the optimal log-likelihood at both ends and middle
+of a searching interval, then updates the window until convergence.</td>
 </tr>
 </tbody>
 </table>

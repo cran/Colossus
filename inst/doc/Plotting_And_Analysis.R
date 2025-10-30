@@ -8,28 +8,21 @@ knitr::opts_chunk$set(
 library(Colossus)
 library(data.table)
 library(survival)
+library(dplyr)
 
 ## ----eval=TRUE----------------------------------------------------------------
 data(cancer, package = "survival")
+cancer %>% setDT()
+df <- copy(cancer)
 
-df <- cancer
 df$UserID <- seq_len(nrow(df))
 
 df$status <- df$status - 1
 df$sex <- df$sex - 1
 
-t0 <- "%trunc%"
-t1 <- "time"
-event <- "status"
-
-names <- c("age", "sex")
-tform <- c("loglin", "loglin")
-control <- list("Ncores" = 1, "maxiter" = 2, "verbose" = 2)
-
+control <- list(ncore = 2)
 a_n <- c(0.01701289, -0.51256478)
-term_n <- c(0, 0)
-keep_constant <- c(0, 0)
-modelform <- "M"
+coxres <- CoxRun(Cox(time, status) ~ loglinear(age, sex, 0), df, control = control, a_n = a_n)
 
 ## ----eval=TRUE, fig.width=7,fig.height=4--------------------------------------
 plot_options <- list(
@@ -37,10 +30,7 @@ plot_options <- list(
   "verbose" = 2, "surv_curv" = T, "martingale" = F, "strat_haz" = F, "km" = F
 )
 
-e <- RunCoxPlots(
-  df, t0, t1, event, names, term_n, tform, keep_constant, a_n, modelform,
-  control = control, plot_options = plot_options
-)
+e <- plot(coxres, df, plot_options)
 
 norm_surv <- e[["standard"]]
 
@@ -61,10 +51,8 @@ plot_options <- list(
   "verbose" = 2, "surv_curv" = F, "martingale" = F, "strat_haz" = F, "km" = T
 )
 
-e <- RunCoxPlots(
-  df, t0, t1, event, names, term_n, tform, keep_constant, a_n, modelform,
-  control = control, plot_options = plot_options
-)
+e <- plot(coxres, df, plot_options)
+
 km <- e[["kaplin-meier"]]
 g <- ggplot2::ggplot(km, ggplot2::aes(x = .data$t_t, y = .data$n_t)) +
   ggplot2::geom_line(color = "black", alpha = 1) +
@@ -77,11 +65,7 @@ plot_options <- list(
   "studyid" = "UserID", "verbose" = 2
 )
 
-res_all <- RunCoxPlots(
-  df, t0, t1, event, names, term_n, tform, keep_constant, a_n,
-  modelform,
-  control = control, plot_options = plot_options
-)
+res_all <- plot(coxres, df, plot_options)
 
 res_age <- res_all[["age"]]
 
@@ -122,11 +106,7 @@ plot_options <- list(
   "studyid" = "UserID", "verbose" = 2, "surv_curv" = F,
   "martingale" = T, "strat_haz" = F, "km" = F, "cov_cols" = c("age", "sex")
 )
-res_all <- RunCoxPlots(
-  df, t0, t1, event, names, term_n, tform, keep_constant, a_n,
-  modelform,
-  control = control, plot_options = plot_options
-)
+res_all <- plot(coxres, df, plot_options)
 
 res_age <- res_all[["age"]]
 
@@ -159,11 +139,7 @@ plot_options <- list(
   "type" = c("risk", paste(tempfile(), "run", sep = "")), "studyid" = "UserID",
   "verbose" = 2
 )
-res_all <- RunCoxPlots(
-  df, t0, t1, event, names, term_n, tform, keep_constant, a_n,
-  modelform,
-  control = control, plot_options = plot_options
-)
+res_all <- plot(coxres, df, plot_options)
 
 res_age <- res_all[["age"]]
 

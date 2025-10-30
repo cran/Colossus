@@ -120,3 +120,28 @@
 
 * Multiple realization code updated to improve speed
 * lingering debugging variables removed: fir and der_iden
+
+# Colossus 1.3.1
+
+* Convergence check performed more often
+* Checks the actual maximum step taken to compare to threshold
+* Previous versions may have run more iterations than necessary to meet derivative and step size thresholds
+
+# Colossus 1.4.0
+
+* Switch to formula inputs and model classes
+* Removed unused functions, to simplify documentation
+
+# Colossus 1.4.1
+
+* Formula input now allows more general applications of factor, ns(), bs(), I(var^n), interaction, etc.
+
+# Colossus 1.4.2
+
+* Option added to normalize covariates, either scaled by the mean or maximum values.
+* Gradient descent option now calculates standard error and covariance through second derivative after regression.
+
+# Colossus 1.4.3
+
+* Logistic regression added
+* Newton step calculation now checks the predicted change in score, and moves in opposite direction if the expected score is worse

@@ -13,44 +13,23 @@ library(parallel)
 # df_Dose <- fread("EX_DOSE.csv")
 
 ## ----eval=FALSE---------------------------------------------------------------
-# col_list <- c("SES_CAT", "YOB_CAT", "dose_cat")
-# val <- factorize(df_Dose, col_list)
-# df_Dose <- val$df
-# 
-# t0 <- "age_entry"
-# t1 <- "age_exit"
-# event <- "nonCLL"
+# model_ERR <- Cox(age_entry, age_exit, nonCLL) ~ plinear(cumulative_dose, 0) + loglinear(factor(SES_CAT), factor(YOB_CAT), sexm)
 
 ## ----eval=FALSE---------------------------------------------------------------
-# # ERR
-# names <- c(
-#   "cumulative_dose", "SES_CAT_1", "SES_CAT_2", "YOB_CAT_1", "YOB_CAT_2",
-#   "YOB_CAT_3", "YOB_CAT_4", "sexm"
-# )
-# tform <- c("plin", rep("loglin", length(names) - 1))
-# control <- list("Ncores" = 8, "maxiter" = 100, "verbose" = 2, "epsilon" = 1e-9, "der_epsilon" = 1e-9)
+# control <- list("Ncores" = 2, "maxiter" = 100, "verbose" = 2, "epsilon" = 1e-9, "der_epsilon" = 1e-9)
 
 ## ----eval=FALSE---------------------------------------------------------------
-# e <- RunCoxRegression(df_Dose, t0, t1, event, names, tform = tform, control = control)
-# Interpret_Output(e)
+# e <- CoxRun(model_ERR, df_dose, control = control)
+# print(e)
 
 ## ----eval=FALSE---------------------------------------------------------------
 # # HR
-# names <- c(
-#   "cumulative_dose", "SES_CAT_1", "SES_CAT_2", "YOB_CAT_1", "YOB_CAT_2",
-#   "YOB_CAT_3", "YOB_CAT_4", "sexm"
-# )
-# tform <- rep("loglin", length(names))
-# e <- RunCoxRegression(df_Dose, t0, t1, event, names, tform = tform, control = control)
-# Interpret_Output(e)
+# model_HR <- Cox(age_entry, age_exit, nonCLL) ~ loglinear(cumulative_dose, factor(SES_CAT), factor(YOB_CAT), sexm)
+# e <- CoxRun(model_HR, df_dose, control = control)
+# print(e)
 # 
 # # Categorical
-# names <- c(
-#   "dose_cat_1", "dose_cat_2", "dose_cat_3", "dose_cat_4", "dose_cat_5",
-#   "dose_cat_6", "SES_CAT_1", "SES_CAT_2", "YOB_CAT_1", "YOB_CAT_2",
-#   "YOB_CAT_3", "YOB_CAT_4", "sexm"
-# )
-# tform <- rep("loglin", length(names))
-# e <- RunCoxRegression(df_Dose, t0, t1, event, names, tform = tform, control = control)
-# Interpret_Output(e)
+# model_categ <- Cox(age_entry, age_exit, nonCLL) ~ loglinear(factor(dose_cat), factor(SES_CAT), factor(YOB_CAT), sexm)
+# e <- CoxRun(model_categ, df_dose, control = control)
+# print(e)
 

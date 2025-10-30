@@ -10,47 +10,26 @@ library(data.table)
 
 ## ----eval=FALSE---------------------------------------------------------------
 # Strat_Col <- "e"
-# e <- RunCoxRegression_Strata(
-#   df, time1, time2, event, names, term_n, tform, keep_constant,
-#   a_n, modelform,
-#   control = control, strat_col = Strat_Col
+# e <- CoxRun_Strata(Cox(time1, time2, event, e) ~ loglinear(dose), df,
+#   a_n = a_n, control = control
 # )
 
 ## ----eval=FALSE---------------------------------------------------------------
 # Strat_Col <- c("e")
-# e <- RunPoissonRegression_Strata(
-#   df, pyr, event, names, term_n, tform, keep_constant,
-#   a_n, modelform,
-#   control = control, strat_col = Strat_Col
+# e <- PoisRun(Poisson_Strata(pyr, event, e) ~ loglinear(dose), df,
+#   a_n = a_n, control = control
 # )
 
 ## ----eval=FALSE---------------------------------------------------------------
-# e <- RunCoxRegression_Basic(
-#   df, time1, time2, event, names,
-#   keep_constant, a_n,
-#   control = control
-# )
-
-## ----eval=FALSE---------------------------------------------------------------
-# e <- RunCoxRegression_Single(
-#   df, time1, time2, event, names, term_n, tform,
-#   a_n, modelform,
-#   control = control
-# )
-# 
-# e <- RunPoissonRegression_Single(
-#   df, pyr, event, names, term_n, tform,
-#   a_n, modelform,
-#   control = control
+# e <- CoxRun(Cox(time1, time2, event) ~ loglinear(dose), df,
+#   a_n = a_n, control = control, single = TRUE
 # )
 
 ## ----eval=FALSE---------------------------------------------------------------
 # pdata <- finegray(Surv(time2, event) ~ ., data = df)
 # 
-# e <- RunCoxRegression_CR(
-#   pdata, "fgstart", "fgstop", "fgstatus", names, term_n, tform, keep_constant,
-#   a_n, modelform,
-#   control = control, cens_weight = "fgwt"
+# e <- CoxRun(FineGray(fgstart, fgstop, fgstatus, fgwt) ~ loglinear(dose), pdata,
+#   a_n = a_n, control = control
 # )
 
 ## ----eval=TRUE----------------------------------------------------------------
@@ -67,64 +46,19 @@ pyr <- "pyr"
 events <- c("e0", "e1")
 
 ## ----eval=TRUE----------------------------------------------------------------
-names_e0 <- c("fac")
-names_e1 <- c("fac")
-names_shared <- c("t0", "t0")
-term_n_e0 <- c(0)
-term_n_e1 <- c(0)
-term_n_shared <- c(0, 0)
-tform_e0 <- c("loglin")
-tform_e1 <- c("loglin")
-tform_shared <- c("quad_slope", "loglin_top")
-keep_constant_e0 <- c(0)
-keep_constant_e1 <- c(0)
-keep_constant_shared <- c(0, 0)
-a_n_e0 <- c(-0.1)
-a_n_e1 <- c(0.1)
-a_n_shared <- c(0.001, -0.02)
-name_list <- list("shared" = names_shared, "e0" = names_e0, "e1" = names_e1)
-term_n_list <- list("shared" = term_n_shared, "e0" = term_n_e0, "e1" = term_n_e1)
-tform_list <- list("shared" = tform_shared, "e0" = tform_e0, "e1" = tform_e1)
-keep_constant_list <- list(
-  "shared" = keep_constant_shared,
-  "e0" = keep_constant_e0, "e1" = keep_constant_e1
-)
-a_n_list <- list("shared" = a_n_shared, "e0" = a_n_e0, "e1" = a_n_e1)
+model_1 <- Pois(pyr, e0) ~ loglin(fac, 0)
+model_2 <- Pois(pyr, e1) ~ loglin(fac, 0)
+model_s <- Pois(pyr) ~ plinear(t0, 0)
+formula_list <- list(model_1, model_2, "shared" = model_s)
 
 ## ----eval=TRUE----------------------------------------------------------------
-Joint_Multiple_Events(
-  df, events, name_list, term_n_list,
-  tform_list, keep_constant_list, a_n_list
-)
+get_form_joint(formula_list, df)
 
 ## ----eval=TRUE----------------------------------------------------------------
-modelform <- "M"
 control <- list(
   "ncores" = 1, "lr" = 0.75, "maxiter" = 10, "halfmax" = 5, "epsilon" = 1e-6,
-  "deriv_epsilon" = 1e-6, "verbose" = 2
+  "deriv_epsilon" = 1e-6, "verbose" = 2, "ncores" = 2
 )
-Strat_Col <- "f"
-e <- RunPoissonRegression_Joint_Omnibus(
-  df, pyr, events, name_list, term_n_list,
-  tform_list, keep_constant_list, a_n_list,
-  modelform,
-  control = control, strat_col = Strat_Col
-)
-Interpret_Output(e)
-
-## ----eval=FALSE---------------------------------------------------------------
-# a_n <- list(c(1, 1, 1), c(1, 2, 1), c(1, 2, 2), c(2, 1, 1))
-# 
-# # runs each (4) starts 1 iteration, and then runs the best 5 iterations
-# control$maxiter <- 5
-# # runs each (4) starts 1 iteration, and then runs the best 5 iterations
-# control$maxiters <- c(1, 1, 1, 1, 5)
-# # runs each (4) starts 5 iterations, and then runs the best 5 iterations
-# control$maxiters <- c(5, 5, 5, 5, 5)
-# 
-# e <- RunCoxRegression_Omnibus(df, time1, time2, event,
-#   names, term_n, tform, keep_constant,
-#   a_n, modelform,
-#   control = control
-# )
+e <- PoisRunJoint(formula_list, df, control = control)
+print(e)
 

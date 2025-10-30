@@ -8,23 +8,13 @@ knitr::opts_chunk$set(
 library(Colossus)
 library(data.table)
 
-## -----------------------------------------------------------------------------
-names <- c("x", "D")
-term_n <- c(0, 1)
-tform <- c("loglin", "lin")
-modelform <- "M"
-
-a_n <- c(0.1, 0.1)
+## ----eval=FALSE---------------------------------------------------------------
+# a_n <- c(0.1, 0.1)
+# model <- Pois(pyr, event) ~ loglinear(x, 0) + linear(D, 1) + Multiplicative()
+# poisres <- PoisRun(model, df, a_n = a_n)
 
 ## ----eval=FALSE---------------------------------------------------------------
-# names <- c("x", "D")
-# term_n <- c(0, 1)
-# tform <- c("loglin", "lin")
-# modelform <- "M"
-# a_n <- c(0.1, 0.1)
-# keep_constant <- rep(0, length(names))
-# control <- list("Ncores" = 2, "verbose" = 2)
-# e <- RunPoissonEventAssignment(df, pyr, event, names, Term_n, tform, keep_constant, a_n, modelform, control = control)
+# e <- EventAssignment(poisres, df)
 # 
 # e0 <- e$predict
 # e1 <- e$caused

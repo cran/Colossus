@@ -8,45 +8,26 @@ knitr::opts_chunk$set(
 library(Colossus)
 library(data.table)
 library(survival)
+library(dplyr)
 
 ## ----eval=TRUE----------------------------------------------------------------
 data(reliability, package = "survival")
+capacitor %>% setDT()
+df <- copy(capacitor)
 
-df <- capacitor
 df$voltage <- (df$voltage - 200) / 150
 df$temperature <- (df$temperature - 170) / 10
 df$time <- (df$time - 216) / (1105 - 216)
 
-t0 <- "%trunc%"
-t1 <- "time"
-event <- "status"
-
-names <- c("temperature", "voltage")
-tform <- c("loglin", "loglin")
 control <- list("Ncores" = 1, "maxiter" = 100, "verbose" = 2)
 
 a_n <- c(0.01, 0.01)
-term_n <- c(0, 0)
-keep_constant <- c(0, 0)
-modelform <- "M"
 
-e1 <- RunCoxRegression(
-  df, t0, t1, event, names, term_n, tform, keep_constant,
-  a_n, modelform,
-  control = control
-)
-Interpret_Output(e1, 5)
+e1 <- CoxRun(Cox(time, status) ~ loglinear(temperature, voltage, 0), df, a_n = a_n, control = control)
+print(e1, 5)
 
-names <- c("temperature", "voltage")
-tform <- c("plin", "loglin")
-a_n <- c(0.01, 0.01)
-
-e2 <- RunCoxRegression(
-  df, t0, t1, event, names, term_n, tform, keep_constant,
-  a_n, modelform,
-  control = control
-)
-Interpret_Output(e2, 5)
+e2 <- CoxRun(Cox(time, status) ~ loglinear(temperature, 0) + plinear(voltage, 0), df, a_n = a_n, control = control)
+print(e2, 5)
 
 ## ----eval=TRUE----------------------------------------------------------------
 names <- c("temperature", "voltage")
@@ -60,45 +41,28 @@ ci_2 <- c(
   e1$beta_0[2] + 1.96 * e1$Standard_Deviation[2]
 )
 
-a_n <- c(0.7599511, 1.9884051)
-term_n <- c(0, 0)
-keep_constant <- c(0, 0)
-modelform <- "M"
 
-model_control <- list(
-  "basic" = FALSE, "maxstep" = 100,
-  "log_bound" = TRUE, "alpha" = 0.05,
-  "para_number" = 0, "manual" = TRUE
-)
-e <- RunCoxRegression_Omnibus(df, t0, t1, event, names,
-  term_n = term_n,
-  tform = tform, keep_constant = keep_constant,
-  a_n = a_n, modelform = modelform,
-  control = control, model_control = model_control
-)
-print("|------------------- Wald Estimate -------------------|")
-print(ci_1)
-Interpret_Output(e, 5)
-
-a_n <- c(0.7599511, 1.9884051)
-model_control <- list(
-  "basic" = FALSE, "maxstep" = 100,
-  "log_bound" = TRUE, "alpha" = 0.05,
+curve_control <- list(
+  "maxstep" = 100,
+  "alpha" = 0.05,
   "para_number" = 1, "manual" = TRUE
 )
-e <- RunCoxRegression_Omnibus(df, t0, t1, event, names,
-  term_n = term_n,
-  tform = tform, keep_constant = keep_constant,
-  a_n = a_n, modelform = modelform,
-  control = control, model_control = model_control
+e <- LikelihoodBound(e1, df, curve_control, control = control)
+print("|------------------- Wald Estimate -------------------|")
+print(ci_1)
+print(e, 5)
+
+curve_control <- list(
+  "maxstep" = 100,
+  "alpha" = 0.05,
+  "para_number" = 2, "manual" = TRUE
 )
+e <- LikelihoodBound(e1, df, curve_control, control = control)
 print("|------------------- Likelihood Bound Estimate -------------------|")
 print(ci_2)
-Interpret_Output(e, 5)
+print(e, 5)
 
 ## ----eval=TRUE----------------------------------------------------------------
-names <- c("temperature", "voltage")
-tform <- c("plin", "loglin")
 ci_1 <- c(
   e2$beta_0[1] - 1.96 * e2$Standard_Deviation[1],
   e2$beta_0[1] + 1.96 * e2$Standard_Deviation[1]
@@ -108,73 +72,46 @@ ci_2 <- c(
   e2$beta_0[2] + 1.96 * e2$Standard_Deviation[2]
 )
 
-a_n <- c(1.138152, 1.988403)
-term_n <- c(0, 0)
-keep_constant <- c(0, 0)
-modelform <- "M"
-
-model_control <- list(
-  "basic" = FALSE, "maxstep" = 100,
-  "log_bound" = TRUE, "alpha" = 0.05,
-  "para_number" = 0, "manual" = TRUE
-)
-e <- RunCoxRegression_Omnibus(df, t0, t1, event, names,
-  term_n = term_n,
-  tform = tform, keep_constant = keep_constant,
-  a_n = a_n, modelform = modelform,
-  control = control, model_control = model_control
-)
-print("|------------------- Wald Estimate -------------------|")
-print(ci_1)
-Interpret_Output(e, 5)
-
-a_n <- c(1.138152, 1.988403)
-model_control <- list(
-  "basic" = FALSE, "maxstep" = 100,
-  "log_bound" = TRUE, "alpha" = 0.05,
+curve_control <- list(
+  "maxstep" = 100,
+  "alpha" = 0.05,
   "para_number" = 1, "manual" = TRUE
 )
-e <- RunCoxRegression_Omnibus(df, t0, t1, event, names,
-  term_n = term_n,
-  tform = tform, keep_constant = keep_constant,
-  a_n = a_n, modelform = modelform,
-  control = control, model_control = model_control
+e <- LikelihoodBound(e2, df, curve_control, control = control)
+print("|------------------- Wald Estimate -------------------|")
+print(ci_1)
+print(e, 5)
+
+a_n <- c(1.138152, 1.988403)
+curve_control <- list(
+  "maxstep" = 100,
+  "alpha" = 0.05,
+  "para_number" = 2, "manual" = TRUE
 )
+e <- LikelihoodBound(e2, df, curve_control, control = control)
 print("|------------------- Wald Estimate -------------------|")
 print(ci_2)
-Interpret_Output(e, 5)
+print(e, 5)
 
 ## ----eval=FALSE---------------------------------------------------------------
 # fname <- "base_example.csv"
 # df <- fread(fname)
 # 
-# time1 <- "entry"
-# time2 <- "exit"
-# event <- "event"
-# names <- c("dose0", "dose1", "dose0")
-# term_n <- c(0, 0, 1)
-# tform <- c("loglin", "loglin", "lin")
 # keep_constant <- c(0, 0, 1)
 # a_n <- c(-1.493177, 5.020007, 1.438377)
-# modelform <- "M"
+# model <- Cox(entry, exit, event) ~ loglinear(dose0, dose1, 0) + linear(dose0, 1)
 # #
-# model_control <- list()
 # control <- list(
 #   "ncores" = 2, "lr" = 0.75, "maxiters" = c(100, 100), "halfmax" = 5,
-#   "epsilon" = 1e-6, "deriv_epsilon" = 1e-6, "abs_max" = 1.0,
-#   "dose_abs_max" = 100.0, "verbose" = 2,
+#   "epsilon" = 1e-6, "deriv_epsilon" = 1e-6, "step_max" = 1.0,
+#   "thres_step_max" = 100.0, "verbose" = 2,
 #   "ties" = "breslow"
 # )
 # 
 # v0 <- sort(c((0:50 / 50 - 1.0) * 0.8, 1:50 / 50 * 3, 1.438377, -0.5909))
 # for (v in v0) {
 #   a_n <- c(-1.493177, 5.020007, v)
-#   e <- RunCoxRegression_Omnibus(df, time1, time2, event, names,
-#     term_n = term_n,
-#     tform = tform, keep_constant = keep_constant, a_n = a_n,
-#     modelform = modelform,
-#     control = control, model_control = model_control
-#   )
+#   e <- CoxRun(model, df, a_n = a_n, control = control)
 #   ll <- e$LogLik
 #   beta <- e$beta_0
 #   print(c(ll, beta[3]))
@@ -196,25 +133,16 @@ g
 # fname <- "base_example.csv"
 # df <- fread(fname)
 # 
-# time1 <- "entry"
-# time2 <- "exit"
-# event <- "event"
-# names <- c("dose0", "dose1", "dose0")
-# term_n <- c(0, 0, 1)
-# tform <- c("loglin", "loglin", "lin")
+# model <- Cox(entry, exit, event) ~ loglinear(dose0, dose1, 0) + linear(dose0, 1)
 # keep_constant <- c(0, 0, 0)
 # a_n <- c(-1.493177, 5.020007, 1.438377)
-# modelform <- "M"
 # #
 # control <- list(
 #   "ncores" = 2, "lr" = 0.75, "maxiter" = 100, "halfmax" = 5,
 #   "verbose" = 2
 # )
+# coxres <- CoxRun(model, df, a_n = a_n, control = control)
 # 
-# model_control <- list("maxstep" = 20, "alpha" = 0.005, "para_number" = 2, "step_size" = 0.5)
-# e <- CoxCurveSolver(df, time1, time2, event, names,
-#   term_n = term_n, tform = tform,
-#   keep_constant = keep_constant, a_n = a_n, modelform = modelform,
-#   control = control, model_control = model_control
-# )
+# curve_control <- list("maxstep" = 20, "alpha" = 0.005, "para_number" = 3, "step_size" = 0.5, "bisect" = TRUE)
+# e <- LikelihoodBound(coxres, df, curve_control, control = control)
 

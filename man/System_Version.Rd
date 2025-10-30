@@ -14,6 +14,11 @@ returns a list of results
 }
 \seealso{
 Other Output and Information Functions: 
-\code{\link{Interpret_Output}()}
+\code{\link{print.caseconres}()},
+\code{\link{print.coxres}()},
+\code{\link{print.coxresbound}()},
+\code{\link{print.logitres}()},
+\code{\link{print.poisres}()},
+\code{\link{print.poisresbound}()}
 }
 \concept{Output and Information Functions}

@@ -62,8 +62,8 @@ time2 <- "a"
 event <- "c"
 control <- list(
   "lr" = 0.75, "maxiter" = -1, "halfmax" = 5, "epsilon" = 1e-9,
-  "deriv_epsilon" = 1e-9, "abs_max" = 1.0,
-  "dose_abs_max" = 100.0,
+  "deriv_epsilon" = 1e-9, "step_max" = 1.0,
+  "thres_step_max" = 100.0,
   "verbose" = FALSE, "ties" = "breslow", "double_step" = 1
 )
 grt_f <- function(df, time_col) {
@@ -79,23 +79,14 @@ file.remove("test_new.csv")
 }
 \seealso{
 Other Data Cleaning Functions: 
-\code{\link{Check_Dupe_Columns}()},
-\code{\link{Check_Trunc}()},
-\code{\link{Check_Verbose}()},
-\code{\link{Convert_Model_Eq}()},
-\code{\link{Correct_Formula_Order}()},
+\code{\link{Check_Iters}()},
 \code{\link{Date_Shift}()},
-\code{\link{Def_Control}()},
-\code{\link{Def_Control_Guess}()},
-\code{\link{Def_model_control}()},
-\code{\link{Def_modelform_fix}()},
 \code{\link{Event_Count_Gen}()},
 \code{\link{Event_Time_Gen}()},
 \code{\link{Joint_Multiple_Events}()},
 \code{\link{Replace_Missing}()},
 \code{\link{Time_Since}()},
-\code{\link{factorize}()},
-\code{\link{factorize_par}()},
-\code{\link{interact_them}()}
+\code{\link{apply_norm}()},
+\code{\link{factorize}()}
 }
 \concept{Data Cleaning Functions}

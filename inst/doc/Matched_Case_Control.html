@@ -27,46 +27,31 @@ document.addEventListener('DOMContentLoaded', function(e) {
   }
 });
 </script>
-<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
-// v0.0.1
-// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
-
-document.addEventListener('DOMContentLoaded', function() {
-  const codeList = document.getElementsByClassName("sourceCode");
-  for (var i = 0; i < codeList.length; i++) {
-    var linkList = codeList[i].getElementsByTagName('a');
-    for (var j = 0; j < linkList.length; j++) {
-      if (linkList[j].innerHTML === "") {
-        linkList[j].setAttribute('aria-hidden', 'true');
-      }
-    }
-  }
-});
-</script>
 
 <style type="text/css">
-  code{white-space: pre-wrap;}
-  span.smallcaps{font-variant: small-caps;}
-  span.underline{text-decoration: underline;}
-  div.column{display: inline-block; vertical-align: top; width: 50%;}
-  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-  ul.task-list{list-style: none;}
-    </style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
 
 
 
 <style type="text/css">
-  code {
-    white-space: pre;
-  }
-  .sourceCode {
-    overflow: visible;
-  }
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
@@ -78,55 +63,54 @@ pre > code.sourceCode { white-space: pre-wrap; }
 pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
-  { counter-reset: source-line 0; }
+{ counter-reset: source-line 0; }
 pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
+{ position: relative; left: -4em; counter-increment: source-line; }
 pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-    color: #aaaaaa;
-  }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
 div.sourceCode
-  {   }
+{ }
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
-
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
 </style>
 <script>
 // apply pandoc div.sourceCode style to pre.sourceCode instead
@@ -163,7 +147,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <style type="text/css">body {
 background-color: #fff;
 margin: 1em auto;
-max-width: 1000px;
+max-width: 700px;
 overflow: visible;
 padding-left: 2em;
 padding-right: 2em;
@@ -352,42 +336,47 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<h1 class="title toc-ignore">Matched Case-Control Logistic Regression</h1>
+<h1 class="title toc-ignore">Matched Case-Control Logistic
+Regression</h1>
 
 
 
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">library</span>(Colossus)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="kw">library</span>(data.table)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a><span class="kw">library</span>(survival)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a><span class="kw">library</span>(dplyr)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true"></a><span class="co">#&gt; Attaching package: &#39;dplyr&#39;</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true"></a><span class="co">#&gt; The following objects are masked from &#39;package:data.table&#39;:</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true"></a><span class="co">#&gt;     between, first, last</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true"></a><span class="co">#&gt; The following objects are masked from &#39;package:stats&#39;:</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true"></a><span class="co">#&gt;     filter, lag</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true"></a><span class="co">#&gt; The following objects are masked from &#39;package:base&#39;:</span></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true"></a><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(Colossus)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(data.table)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">library</span>(survival)</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code></pre></div>
 <div id="matched-case-control-modeling" class="section level2">
 <h2>Matched Case-Control Modeling</h2>
-<p>One alternative regression method in Colossus is matched case-control logistic regression. The theory is presented in the following section.</p>
+<p>One alternative regression method in Colossus is matched case-control
+logistic regression. The theory is presented in the following
+section.</p>
 <div id="general-theory" class="section level3">
 <h3>General Theory</h3>
 <div id="conditional-logistic-regression" class="section level4">
 <h4>Conditional Logistic Regression</h4>
-<p>Suppose we have matched case-control data and divide our data into each matched set. Each set has <span class="math inline">\(m\)</span> cases and <span class="math inline">\(n\)</span> records. We denote the relative risk for individual <span class="math inline">\(i\)</span> in the set by <span class="math inline">\(r_i\)</span>. We can calculate the probability of case exposures conditional on all exposures in the set by taking the ratio of the product of relative risks in the cases to the sum of the product of relative risks for every way of selecting <span class="math inline">\(m\)</span> individuals from the <span class="math inline">\(n\)</span> at risk.</p>
+<p>Suppose we have matched case-control data and divide our data into
+each matched set. Each set has <span class="math inline">\(m\)</span>
+cases and <span class="math inline">\(n\)</span> records. We denote the
+relative risk for individual <span class="math inline">\(i\)</span> in
+the set by <span class="math inline">\(r_i\)</span>. We can calculate
+the probability of case exposures conditional on all exposures in the
+set by taking the ratio of the product of relative risks in the cases to
+the sum of the product of relative risks for every way of selecting
+<span class="math inline">\(m\)</span> individuals from the <span class="math inline">\(n\)</span> at risk.</p>
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
-    \frac{\prod_{i}^{m} r_i}{\sum_{c \in R} \left ( \prod_{j=1}^{m} r_{c_j} \right )} \\
-    L = \sum_{i=1}^{m} log(r_i) - log \left ( \sum_{c \in R} \left ( \prod_{j=1}^{m} r_{c_j} \right ) \right )
+    \frac{\prod_{i}^{m} r_i}{\sum_{c \in R} \left ( \prod_{j=1}^{m}
+r_{c_j} \right )} \\
+    L = \sum_{i=1}^{m} log(r_i) - log \left ( \sum_{c \in R} \left (
+\prod_{j=1}^{m} r_{c_j} \right ) \right )
 \end{aligned}
 \]</span>
 </p>
-<p>Using the methods presented in Gail et al. (1981) we can calculate the combination of all <span class="math inline">\(n!/m!(n-m)!\)</span> ways to select <span class="math inline">\(m\)</span> items with a more manageable recursive formula <span class="math inline">\(B(m,n)\)</span>.</p>
+<p>Using the methods presented in Gail et al. (1981) we can calculate
+the combination of all <span class="math inline">\(n!/m!(n-m)!\)</span>
+ways to select <span class="math inline">\(m\)</span> items with a more
+manageable recursive formula <span class="math inline">\(B(m,n)\)</span>.</p>
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
@@ -400,13 +389,17 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 \end{aligned}
 \]</span>
 </p>
-<p>We can then directly solve for the first and second derivatives and their recursive formula.</p>
+<p>We can then directly solve for the first and second derivatives and
+their recursive formula.</p>
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
     \frac{\partial r_i}{\partial \beta_\mu} =: r_{i}^{\mu} \\
-    \frac{\partial B(m,n)}{\partial \beta_\mu} = B^{\mu}(m, n) = \sum_{c \in R} \left [ \left ( \sum_{j=1}^{m} \frac{r_{c_j}^{\mu}}{r_{c_j}} \right ) \prod_{j=1}^{m} r_{c_j} \right ] \\
-    B^{\mu}(m,n) = B^{\mu}(m, n-1) + r_n B^{\mu}(m-1, n-1) + r_n^{\mu} B(m-1, n-1) \\
+    \frac{\partial B(m,n)}{\partial \beta_\mu} = B^{\mu}(m, n) = \sum_{c
+\in R} \left [ \left ( \sum_{j=1}^{m} \frac{r_{c_j}^{\mu}}{r_{c_j}}
+\right ) \prod_{j=1}^{m} r_{c_j} \right ] \\
+    B^{\mu}(m,n) = B^{\mu}(m, n-1) + r_n B^{\mu}(m-1, n-1) + r_n^{\mu}
+B(m-1, n-1) \\
     B^{\mu}(m,n) = \begin{cases}
      \sum_{j}^{n} r_j^{\mu} &amp; m = 1 \\
      0                &amp; m &gt; n
@@ -417,10 +410,18 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
-    \frac{\partial^2 r_i}{\partial \beta_\mu \partial \beta_\nu} =: r_{i}^{\mu,\nu} \\
-    \frac{\partial^2 B(m,n)}{\partial \beta_\mu \partial \beta_\nu} = B^{\mu,\nu}(m, n) = \sum_{c \in R} \left [ \left ( \sum_{j=1}^{m} \frac{r_{c_j}^{\mu,\nu}}{r_{c_j}} +
-     \left ( \sum_{j=1}^{m} \frac{r_{c_j}^{\mu}}{r_{c_j}} \right ) \left ( \sum_{j=1}^{m} \frac{r_{c_j}^{\nu}}{r_{c_j}} \right ) - \sum_{j=1}^{m} \frac{r_{c_j}^{\mu}}{r_{c_j}} \frac{r_{c_j}^{\nu}}{r_{c_j}} \right ) \prod_{j=1}^{m} r_{c_j} \right ] \\
-    B^{\mu,\nu}(m,n) = B^{\mu,\nu}(m, n-1) + r_n^{\mu,\nu} B(m-1, n-1) + r_n^{\nu} B^{\mu}(m-1, n-1) + r_n^{\mu} B^{\nu}(m-1, n-1) + r_n B^{\mu,\nu}(m-1, n-1) \\
+    \frac{\partial^2 r_i}{\partial \beta_\mu \partial \beta_\nu} =:
+r_{i}^{\mu,\nu} \\
+    \frac{\partial^2 B(m,n)}{\partial \beta_\mu \partial \beta_\nu} =
+B^{\mu,\nu}(m, n) = \sum_{c \in R} \left [ \left ( \sum_{j=1}^{m}
+\frac{r_{c_j}^{\mu,\nu}}{r_{c_j}} +
+     \left ( \sum_{j=1}^{m} \frac{r_{c_j}^{\mu}}{r_{c_j}} \right ) \left
+( \sum_{j=1}^{m} \frac{r_{c_j}^{\nu}}{r_{c_j}} \right ) - \sum_{j=1}^{m}
+\frac{r_{c_j}^{\mu}}{r_{c_j}} \frac{r_{c_j}^{\nu}}{r_{c_j}} \right )
+\prod_{j=1}^{m} r_{c_j} \right ] \\
+    B^{\mu,\nu}(m,n) = B^{\mu,\nu}(m, n-1) + r_n^{\mu,\nu} B(m-1, n-1) +
+r_n^{\nu} B^{\mu}(m-1, n-1) + r_n^{\mu} B^{\nu}(m-1, n-1) + r_n
+B^{\mu,\nu}(m-1, n-1) \\
     B^{\mu,\nu}(m,n) = \begin{cases}
      \sum_{j}^{n} r_j^{\mu,\nu} &amp; m = 1 \\
      0                &amp; m &gt; n
@@ -428,30 +429,59 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 \end{aligned}
 \]</span>
 </p>
-<p>Finally, these expressions for <span class="math inline">\(B(m,n)\)</span> can be substituted into the equations for the contribution of Log-Likelihood and its derivatives from each matched set. The model is then optimized via the same methods as the other regression models.</p>
+<p>Finally, these expressions for <span class="math inline">\(B(m,n)\)</span> can be substituted into the
+equations for the contribution of Log-Likelihood and its derivatives
+from each matched set. The model is then optimized via the same methods
+as the other regression models.</p>
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
     L_{set} = \sum_{i=1}^{m} log(r_i) - log \left ( B(m,n) \right ) \\
-    L^{\mu}_{set} = \sum_{i=1}^{m} \frac{r_i^{\mu}}{r_i} - \frac{B^{\mu}(m,n)}{B(m,n)} \\
-    L^{\mu, \nu}_{set} = \sum_{i=1}^{m} \left ( \frac{r_i^{\mu,\nu}}{r_i} - \frac{r_i^{\mu}}{r_i}\frac{r_i^{nu}}{r_i} \right ) - \left ( \frac{B^{\mu,\nu}(m,n)}{B(m,n)} - \frac{B^{\mu}(m,n)}{B(m,n)}\frac{B^{\nu}(m,n)}{B(m,n)}  \right )
+    L^{\mu}_{set} = \sum_{i=1}^{m} \frac{r_i^{\mu}}{r_i} -
+\frac{B^{\mu}(m,n)}{B(m,n)} \\
+    L^{\mu, \nu}_{set} = \sum_{i=1}^{m} \left (
+\frac{r_i^{\mu,\nu}}{r_i} - \frac{r_i^{\mu}}{r_i}\frac{r_i^{nu}}{r_i}
+\right ) - \left ( \frac{B^{\mu,\nu}(m,n)}{B(m,n)} -
+\frac{B^{\mu}(m,n)}{B(m,n)}\frac{B^{\nu}(m,n)}{B(m,n)}  \right )
 \end{aligned}
 \]</span>
 </p>
 </div>
 <div id="unconditional-logistic-regression" class="section level4">
 <h4>Unconditional Logistic Regression</h4>
-<p>It is important to note that the recursive formula calculation can quickly become time-consuming, particularly if there is a large number of cases. To make the matched case-control method generally applicable, the likelihood function can be changed to a logistic regression model in matched sets with a large number of cases. In general, the matched case-control regression function adds an item to the model control list, “cond_thres”, to set the threshold to switch to a logistic regression model.</p>
-<p>The logistic loglikelihood is defined by treating the matched case-control data as single trial data. The likelihood is a function of the event status (<span class="math inline">\(\theta_i\)</span>) and odds ratio (<span class="math inline">\(O_i\)</span>). The odds ratio for any row is calculated as the product of the odds ratio for the matched set (<span class="math inline">\(O_s\)</span>) and the relative risk for the row (<span class="math inline">\(r_i\)</span>). Behind the scenes, Colossus optimizes both the model parameters (<span class="math inline">\(\vec{\beta}\)</span>) for the relative risk as well as a logistic model for the matched set odds ratios (<span class="math inline">\(O_s=e^{\alpha_s}\)</span>).</p>
+<p>It is important to note that the recursive formula calculation can
+quickly become time-consuming, particularly if there is a large number
+of cases. To make the matched case-control method generally applicable,
+the likelihood function can be changed to a logistic regression model in
+matched sets with a large number of cases. In general, the matched
+case-control regression function adds an item to the model control list,
+“cond_thres”, to set the threshold to switch to a logistic regression
+model.</p>
+<p>The logistic loglikelihood is defined by treating the matched
+case-control data as single trial data. The likelihood is a function of
+the event status (<span class="math inline">\(\theta_i\)</span>) and
+odds ratio (<span class="math inline">\(O_i\)</span>). The odds ratio
+for any row is calculated as the product of the odds ratio for the
+matched set (<span class="math inline">\(O_s\)</span>) and the relative
+risk for the row (<span class="math inline">\(r_i\)</span>). Behind the
+scenes, Colossus optimizes both the model parameters (<span class="math inline">\(\vec{\beta}\)</span>) for the relative risk as
+well as a logistic model for the matched set odds ratios (<span class="math inline">\(O_s=e^{\alpha_s}\)</span>).</p>
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
     L_i = y_i ln(O_s r_i) - ln(1+ O_s r_i) \\
-    \frac{\partial L_i}{\partial \beta_j} = y_i \frac{r^j_i}{r_i} - O_s \frac{r^j_i}{1 + O_s r_i}\\
-    \frac{\partial L_i}{\partial \alpha_s} = (y_i - 1) + \frac{1}{1 + O_s r_i} \\
-    \frac{\partial^2 L_i}{\partial \beta_j \partial \beta_k} = y_i \left ( \frac{r^{j,k}_i}{r_i} - \frac{r^j_i}{r_i} \frac{r^k_i}{r_i} \right ) - O_s \left ( \frac{r^{j,k}_i}{1 + O_s r_i} - O_s \frac{r^j_i}{1 + O_s r_i} \frac{r^k_i}{1 + O_s r_i} \right ) \\
-    \frac{\partial^2 L_i}{\partial \beta_j \partial \alpha_s} = \frac{-O_s r^j_i}{1 + O_s r_i} \\
-    \frac{\partial^2 L_i}{\partial \alpha_s^2} = \frac{-O_s r_i}{1 + O_s r_i}
+    \frac{\partial L_i}{\partial \beta_j} = y_i \frac{r^j_i}{r_i} - O_s
+\frac{r^j_i}{1 + O_s r_i}\\
+    \frac{\partial L_i}{\partial \alpha_s} = (y_i - 1) + \frac{1}{1 +
+O_s r_i} \\
+    \frac{\partial^2 L_i}{\partial \beta_j \partial \beta_k} = y_i \left
+( \frac{r^{j,k}_i}{r_i} - \frac{r^j_i}{r_i} \frac{r^k_i}{r_i} \right ) -
+O_s \left ( \frac{r^{j,k}_i}{1 + O_s r_i} - O_s \frac{r^j_i}{1 + O_s
+r_i} \frac{r^k_i}{1 + O_s r_i} \right ) \\
+    \frac{\partial^2 L_i}{\partial \beta_j \partial \alpha_s} =
+\frac{-O_s r^j_i}{1 + O_s r_i} \\
+    \frac{\partial^2 L_i}{\partial \alpha_s^2} = \frac{-O_s r_i}{1 + O_s
+r_i}
 \end{aligned}
 \]</span>
 </p>
@@ -459,119 +489,96 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </div>
 <div id="examples-of-use" class="section level3">
 <h3>Examples of Use</h3>
-<p>The following provides a basic example of how to use the matched case-control regression function. The data used is from a lung cancer study, included in the R survival library. Slight adjustments were made to make the data line up with data included with 32-bit Epicure, for comparison. In short, we want to model the effects of treatment and Karnofsky performance score on sets matched by cancer cell type.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="co">#</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a><span class="kw">data</span>(cancer, <span class="dt">package =</span> <span class="st">&quot;survival&quot;</span>)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>df &lt;-<span class="st"> </span>veteran</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a><span class="co"># Make the same adjustments as Epicure example 6.5</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a>karno &lt;-<span class="st"> </span>df<span class="op">$</span>karno</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a>karno[<span class="dv">93</span>] &lt;-<span class="st"> </span><span class="dv">20</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true"></a>df<span class="op">$</span>karno &lt;-<span class="st"> </span>karno</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true"></a>df<span class="op">$</span>trt &lt;-<span class="st"> </span>df<span class="op">$</span>trt <span class="op">-</span><span class="st"> </span><span class="dv">1</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true"></a>df<span class="op">$</span>trt &lt;-<span class="st"> </span><span class="kw">as.integer</span>(df<span class="op">$</span>trt <span class="op">==</span><span class="st"> </span><span class="dv">0</span>)</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true"></a>cell_string &lt;-<span class="st"> </span>df<span class="op">$</span>celltype</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true"></a>cell &lt;-<span class="st"> </span><span class="kw">case_when</span>(</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true"></a>  cell_string <span class="op">==</span><span class="st"> &quot;squamous&quot;</span> <span class="op">~</span><span class="st"> </span><span class="dv">1</span>,</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true"></a>  cell_string <span class="op">==</span><span class="st"> &quot;smallcell&quot;</span> <span class="op">~</span><span class="st"> </span><span class="dv">2</span>,</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true"></a>  cell_string <span class="op">==</span><span class="st"> &quot;adeno&quot;</span> <span class="op">~</span><span class="st"> </span><span class="dv">3</span>,</span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true"></a>  cell_string <span class="op">==</span><span class="st"> &quot;large&quot;</span> <span class="op">~</span><span class="st"> </span><span class="dv">0</span></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true"></a>)</span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true"></a>df<span class="op">$</span>cell &lt;-<span class="st"> </span>cell</span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true"></a></span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true"></a>df<span class="op">$</span>karno50 &lt;-<span class="st"> </span>df<span class="op">$</span>karno <span class="op">-</span><span class="st"> </span><span class="dv">50</span></span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true"></a><span class="co"># Convert the cell column into factor columns</span></span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true"></a>fcols &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;cell&quot;</span>)</span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true"></a>val &lt;-<span class="st"> </span><span class="kw">factorize</span>(df, fcols) <span class="co"># Colossus function</span></span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true"></a>df &lt;-<span class="st"> </span>val<span class="op">$</span>df</span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true"></a></span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true"></a>t0 &lt;-<span class="st"> &quot;%trunc%&quot;</span></span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true"></a>t1 &lt;-<span class="st"> &quot;time&quot;</span></span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true"></a>event &lt;-<span class="st"> &quot;status&quot;</span></span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true"></a></span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true"></a>names &lt;-<span class="st"> </span><span class="kw">c</span>(</span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true"></a>  <span class="st">&quot;karno50&quot;</span>, <span class="st">&quot;trt&quot;</span></span>
-<span id="cb2-32"><a href="#cb2-32" aria-hidden="true"></a>)</span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true"></a>tform_<span class="dv">1</span> &lt;-<span class="st"> </span><span class="kw">c</span>(</span>
-<span id="cb2-34"><a href="#cb2-34" aria-hidden="true"></a>  <span class="st">&quot;loglin&quot;</span>, <span class="st">&quot;loglin&quot;</span></span>
-<span id="cb2-35"><a href="#cb2-35" aria-hidden="true"></a>)</span>
-<span id="cb2-36"><a href="#cb2-36" aria-hidden="true"></a></span>
-<span id="cb2-37"><a href="#cb2-37" aria-hidden="true"></a>term_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">0</span>)</span>
-<span id="cb2-38"><a href="#cb2-38" aria-hidden="true"></a>a_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.1</span>, <span class="fl">0.1</span>)</span></code></pre></div>
-<p>In the following examples, we are using matching by strata and changing the conditional threshold. In the first case, every matched set uses the recursive formula. In the second case, one set uses the simplified formula. Finally in the third case, every set uses the simplified formula. In all cases, the regression returns the typical output and can be summarized similarly to other regression function outputs.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>control &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">verbose =</span> <span class="dv">2</span>, <span class="dt">maxiters =</span> <span class="kw">c</span>(<span class="dv">25</span>, <span class="dv">25</span>))</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>model_control &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="st">&quot;strata&quot;</span> =<span class="st"> </span>T, <span class="st">&quot;conditional_threshold&quot;</span> =<span class="st"> </span><span class="dv">100</span>)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>e0 &lt;-<span class="st"> </span><span class="kw">RunCaseControlRegression_Omnibus</span>(</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a>  df, t0, t1, event,</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true"></a>  <span class="dt">names =</span> names, <span class="dt">tform =</span> tform_<span class="dv">1</span>,</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true"></a>  <span class="dt">strat_col =</span> <span class="st">&quot;cell&quot;</span>, <span class="dt">model_control =</span> model_control,</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true"></a>  <span class="dt">control =</span> control, <span class="dt">term_n =</span> term_n, <span class="dt">a_n =</span> a_n</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true"></a>)</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true"></a></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true"></a>model_control &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="st">&quot;strata&quot;</span> =<span class="st"> </span>T, <span class="st">&quot;conditional_threshold&quot;</span> =<span class="st"> </span><span class="dv">40</span>)</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true"></a>e1 &lt;-<span class="st"> </span><span class="kw">RunCaseControlRegression_Omnibus</span>(</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true"></a>  df, t0, t1, event,</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true"></a>  <span class="dt">names =</span> names, <span class="dt">tform =</span> tform_<span class="dv">1</span>,</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true"></a>  <span class="dt">strat_col =</span> <span class="st">&quot;cell&quot;</span>, <span class="dt">model_control =</span> model_control,</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true"></a>  <span class="dt">control =</span> control, <span class="dt">term_n =</span> term_n, <span class="dt">a_n =</span> a_n</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true"></a>)</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true"></a></span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true"></a>model_control &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="st">&quot;strata&quot;</span> =<span class="st"> </span>T, <span class="st">&quot;conditional_threshold&quot;</span> =<span class="st"> </span><span class="dv">0</span>)</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true"></a>e2 &lt;-<span class="st"> </span><span class="kw">RunCaseControlRegression_Omnibus</span>(</span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true"></a>  df, t0, t1, event,</span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true"></a>  <span class="dt">names =</span> names, <span class="dt">tform =</span> tform_<span class="dv">1</span>,</span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true"></a>  <span class="dt">strat_col =</span> <span class="st">&quot;cell&quot;</span>, <span class="dt">model_control =</span> model_control,</span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true"></a>  <span class="dt">control =</span> control, <span class="dt">term_n =</span> term_n, <span class="dt">a_n =</span> a_n</span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true"></a>)</span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true"></a></span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true"></a><span class="kw">Interpret_Output</span>(e0)</span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true"></a><span class="co">#&gt; Final Results</span></span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true"></a><span class="co">#&gt;    Covariate Subterm Term Number Central Estimate Standard Error 1-tail p-value</span></span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true"></a><span class="co">#&gt;       &lt;char&gt;  &lt;char&gt;       &lt;int&gt;            &lt;num&gt;          &lt;num&gt;          &lt;num&gt;</span></span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true"></a><span class="co">#&gt; 1:   karno50  loglin           0      -0.04350168     0.02315817     0.03015916</span></span>
-<span id="cb3-32"><a href="#cb3-32" aria-hidden="true"></a><span class="co">#&gt; 2:       trt  loglin           0      -0.36615825     0.73703418     0.30966521</span></span>
-<span id="cb3-33"><a href="#cb3-33" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb3-34"><a href="#cb3-34" aria-hidden="true"></a><span class="co">#&gt; Matched Case-Control Model Used</span></span>
-<span id="cb3-35"><a href="#cb3-35" aria-hidden="true"></a><span class="co">#&gt; Deviance: 49.86</span></span>
-<span id="cb3-36"><a href="#cb3-36" aria-hidden="true"></a><span class="co">#&gt; 0 out of 4 matched sets used Unconditional Likelihood</span></span>
-<span id="cb3-37"><a href="#cb3-37" aria-hidden="true"></a><span class="co">#&gt; Iterations run: 18</span></span>
-<span id="cb3-38"><a href="#cb3-38" aria-hidden="true"></a><span class="co">#&gt; maximum step size: 9.54e-07, maximum first derivative: 3.79e+02</span></span>
-<span id="cb3-39"><a href="#cb3-39" aria-hidden="true"></a><span class="co">#&gt; Analysis did not converge, check convergence criteria or run further</span></span>
-<span id="cb3-40"><a href="#cb3-40" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.25 seconds</span></span>
-<span id="cb3-41"><a href="#cb3-41" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
-<span id="cb3-42"><a href="#cb3-42" aria-hidden="true"></a><span class="kw">Interpret_Output</span>(e1)</span>
-<span id="cb3-43"><a href="#cb3-43" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
-<span id="cb3-44"><a href="#cb3-44" aria-hidden="true"></a><span class="co">#&gt; Final Results</span></span>
-<span id="cb3-45"><a href="#cb3-45" aria-hidden="true"></a><span class="co">#&gt;    Covariate Subterm Term Number Central Estimate Standard Error 1-tail p-value</span></span>
-<span id="cb3-46"><a href="#cb3-46" aria-hidden="true"></a><span class="co">#&gt;       &lt;char&gt;  &lt;char&gt;       &lt;int&gt;            &lt;num&gt;          &lt;num&gt;          &lt;num&gt;</span></span>
-<span id="cb3-47"><a href="#cb3-47" aria-hidden="true"></a><span class="co">#&gt; 1:   karno50  loglin           0      -0.04386339     0.02048505     0.01612741</span></span>
-<span id="cb3-48"><a href="#cb3-48" aria-hidden="true"></a><span class="co">#&gt; 2:       trt  loglin           0      -0.37043486     0.57345538     0.25914946</span></span>
-<span id="cb3-49"><a href="#cb3-49" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb3-50"><a href="#cb3-50" aria-hidden="true"></a><span class="co">#&gt; Matched Case-Control Model Used</span></span>
-<span id="cb3-51"><a href="#cb3-51" aria-hidden="true"></a><span class="co">#&gt; Deviance: 52.75</span></span>
-<span id="cb3-52"><a href="#cb3-52" aria-hidden="true"></a><span class="co">#&gt; 1 out of 4 matched sets used Unconditional Likelihood</span></span>
-<span id="cb3-53"><a href="#cb3-53" aria-hidden="true"></a><span class="co">#&gt; Iterations run: 19</span></span>
-<span id="cb3-54"><a href="#cb3-54" aria-hidden="true"></a><span class="co">#&gt; maximum step size: 9.54e-07, maximum first derivative: 4.35e+02</span></span>
-<span id="cb3-55"><a href="#cb3-55" aria-hidden="true"></a><span class="co">#&gt; Analysis did not converge, check convergence criteria or run further</span></span>
-<span id="cb3-56"><a href="#cb3-56" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.2 seconds</span></span>
-<span id="cb3-57"><a href="#cb3-57" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
-<span id="cb3-58"><a href="#cb3-58" aria-hidden="true"></a><span class="kw">Interpret_Output</span>(e2)</span>
-<span id="cb3-59"><a href="#cb3-59" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
-<span id="cb3-60"><a href="#cb3-60" aria-hidden="true"></a><span class="co">#&gt; Final Results</span></span>
-<span id="cb3-61"><a href="#cb3-61" aria-hidden="true"></a><span class="co">#&gt;    Covariate Subterm Term Number Central Estimate Standard Error 1-tail p-value</span></span>
-<span id="cb3-62"><a href="#cb3-62" aria-hidden="true"></a><span class="co">#&gt;       &lt;char&gt;  &lt;char&gt;       &lt;int&gt;            &lt;num&gt;          &lt;num&gt;          &lt;num&gt;</span></span>
-<span id="cb3-63"><a href="#cb3-63" aria-hidden="true"></a><span class="co">#&gt; 1:   karno50  loglin           0      -0.04487003     0.01633575    0.003009551</span></span>
-<span id="cb3-64"><a href="#cb3-64" aria-hidden="true"></a><span class="co">#&gt; 2:       trt  loglin           0      -0.37735968     0.55683957    0.248986940</span></span>
-<span id="cb3-65"><a href="#cb3-65" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb3-66"><a href="#cb3-66" aria-hidden="true"></a><span class="co">#&gt; Matched Case-Control Model Used</span></span>
-<span id="cb3-67"><a href="#cb3-67" aria-hidden="true"></a><span class="co">#&gt; Deviance: 59.72</span></span>
-<span id="cb3-68"><a href="#cb3-68" aria-hidden="true"></a><span class="co">#&gt; 4 out of 4 matched sets used Unconditional Likelihood</span></span>
-<span id="cb3-69"><a href="#cb3-69" aria-hidden="true"></a><span class="co">#&gt; Iterations run: 21</span></span>
-<span id="cb3-70"><a href="#cb3-70" aria-hidden="true"></a><span class="co">#&gt; maximum step size: 9.54e-07, maximum first derivative: 7.06e+02</span></span>
-<span id="cb3-71"><a href="#cb3-71" aria-hidden="true"></a><span class="co">#&gt; Analysis did not converge, check convergence criteria or run further</span></span>
-<span id="cb3-72"><a href="#cb3-72" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.22 seconds</span></span>
-<span id="cb3-73"><a href="#cb3-73" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span></code></pre></div>
+<p>The following provides a basic example of how to use the matched
+case-control regression function. The data used is from a lung cancer
+study, included in the R survival library. Slight adjustments were made
+to make the data line up with data included with 32-bit Epicure, for
+comparison. In short, we want to model the effects of treatment and
+Karnofsky performance score on sets matched by cancer cell type.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">data</span>(cancer, <span class="at">package =</span> <span class="st">&quot;survival&quot;</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>veteran <span class="sc">%&gt;%</span> <span class="fu">setDT</span>()</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">copy</span>(veteran)</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="co"># Make the same adjustments as Epicure example 6.5</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>karno <span class="ot">&lt;-</span> df<span class="sc">$</span>karno</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>karno[<span class="dv">93</span>] <span class="ot">&lt;-</span> <span class="dv">20</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>df<span class="sc">$</span>karno <span class="ot">&lt;-</span> karno</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>df<span class="sc">$</span>trt <span class="ot">&lt;-</span> df<span class="sc">$</span>trt <span class="sc">-</span> <span class="dv">1</span></span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>df<span class="sc">$</span>trt <span class="ot">&lt;-</span> <span class="fu">as.integer</span>(df<span class="sc">$</span>trt <span class="sc">==</span> <span class="dv">0</span>)</span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>cell_string <span class="ot">&lt;-</span> df<span class="sc">$</span>celltype</span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>cell <span class="ot">&lt;-</span> <span class="fu">case_when</span>(</span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a>  cell_string <span class="sc">==</span> <span class="st">&quot;squamous&quot;</span> <span class="sc">~</span> <span class="dv">1</span>,</span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a>  cell_string <span class="sc">==</span> <span class="st">&quot;smallcell&quot;</span> <span class="sc">~</span> <span class="dv">2</span>,</span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a>  cell_string <span class="sc">==</span> <span class="st">&quot;adeno&quot;</span> <span class="sc">~</span> <span class="dv">3</span>,</span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a>  cell_string <span class="sc">==</span> <span class="st">&quot;large&quot;</span> <span class="sc">~</span> <span class="dv">0</span></span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a>)</span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a>df<span class="sc">$</span>cell <span class="ot">&lt;-</span> cell</span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a></span>
+<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a>df<span class="sc">$</span>karno50 <span class="ot">&lt;-</span> df<span class="sc">$</span>karno <span class="sc">-</span> <span class="dv">50</span></span></code></pre></div>
+<p>In the following examples, we are using matching by strata and
+changing the conditional threshold. In the first case, every matched set
+uses the recursive formula. In the second case, one set uses the
+simplified formula. Finally in the third case, every set uses the
+simplified formula. In all cases, the regression returns the typical
+output and can be summarized similarly to other regression function
+outputs.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">CaseControl_Strata</span>(status, cell) <span class="sc">~</span> <span class="fu">loglinear</span>(karno50, trt)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>control <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">verbose =</span> <span class="dv">2</span>, <span class="at">maxiters =</span> <span class="fu">c</span>(<span class="dv">25</span>, <span class="dv">25</span>), <span class="at">ncores =</span> <span class="dv">2</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>e0 <span class="ot">&lt;-</span> <span class="fu">CaseControlRun</span>(model, df, <span class="at">control =</span> control, <span class="at">conditional_threshold =</span> <span class="dv">100</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>e1 <span class="ot">&lt;-</span> <span class="fu">CaseControlRun</span>(model, df, <span class="at">control =</span> control, <span class="at">conditional_threshold =</span> <span class="dv">40</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>e2 <span class="ot">&lt;-</span> <span class="fu">CaseControlRun</span>(model, df, <span class="at">control =</span> control, <span class="at">conditional_threshold =</span> <span class="dv">0</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="fu">print</span>(e0)</span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co">#&gt; Final Results</span></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="co">#&gt;    Covariate Subterm Term Number Central Estimate Standard Error 2-tail p-value</span></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co">#&gt;       &lt;char&gt;  &lt;char&gt;       &lt;int&gt;            &lt;num&gt;          &lt;num&gt;          &lt;num&gt;</span></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="co">#&gt; 1:   karno50  loglin           0      -0.04349914     0.02315767     0.06032785</span></span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="co">#&gt; 2:       trt  loglin           0      -0.36613298     0.73703071     0.61935294</span></span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="co">#&gt; Matched Case-Control Model Used</span></span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a><span class="co">#&gt; Deviance: 49.86</span></span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a><span class="co">#&gt; 0 out of 4 matched sets used Unconditional Likelihood</span></span>
+<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a><span class="co">#&gt; Iterations run: 8</span></span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a><span class="co">#&gt; maximum step size: 7.58e-05, maximum first derivative: 4.83e+01</span></span>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a><span class="co">#&gt; Analysis did not converge, check convergence criteria or run further</span></span>
+<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a><span class="co">#&gt; Run finished in 0.01 seconds</span></span>
+<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
+<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a><span class="fu">print</span>(e1)</span>
+<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
+<span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a><span class="co">#&gt; Final Results</span></span>
+<span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a><span class="co">#&gt;    Covariate Subterm Term Number Central Estimate Standard Error 2-tail p-value</span></span>
+<span id="cb3-30"><a href="#cb3-30" tabindex="-1"></a><span class="co">#&gt;       &lt;char&gt;  &lt;char&gt;       &lt;int&gt;            &lt;num&gt;          &lt;num&gt;          &lt;num&gt;</span></span>
+<span id="cb3-31"><a href="#cb3-31" tabindex="-1"></a><span class="co">#&gt; 1:   karno50  loglin           0      -0.04386262     0.02048497     0.03225717</span></span>
+<span id="cb3-32"><a href="#cb3-32" tabindex="-1"></a><span class="co">#&gt; 2:       trt  loglin           0      -0.37042694     0.57345403     0.51830687</span></span>
+<span id="cb3-33"><a href="#cb3-33" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-34"><a href="#cb3-34" tabindex="-1"></a><span class="co">#&gt; Matched Case-Control Model Used</span></span>
+<span id="cb3-35"><a href="#cb3-35" tabindex="-1"></a><span class="co">#&gt; Deviance: 52.75</span></span>
+<span id="cb3-36"><a href="#cb3-36" tabindex="-1"></a><span class="co">#&gt; 1 out of 4 matched sets used Unconditional Likelihood</span></span>
+<span id="cb3-37"><a href="#cb3-37" tabindex="-1"></a><span class="co">#&gt; Iterations run: 9</span></span>
+<span id="cb3-38"><a href="#cb3-38" tabindex="-1"></a><span class="co">#&gt; maximum step size: 7.38e-05, maximum first derivative: 4.29e+01</span></span>
+<span id="cb3-39"><a href="#cb3-39" tabindex="-1"></a><span class="co">#&gt; Analysis did not converge, check convergence criteria or run further</span></span>
+<span id="cb3-40"><a href="#cb3-40" tabindex="-1"></a><span class="co">#&gt; Run finished in 0.01 seconds</span></span>
+<span id="cb3-41"><a href="#cb3-41" tabindex="-1"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
+<span id="cb3-42"><a href="#cb3-42" tabindex="-1"></a><span class="fu">print</span>(e2)</span>
+<span id="cb3-43"><a href="#cb3-43" tabindex="-1"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
+<span id="cb3-44"><a href="#cb3-44" tabindex="-1"></a><span class="co">#&gt; Final Results</span></span>
+<span id="cb3-45"><a href="#cb3-45" tabindex="-1"></a><span class="co">#&gt;    Covariate Subterm Term Number Central Estimate Standard Error 2-tail p-value</span></span>
+<span id="cb3-46"><a href="#cb3-46" tabindex="-1"></a><span class="co">#&gt;       &lt;char&gt;  &lt;char&gt;       &lt;int&gt;            &lt;num&gt;          &lt;num&gt;          &lt;num&gt;</span></span>
+<span id="cb3-47"><a href="#cb3-47" tabindex="-1"></a><span class="co">#&gt; 1:   karno50  loglin           0      -0.04486979     0.01633573    0.006019336</span></span>
+<span id="cb3-48"><a href="#cb3-48" tabindex="-1"></a><span class="co">#&gt; 2:       trt  loglin           0      -0.37735720     0.55683886    0.497976156</span></span>
+<span id="cb3-49"><a href="#cb3-49" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-50"><a href="#cb3-50" tabindex="-1"></a><span class="co">#&gt; Matched Case-Control Model Used</span></span>
+<span id="cb3-51"><a href="#cb3-51" tabindex="-1"></a><span class="co">#&gt; Deviance: 59.72</span></span>
+<span id="cb3-52"><a href="#cb3-52" tabindex="-1"></a><span class="co">#&gt; 4 out of 4 matched sets used Unconditional Likelihood</span></span>
+<span id="cb3-53"><a href="#cb3-53" tabindex="-1"></a><span class="co">#&gt; Iterations run: 10</span></span>
+<span id="cb3-54"><a href="#cb3-54" tabindex="-1"></a><span class="co">#&gt; maximum step size: 2.88e-05, maximum first derivative: 1.87e+01</span></span>
+<span id="cb3-55"><a href="#cb3-55" tabindex="-1"></a><span class="co">#&gt; Analysis did not converge, check convergence criteria or run further</span></span>
+<span id="cb3-56"><a href="#cb3-56" tabindex="-1"></a><span class="co">#&gt; Run finished in 0.01 seconds</span></span>
+<span id="cb3-57"><a href="#cb3-57" tabindex="-1"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span></code></pre></div>
 </div>
 </div>
 

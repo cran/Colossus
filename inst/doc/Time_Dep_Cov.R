@@ -7,6 +7,8 @@ knitr::opts_chunk$set(
 ## ----setup--------------------------------------------------------------------
 library(Colossus)
 library(data.table)
+library(survival)
+library(dplyr)
 
 ## ----fig.cap='Linear Interpolated Function'-----------------------------------
 dft <- data.table("x" = c(1, 2, 3), "y" = c(2, 5, 10))
@@ -44,8 +46,9 @@ g
 ## -----------------------------------------------------------------------------
 # Setting up the data for use
 data(cancer, package = "survival")
+cancer %>% setDT()
+df <- copy(cancer)
 
-df <- data.table(cancer)
 df$UserID <- seq_len(nrow(df))
 
 df$status <- df$status - 1

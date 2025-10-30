@@ -9,14 +9,9 @@ library(Colossus)
 library(data.table)
 
 ## -----------------------------------------------------------------------------
-names <- c("a", "r0", "s0")
-term_n <- c(0, 0, 0)
-tform <- c("loglin", "loglin", "loglin")
-modelform <- "M"
+model <- Cox(t0, t1, event) ~ loglinear(a, r0, s0)
 
 a_n <- c(0.1, 0.1, 0.1)
-model_control <- list("mcml" = FALSE)
-# Setting to true uses the Monte-Carlo Maximum Likelihood option and optimizes the average log-likelihood, setting to false optimizes each realization separately.
 
 ## ----eval=FALSE---------------------------------------------------------------
 # dose_index <- c("r0", "s0")
@@ -26,4 +21,10 @@ model_control <- list("mcml" = FALSE)
 #   nrow = 2
 # )
 # # columns to be used for realizations 0-4, rows for each column being replaced
+
+## ----eval=FALSE---------------------------------------------------------------
+# e_fma <- CoxRunMulti(model, df, a_n = a_n, realization_columns = realization_columns, realization_index = realization_index, fma = TRUE)
+
+## ----eval=FALSE---------------------------------------------------------------
+# e_mcml <- CoxRunMulti(model, df, a_n = a_n, realization_columns = realization_columns, realization_index = realization_index, mcml = TRUE)
 

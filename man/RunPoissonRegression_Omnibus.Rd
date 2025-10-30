@@ -40,11 +40,11 @@ RunPoissonRegression_Omnibus(
 
 \item{modelform}{string specifying the model type: M, ME, A, PA, PAE, GMIX, GMIX-R, GMIX-E}
 
-\item{control}{list of parameters controlling the convergence, see Def_Control() for options or vignette("Control_Options")}
+\item{control}{list of parameters controlling the convergence, see the Control_Options vignette for details}
 
 \item{strat_col}{column to stratify by if needed}
 
-\item{model_control}{controls which alternative model options are used, see Def_model_control() for options and vignette("Control_Options") for further details}
+\item{model_control}{controls which alternative model options are used, see the Control_Options vignette for further details}
 
 \item{cons_mat}{Matrix containing coefficients for a system of linear constraints, formatted as matrix}
 
@@ -84,14 +84,9 @@ keep_constant <- c(0, 0, 0, 0)
 control <- list(
   "ncores" = 2, "lr" = 0.75, "maxiter" = 5,
   "halfmax" = 5, "epsilon" = 1e-3,
-  "deriv_epsilon" = 1e-3, "abs_max" = 1.0,
-  "dose_abs_max" = 100.0, "verbose" = FALSE, "ties" = "breslow",
+  "deriv_epsilon" = 1e-3, "step_max" = 1.0,
+  "thres_step_max" = 100.0, "verbose" = FALSE, "ties" = "breslow",
   "double_step" = 1
-)
-guesses_control <- list(
-  "maxiter" = 10, "guesses" = 10, "lin_min" = 0.001,
-  "lin_max" = 1, "loglin_min" = -1, "loglin_max" = 1, "lin_method" = "uniform",
-  "loglin_method" = "uniform", strata = FALSE
 )
 strat_col <- "e"
 e <- RunPoissonRegression_Omnibus(
@@ -103,15 +98,11 @@ e <- RunPoissonRegression_Omnibus(
 }
 \seealso{
 Other Poisson Wrapper Functions: 
-\code{\link{PoissonCurveSolver}()},
-\code{\link{RunPoissonEventAssignment}()},
-\code{\link{RunPoissonEventAssignment_bound}()},
-\code{\link{RunPoissonRegression}()},
-\code{\link{RunPoissonRegression_Guesses_CPP}()},
-\code{\link{RunPoissonRegression_Joint_Omnibus}()},
-\code{\link{RunPoissonRegression_Residual}()},
-\code{\link{RunPoissonRegression_Single}()},
-\code{\link{RunPoissonRegression_Strata}()},
-\code{\link{RunPoissonRegression_Tier_Guesses}()}
+\code{\link{EventAssignment.poisres}()},
+\code{\link{LikelihoodBound.poisres}()},
+\code{\link{PoisRun}()},
+\code{\link{PoisRunJoint}()},
+\code{\link{PoisRunMulti}()},
+\code{\link{Residual.poisres}()}
 }
 \concept{Poisson Wrapper Functions}

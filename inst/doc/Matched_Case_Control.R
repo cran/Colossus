@@ -10,11 +10,11 @@ library(data.table)
 library(survival)
 library(dplyr)
 
-## -----------------------------------------------------------------------------
+## ----eval = TRUE--------------------------------------------------------------
 #
 data(cancer, package = "survival")
-df <- veteran
-
+veteran %>% setDT()
+df <- copy(veteran)
 # Make the same adjustments as Epicure example 6.5
 karno <- df$karno
 karno[93] <- 20
@@ -31,52 +31,18 @@ cell <- case_when(
 df$cell <- cell
 
 df$karno50 <- df$karno - 50
-# Convert the cell column into factor columns
-fcols <- c("cell")
-val <- factorize(df, fcols) # Colossus function
-df <- val$df
 
-t0 <- "%trunc%"
-t1 <- "time"
-event <- "status"
+## ----eval = TRUE--------------------------------------------------------------
+model <- CaseControl_Strata(status, cell) ~ loglinear(karno50, trt)
 
-names <- c(
-  "karno50", "trt"
-)
-tform_1 <- c(
-  "loglin", "loglin"
-)
 
-term_n <- c(0, 0)
-a_n <- c(0.1, 0.1)
+control <- list(verbose = 2, maxiters = c(25, 25), ncores = 2)
+e0 <- CaseControlRun(model, df, control = control, conditional_threshold = 100)
+e1 <- CaseControlRun(model, df, control = control, conditional_threshold = 40)
+e2 <- CaseControlRun(model, df, control = control, conditional_threshold = 0)
 
-## -----------------------------------------------------------------------------
-control <- list(verbose = 2, maxiters = c(25, 25))
-model_control <- list("strata" = T, "conditional_threshold" = 100)
-e0 <- RunCaseControlRegression_Omnibus(
-  df, t0, t1, event,
-  names = names, tform = tform_1,
-  strat_col = "cell", model_control = model_control,
-  control = control, term_n = term_n, a_n = a_n
-)
 
-model_control <- list("strata" = T, "conditional_threshold" = 40)
-e1 <- RunCaseControlRegression_Omnibus(
-  df, t0, t1, event,
-  names = names, tform = tform_1,
-  strat_col = "cell", model_control = model_control,
-  control = control, term_n = term_n, a_n = a_n
-)
-
-model_control <- list("strata" = T, "conditional_threshold" = 0)
-e2 <- RunCaseControlRegression_Omnibus(
-  df, t0, t1, event,
-  names = names, tform = tform_1,
-  strat_col = "cell", model_control = model_control,
-  control = control, term_n = term_n, a_n = a_n
-)
-
-Interpret_Output(e0)
-Interpret_Output(e1)
-Interpret_Output(e2)
+print(e0)
+print(e1)
+print(e2)
 
