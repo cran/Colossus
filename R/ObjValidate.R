@@ -348,8 +348,10 @@ validate_formula <- function(x, df, verbose = FALSE) {
     "gmix-e", "excess-geometric-mixture"
   ))
   if (x$modelform %in% acceptable) {
-    if (x$modelform %in% c("ME", "MULTIPLICATIVE", "MULTIPLICATIVE-EXCESS")) {
+    if (x$modelform %in% c("MULTIPLICATIVE")) {
       x$modelform <- "M"
+    } else if (x$modelform %in% c("MULTIPLICATIVE-EXCESS")) {
+      x$modelform <- "ME"
     } else if (x$modelform == "ADDITIVE") {
       x$modelform <- "A"
     } else if (x$modelform == "PRODUCT-ADDITIVE") {
@@ -511,6 +513,21 @@ validate_coxres <- function(x, df) {
   x
 }
 
+validate_coxresbound <- function(x, df) {
+  coxres <- x$coxres
+  coxmodel <- coxres$model
+  null <- coxmodel$null
+  control <- coxres$control
+  verbose <- control$verbose
+  #
+  validate_coxsurv(coxmodel, df)
+  if (!null) {
+    coxmodel <- validate_formula(coxmodel, df, verbose)
+  }
+  x$coxres$model <- coxmodel
+  x
+}
+
 validate_poisres <- function(x, df) {
   poismodel <- x$model
   control <- x$control
@@ -519,6 +536,18 @@ validate_poisres <- function(x, df) {
   validate_poissurv(poismodel, df)
   poismodel <- validate_formula(poismodel, df, verbose)
   x$model <- poismodel
+  x
+}
+
+validate_poisresbound <- function(x, df) {
+  poisres <- x$poisres
+  poismodel <- poisres$model
+  control <- poisres$control
+  verbose <- control$verbose
+  #
+  validate_poissurv(poismodel, df)
+  poismodel <- validate_formula(poismodel, df, verbose)
+  x$poisres$model <- poismodel
   x
 }
 
@@ -632,9 +661,10 @@ logitmodel <- function(trials = "",
 }
 
 # ------------------------------------------------------------------------ #
-ColossusControl <- function(verbose = 0,
+ColossusControl <- function(verbose = 1,
                             lr = 0.75,
                             maxiter = 20,
+                            maxiters = c(1, 20),
                             halfmax = 5,
                             epsilon = 1e-4,
                             deriv_epsilon = 1e-4,
@@ -642,11 +672,20 @@ ColossusControl <- function(verbose = 0,
                             thres_step_max = 1.0,
                             ties = "breslow",
                             ncores = as.numeric(detectCores())) {
+  if (missing(maxiters)) {
+    maxiters <- c(1, maxiter)
+    if (maxiter < 0) {
+      maxiters <- c(-1, -1)
+    }
+  }
+  maxiters <- as.integer(maxiters)
+  maxiters[maxiters < -1] <- -1
   verbose <- Check_Verbose(verbose)
   control <- list(
     "verbose" = verbose,
     "lr" = lr,
     "maxiter" = maxiter,
+    "maxiters" = maxiters,
     "halfmax" = halfmax,
     "epsilon" = epsilon,
     "deriv_epsilon" = deriv_epsilon,
@@ -656,7 +695,7 @@ ColossusControl <- function(verbose = 0,
     "ncores" = ncores
   )
   control_def <- list(
-    "verbose" = 0, "lr" = 0.75, "maxiter" = 20,
+    "verbose" = 1, "lr" = 0.75, "maxiter" = 20,
     "halfmax" = 5, "epsilon" = 1e-4,
     "deriv_epsilon" = 1e-4, "step_max" = 1.0,
     "thres_step_max" = 100.0,

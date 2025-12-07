@@ -72,7 +72,6 @@ void visit_lambda(const Mat& m, const Func& f) {
 //' @return List of results: baseline hazard, risk for each row
 //' @noRd
 //'
-//
 List PLOT_SURV_Strata(int reqrdnum, MatrixXd& R, MatrixXd& Rd, NumericVector& a_er, const Ref<const MatrixXd>& df_m, NumericVector& tu, NumericVector& Strata_vals, int verbose, int nthreads) {
     //
     int ntime = tu.size();
@@ -153,7 +152,6 @@ List PLOT_SURV_Strata(int reqrdnum, MatrixXd& R, MatrixXd& Rd, NumericVector& a_
 //' @return List of results: baseline hazard, risk for each row
 //' @noRd
 //'
-//
 List PLOT_SURV(int reqrdnum, MatrixXd& R, MatrixXd& Rd, NumericVector& a_er, const Ref<const MatrixXd>& df_m, NumericVector& tu, int verbose, int nthreads) {
     //
     int ntime = tu.size();
@@ -168,7 +166,6 @@ List PLOT_SURV(int reqrdnum, MatrixXd& R, MatrixXd& Rd, NumericVector& a_er, con
     //
     //  Iterates through the risk groups and approximates the baseline
     //
-    // const Map<MatrixXd> df_m(as<Map<MatrixXd> >(df_groups));
     #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
     #endif
@@ -233,7 +230,6 @@ List PLOT_SURV(int reqrdnum, MatrixXd& R, MatrixXd& Rd, NumericVector& a_er, con
 //' @return List of results: scaled schoenfeld residuals
 //' @noRd
 //'
-//
 List Schoenfeld_Calc(int ntime, int totalnum, const  VectorXd& beta_0, const Ref<const MatrixXd>& df0, const MatrixXd& R, MatrixXd& Lldd_inv, const IntegerMatrix& RiskFail, const vector<vector<int> >& RiskPairs, IntegerVector& dfc, int verbose, IntegerVector KeepConstant, int nthreads) {
     int reqrdnum = totalnum - sum(KeepConstant);
     MatrixXd residuals = MatrixXd::Zero(ntime, reqrdnum);
@@ -297,7 +293,6 @@ List Schoenfeld_Calc(int ntime, int totalnum, const  VectorXd& beta_0, const Ref
 //' @return List of final results: Log-likelihood of optimum, first derivative of log-likelihood, second derivative matrix, parameter list, standard deviation estimate, AIC, model information
 //' @noRd
 //'
-//
 List Plot_Omnibus(IntegerVector term_n, StringVector tform, Ref<VectorXd> beta_0, const Ref<const MatrixXd>& df0, IntegerVector dfc, int fir, int der_iden, string modelform, double step_max, double thres_step_max, const Ref<const MatrixXd>& df_m, NumericVector& tu, int verbose, IntegerVector KeepConstant, int term_tot, string ties_method, int nthreads, NumericVector& Strata_vals, const VectorXd& cens_weight, int uniq_v, List model_bool, bool Surv_bool, bool Risk_bool, bool Schoenfeld_bool, bool Risk_Sub_bool, const double gmix_theta, const IntegerVector& gmix_term) {
     //
     List temp_list = List::create(_["Status"] = "FAILED");  //  used as a dummy return value for code checking
@@ -328,7 +323,6 @@ List Plot_Omnibus(IntegerVector term_n, StringVector tform, Ref<VectorXd> beta_0
     Rcout.precision(7);  //  forces higher precision numbers printed to terminal
     //  ---------------------------------------------
     //  ------------------------------------------------------------------------- //  initialize
-    // Map<VectorXd> beta_0(as<Map<VectorXd> >(a_n));
     MatrixXd T0;
     MatrixXd Td0;
     MatrixXd Tdd0;
@@ -466,7 +460,6 @@ List Plot_Omnibus(IntegerVector term_n, StringVector tform, Ref<VectorXd> beta_0
 //' @return returns proportion of events due to background and excess for each term
 //' @noRd
 //'
-//
 List Assign_Events_Pois(IntegerVector term_n, StringVector tform, Ref<VectorXd> beta_0, Ref<MatrixXd> df0, IntegerVector dfc, const Ref<const MatrixXd>& PyrC, const Ref<const MatrixXd>& dfs, int fir, string modelform, int verbose, IntegerVector KeepConstant, int term_tot, int nthreads, const double gmix_theta, const IntegerVector gmix_term, List model_bool) {
     //
     int totalnum = term_n.size();
@@ -477,7 +470,6 @@ List Assign_Events_Pois(IntegerVector term_n, StringVector tform, Ref<VectorXd> 
     //  To Start, needs to seperate the derivative terms
     //  ---------------------------------------------
     //
-    // Map<VectorXd> beta_0(as<Map<VectorXd> >(a_n));
     MatrixXd T0 = MatrixXd::Zero(df0.rows(), totalnum);  //  preallocates matrix for Term column
     //
     MatrixXd Te = MatrixXd::Zero(df0.rows(), 1);  //  preallocates matrix for column terms used for temporary storage
@@ -498,7 +490,7 @@ List Assign_Events_Pois(IntegerVector term_n, StringVector tform, Ref<VectorXd> 
     VectorXd s_weights;
     if (model_bool["strata"]) {
         s_weights = VectorXd::Zero(df0.rows());
-        Gen_Strat_Weight(modelform, dfs, PyrC, s_weights, nthreads, tform, term_n, term_tot);
+        Gen_Strat_Weight(modelform, dfs, PyrC, s_weights, nthreads, tform, term_n, term_tot, gmix_theta, gmix_term);
         Make_Risks_Weighted_Single(modelform, tform, term_n, totalnum, fir, s_weights, T0, Te, R, Dose, nonDose, TTerm, nonDose_LIN, nonDose_PLIN, nonDose_LOGLIN, nthreads, KeepConstant, gmix_theta, gmix_term);
     } else {
         Make_Risks_Single(modelform, tform, term_n, totalnum, fir, T0, Te, R, Dose, nonDose, TTerm, nonDose_LIN, nonDose_PLIN, nonDose_LOGLIN, nthreads, KeepConstant, gmix_theta, gmix_term);
@@ -508,8 +500,11 @@ List Assign_Events_Pois(IntegerVector term_n, StringVector tform, Ref<VectorXd> 
     MatrixXd predict = MatrixXd::Zero(PyrC.rows(), 3);
     //
     predict.col(0) = (TTerm.col(fir).array() * PyrC.col(0).array());
-    predict.col(1) = (R.col(0).array() * PyrC.col(0).array()).array() - predict.col(0).array();
-    predict.col(2) = predict.col(0).array() + predict.col(1).array();
+    if (model_bool["strata"]) {
+        predict.col(0) = predict.col(0).array() * s_weights.array();;
+    }
+    predict.col(2) = (R.col(0).array() * PyrC.col(0).array()).array();
+    predict.col(1) = predict.col(2).array() - predict.col(0).array();
     //
     caused.col(0) = PyrC.col(1).array() * predict.col(0).array() / predict.col(2).array();
     caused.col(1) = PyrC.col(1).array() * predict.col(1).array() / predict.col(2).array();
@@ -528,7 +523,6 @@ List Assign_Events_Pois(IntegerVector term_n, StringVector tform, Ref<VectorXd> 
 //' @return List of final results: Log-likelihood of optimum, first derivative of log-likelihood, second derivative matrix, parameter list, standard deviation estimate, AIC, model information
 //' @noRd
 //'
-//
 List Poisson_Residuals(const Ref<const MatrixXd>& PyrC, IntegerVector term_n, StringVector tform, Ref<VectorXd> beta_0, Ref<MatrixXd> df0, IntegerVector dfc, int fir, string modelform, double step_max, double thres_step_max, int verbose, IntegerVector KeepConstant, int term_tot, int nthreads, const Ref<const MatrixXd>& dfs, List model_bool, const double gmix_theta, const IntegerVector gmix_term, bool Pearson_bool, bool Deviance_bool) {
     //
     List temp_list = List::create(_["Status"] = "FAILED");  //  used as a dummy return value for code checking
@@ -551,7 +545,6 @@ List Poisson_Residuals(const Ref<const MatrixXd>& PyrC, IntegerVector term_n, St
     //  ---------------------------------------------
     //
     //  ------------------------------------------------------------------------- //  initialize
-    // Map<VectorXd> beta_0(as<Map<VectorXd> >(a_n));
     MatrixXd T0 = MatrixXd::Zero(df0.rows(), totalnum);  //  preallocates matrix for Term column
     MatrixXd Te = MatrixXd::Zero(df0.rows(), 1);  //  preallocates matrix for column terms used for temporary storage
     MatrixXd R = MatrixXd::Zero(df0.rows(), 1);  //  preallocates matrix for Risks
@@ -579,7 +572,7 @@ List Poisson_Residuals(const Ref<const MatrixXd>& PyrC, IntegerVector term_n, St
     VectorXd s_weights;
     if (model_bool["strata"]) {
         s_weights = VectorXd::Zero(df0.rows());
-        Gen_Strat_Weight(modelform, dfs, PyrC, s_weights, nthreads, tform, term_n, term_tot);
+        Gen_Strat_Weight(modelform, dfs, PyrC, s_weights, nthreads, tform, term_n, term_tot, gmix_theta, gmix_term);
     }
     //  ------------------------------------------------------------------------- //  initialize
     //  ---------------------------------------------

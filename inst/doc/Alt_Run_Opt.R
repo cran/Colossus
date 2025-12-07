@@ -9,8 +9,12 @@ library(Colossus)
 library(data.table)
 
 ## ----eval=FALSE---------------------------------------------------------------
-# Strat_Col <- "e"
-# e <- CoxRun_Strata(Cox(time1, time2, event, e) ~ loglinear(dose), df,
+# Strat_Col <- "s0"
+# e <- CoxRun_Strata(Cox(time1, time2, event, s0) ~ loglinear(dose), df,
+#   a_n = a_n, control = control
+# )
+# Strat_Cols <- c("s0", "s1", "s2")
+# e <- CoxRun_Strata(Cox(time1, time2, event, c(s0, s1, s2)) ~ loglinear(dose), df,
 #   a_n = a_n, control = control
 # )
 

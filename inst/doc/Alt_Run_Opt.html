@@ -27,31 +27,46 @@ document.addEventListener('DOMContentLoaded', function(e) {
   }
 });
 </script>
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
+  }
+});
+</script>
 
 <style type="text/css">
-code{white-space: pre-wrap;}
-span.smallcaps{font-variant: small-caps;}
-span.underline{text-decoration: underline;}
-div.column{display: inline-block; vertical-align: top; width: 50%;}
-div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-ul.task-list{list-style: none;}
-</style>
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
 
 
 
 <style type="text/css">
-code {
-white-space: pre;
-}
-.sourceCode {
-overflow: visible;
-}
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
@@ -63,54 +78,55 @@ pre > code.sourceCode { white-space: pre-wrap; }
 pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
-{ counter-reset: source-line 0; }
+  { counter-reset: source-line 0; }
 pre.numberSource code > span
-{ position: relative; left: -4em; counter-increment: source-line; }
+  { position: relative; left: -4em; counter-increment: source-line; }
 pre.numberSource code > span > a:first-child::before
-{ content: counter(source-line);
-position: relative; left: -1em; text-align: right; vertical-align: baseline;
-border: none; display: inline-block;
--webkit-touch-callout: none; -webkit-user-select: none;
--khtml-user-select: none; -moz-user-select: none;
--ms-user-select: none; user-select: none;
-padding: 0 4px; width: 4em;
-color: #aaaaaa;
-}
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
 div.sourceCode
-{ }
+  {   }
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-code span.al { color: #ff0000; font-weight: bold; } 
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
-code span.at { color: #7d9029; } 
-code span.bn { color: #40a070; } 
-code span.bu { color: #008000; } 
-code span.cf { color: #007020; font-weight: bold; } 
-code span.ch { color: #4070a0; } 
-code span.cn { color: #880000; } 
-code span.co { color: #60a0b0; font-style: italic; } 
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
-code span.do { color: #ba2121; font-style: italic; } 
-code span.dt { color: #902000; } 
-code span.dv { color: #40a070; } 
-code span.er { color: #ff0000; font-weight: bold; } 
-code span.ex { } 
-code span.fl { color: #40a070; } 
-code span.fu { color: #06287e; } 
-code span.im { color: #008000; font-weight: bold; } 
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
-code span.kw { color: #007020; font-weight: bold; } 
-code span.op { color: #666666; } 
-code span.ot { color: #007020; } 
-code span.pp { color: #bc7a00; } 
-code span.sc { color: #4070a0; } 
-code span.ss { color: #bb6688; } 
-code span.st { color: #4070a0; } 
-code span.va { color: #19177c; } 
-code span.vs { color: #4070a0; } 
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
 </style>
 <script>
 // apply pandoc div.sourceCode style to pre.sourceCode instead
@@ -340,19 +356,17 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(Colossus)</span>
-<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(data.table)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">library</span>(Colossus)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="kw">library</span>(data.table)</span></code></pre></div>
 <div id="general-options" class="section level2">
 <h2>General Options</h2>
-<p>Both Cox proportional hazards and Poisson model regressions have
-additional functions that can account for specific situations. There
-general situations are as follows:</p>
+<p>Both Cox proportional hazards and Poisson model regressions have additional functions that can account for specific situations. There general situations are as follows:</p>
 <table>
 <colgroup>
-<col width="25%" />
-<col width="27%" />
-<col width="27%" />
-<col width="20%" />
+<col width="25%"></col>
+<col width="27%"></col>
+<col width="27%"></col>
+<col width="20%"></col>
 </colgroup>
 <thead>
 <tr class="header">
@@ -365,103 +379,70 @@ general situations are as follows:</p>
 <tbody>
 <tr class="odd">
 <td align="center">Stratification</td>
-<td align="center">In Cox PH, the stratification is applied in the risks
-groups to compare only like rows. In Poisson model regression the
-stratification is an additional term in the model to account for the
-effects of stratified covariates</td>
+<td align="center">In Cox PH, the stratification is applied in the risks groups to compare only like rows. In Poisson model regression the stratification is an additional term in the model to account for the effects of stratified covariates</td>
 <td align="center">x</td>
 <td align="center">x</td>
 </tr>
 <tr class="even">
 <td align="center">Simplified Model</td>
-<td align="center">For a multiplicative Log-Linear model,
-simplifications can be made to the code. These give a faster
-version.</td>
+<td align="center">For a multiplicative Log-Linear model, simplifications can be made to the code. These give a faster version.</td>
 <td align="center">x</td>
 <td align="center"></td>
 </tr>
 <tr class="odd">
 <td align="center">Non-Derivative Calculation</td>
-<td align="center">If a single iteration is needed without derivatives,
-there is time and memory that can be saved</td>
+<td align="center">If a single iteration is needed without derivatives, there is time and memory that can be saved</td>
 <td align="center">x</td>
 <td align="center">x</td>
 </tr>
 <tr class="even">
 <td align="center">Competing Risks</td>
-<td align="center">If there is a competing event, rows are weighted by
-an estimate of the censoring rate to approximate a dataset without the
-effect of a competing event</td>
+<td align="center">If there is a competing event, rows are weighted by an estimate of the censoring rate to approximate a dataset without the effect of a competing event</td>
 <td align="center">x</td>
 <td align="center"></td>
 </tr>
 <tr class="odd">
 <td align="center">Joint Analysis</td>
-<td align="center">A Poisson method which allows a model to solve for
-multiple outcomes, by creating multiple copies of rows with multiple
-events and using a factor variable to add covariates for specific
-outcomes</td>
+<td align="center">A Poisson method which allows a model to solve for multiple outcomes, by creating multiple copies of rows with multiple events and using a factor variable to add covariates for specific outcomes</td>
 <td align="center"></td>
 <td align="center">x</td>
 </tr>
 <tr class="even">
 <td align="center">Distributed Initial Parameter Sets</td>
-<td align="center">The user provides distribution for each starting
-parameter, Colossus runs low iteration regressions at random points, and
-then a full run at the best guess</td>
+<td align="center">The user provides distribution for each starting parameter, Colossus runs low iteration regressions at random points, and then a full run at the best guess</td>
 <td align="center">x</td>
 <td align="center">x</td>
 </tr>
 </tbody>
 </table>
-<p>The following sections review the math behind the basic functions and
-how each option changes that.</p>
+<p>The following sections review the math behind the basic functions and how each option changes that.</p>
 </div>
 <div id="stratification" class="section level2">
 <h2>Stratification</h2>
 <div id="cox-proportional-hazards" class="section level3">
 <h3>Cox Proportional Hazards</h3>
-<p>In Cox Proportional Hazards, the Log-Likelihood is calculated by
-taking the ratio of the hazard ratio at each event to the sum of the
-hazard ratios of every other row at risk. This defines the risk group
-for every event time to be the intervals containing the event time.
-Intervals are assumed to be open on the left and closed on the right,
-and events are assumed to take place at the right endpoint. This gives
-the following common equation for the Log-Likelihood:</p>
+<p>In Cox Proportional Hazards, the Log-Likelihood is calculated by taking the ratio of the hazard ratio at each event to the sum of the hazard ratios of every other row at risk. This defines the risk group for every event time to be the intervals containing the event time. Intervals are assumed to be open on the left and closed on the right, and events are assumed to take place at the right endpoint. This gives the following common equation for the Log-Likelihood:</p>
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
-    Ll = \prod_{i}^{n} \left( \frac{r_{i}}{\sum_{j: t_j \in R_i} r_j}
-\right)^{\delta_i}
+    Ll = \prod_{i}^{n} \left( \frac{r_{i}}{\sum_{j: t_j \in R_i} r_j} \right)^{\delta_i}
 \end{aligned}
 \]</span>
 </p>
-<p>In which r denotes hazard ratios, the denominator is the sum of
-hazard ratios of intervals containing the event time, and each term is
-raised to the power of 1 if the interval has an event and 0 otherwise.
-Different tie methods modify the denominator based on how the order of
-events is assumed, but the general form still stands. The goal is to
-compare each event interval to intervals within a similar time span.
-Stratification adds a condition: if the user stratifies over a covariate
-“F” then each risk group is split into subgroups with the same value of
-“F”. So the goal becomes to compare event intervals to intervals with
-similar strata AND time. This is done to remove the influence of the
-stratification variables from the calculations.</p>
-<p>In code, this is done by adding an additional parameter for the
-stratification column and using a different function to call the
-regression.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>Strat_Col <span class="ot">&lt;-</span> <span class="st">&quot;e&quot;</span></span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>e <span class="ot">&lt;-</span> <span class="fu">CoxRun_Strata</span>(<span class="fu">Cox</span>(time1, time2, event, e) <span class="sc">~</span> <span class="fu">loglinear</span>(dose), df,</span>
-<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>  <span class="at">a_n =</span> a_n, <span class="at">control =</span> control</span>
-<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>)</span></code></pre></div>
+<p>In which r denotes hazard ratios, the denominator is the sum of hazard ratios of intervals containing the event time, and each term is raised to the power of 1 if the interval has an event and 0 otherwise. Different tie methods modify the denominator based on how the order of events is assumed, but the general form still stands. The goal is to compare each event interval to intervals within a similar time span. Stratification adds a condition: if the user stratifies over a covariate “F” then each risk group is split into subgroups with the same value of “F”. So the goal becomes to compare event intervals to intervals with similar strata AND time. This is done to remove the influence of the stratification variables from the calculations.</p>
+<p>In code, this is done by adding an additional parameter for the stratification column and using a different function to call the regression. Multiple strata columns can be provided by including a vector of columns.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>Strat_Col &lt;-<span class="st"> &quot;s0&quot;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">CoxRun_Strata</span>(<span class="kw">Cox</span>(time1, time2, event, s0) <span class="op">~</span><span class="st"> </span><span class="kw">loglinear</span>(dose), df,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>  <span class="dt">a_n =</span> a_n, <span class="dt">control =</span> control</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>Strat_Cols &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;s0&quot;</span>, <span class="st">&quot;s1&quot;</span>, <span class="st">&quot;s2&quot;</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">CoxRun_Strata</span>(<span class="kw">Cox</span>(time1, time2, event, <span class="kw">c</span>(s0, s1, s2)) <span class="op">~</span><span class="st"> </span><span class="kw">loglinear</span>(dose), df,</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a>  <span class="dt">a_n =</span> a_n, <span class="dt">control =</span> control</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true"></a>)</span></code></pre></div>
 </div>
 <div id="poisson-regression" class="section level3">
 <h3>Poisson Regression</h3>
-<p>Poisson model regression does not have risk groups to account for,
-but the theory is the same. To remove the influence of stratification
-covariate a new term is added to account for their effects. In Colossus,
-this is a Log-Linear term. So the following may be the model used
-without stratification:</p>
+<p>Poisson model regression does not have risk groups to account for, but the theory is the same. To remove the influence of stratification covariate a new term is added to account for their effects. In Colossus, this is a Log-Linear term. So the following may be the model used without stratification:</p>
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
@@ -473,110 +454,59 @@ without stratification:</p>
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
-    R = (\sum_i (x_i \cdot \beta_i)) \times (\exp{(\sum_{strata}
-(x_{strata} \cdot \beta_{strata}))})
+    R = (\sum_i (x_i \cdot \beta_i)) \times (\exp{(\sum_{strata} (x_{strata} \cdot \beta_{strata}))})
 \end{aligned}
 \]</span>
 </p>
-<p>Only results associated with the non-stratified parameters are
-returned by default. An average event rate is calculated for every
-strata level, which weights the calculated risks.</p>
-<p>In code, this is done by adding in a list of stratification columns
-and using a different function to call the regression. Colossus combines
-the list of stratification columns into a single interaction, so it does
-not matter if the user provides a list or combines them themselves.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>Strat_Col <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;e&quot;</span>)</span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>e <span class="ot">&lt;-</span> <span class="fu">PoisRun</span>(<span class="fu">Poisson_Strata</span>(pyr, event, e) <span class="sc">~</span> <span class="fu">loglinear</span>(dose), df,</span>
-<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  <span class="at">a_n =</span> a_n, <span class="at">control =</span> control</span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>)</span></code></pre></div>
+<p>Only results associated with the non-stratified parameters are returned by default. An average event rate is calculated for every strata level, which weights the calculated risks. The weighting is performed so that the predicted rate when every model parameter is set to 0 equals the average strata rates. Note that this can lead to errors if the model specified predicts a rate of 0 when the model parameters are all 0. Purely linear models cannot be used with stratification currently for this reason.</p>
+<p>In code, this is done by adding in a list of stratification columns and using a different function to call the regression. Colossus combines the list of stratification columns into a single interaction, so it does not matter if the user provides a list or combines them themselves.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>Strat_Col &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;e&quot;</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">PoisRun</span>(<span class="kw">Poisson_Strata</span>(pyr, event, e) <span class="op">~</span><span class="st"> </span><span class="kw">loglinear</span>(dose), df,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>  <span class="dt">a_n =</span> a_n, <span class="dt">control =</span> control</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a>)</span></code></pre></div>
 </div>
 </div>
 <div id="non-derivative-calculation" class="section level2">
 <h2>Non-Derivative Calculation</h2>
-<p>Colossus uses Newton’s method to perform the regression, which can
-become computationally intensive as the model becomes more complicated.
-So, Colossus contains functions to calculate only the scores for a
-parameter set and skip the derivative calculations. These results could
-be used to perform a bisection method of regression or plot the
-dependence between the score and parameter values. This ability is left
-for the user’s convenience.</p>
+<p>Colossus uses Newton’s method to perform the regression, which can become computationally intensive as the model becomes more complicated. So, Colossus contains functions to calculate only the scores for a parameter set and skip the derivative calculations. These results could be used to perform a bisection method of regression or plot the dependence between the score and parameter values. This ability is left for the user’s convenience.</p>
 <p>The code is similar to previous examples:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>e <span class="ot">&lt;-</span> <span class="fu">CoxRun</span>(<span class="fu">Cox</span>(time1, time2, event) <span class="sc">~</span> <span class="fu">loglinear</span>(dose), df,</span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>  <span class="at">a_n =</span> a_n, <span class="at">control =</span> control, <span class="at">single =</span> <span class="cn">TRUE</span></span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">CoxRun</span>(<span class="kw">Cox</span>(time1, time2, event) <span class="op">~</span><span class="st"> </span><span class="kw">loglinear</span>(dose), df,</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a>  <span class="dt">a_n =</span> a_n, <span class="dt">control =</span> control, <span class="dt">single =</span> <span class="ot">TRUE</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a>)</span></code></pre></div>
 </div>
 <div id="competing-risks" class="section level2">
 <h2>Competing Risks</h2>
 <div id="fine-gray" class="section level3">
 <h3>Fine-Gray</h3>
-<p>In Cox PH there is an assumption that every individual is recorded
-until they have an event or they are naturally censored. Censoring is
-assumed to be statistically independent with regard to the event being
-studied. These assumptions are violated when there is a competing event
-occurring. In sensitivity analysis, two extremes are generally tested.
-Either every person with a competing event is treated as having the
-event of interest instead, or they are assumed to never experience the
-event of interest. However, there are methods to find a more realistic
-alternative. Colossus applies the Fine-Gray model for competing risks,
-which instead weights the contribution of competing event intervals in
-future intervals by the probability they would not have been
-censored.</p>
-<p>As previously established, the risk groups are formed to measure the
-probability that an individual survived up to the time and experienced
-the event of interest, given that they did not experience an event up to
-that time:</p>
+<p>In Cox PH there is an assumption that every individual is recorded until they have an event or they are naturally censored. Censoring is assumed to be statistically independent with regard to the event being studied. These assumptions are violated when there is a competing event occurring. In sensitivity analysis, two extremes are generally tested. Either every person with a competing event is treated as having the event of interest instead, or they are assumed to never experience the event of interest. However, there are methods to find a more realistic alternative. Colossus applies the Fine-Gray model for competing risks, which instead weights the contribution of competing event intervals in future intervals by the probability they would not have been censored.</p>
+<p>As previously established, the risk groups are formed to measure the probability that an individual survived up to the time and experienced the event of interest, given that they did not experience an event up to that time:</p>
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
-    \lambda(t) = \lim_{\Delta t \to 0} \frac{(P(t \leq T \leq t + \Delta
-t)\text{ and }(k=1), T \geq t)}{\Delta t}
+    \lambda(t) = \lim_{\Delta t \to 0} \frac{(P(t \leq T \leq t + \Delta t)\text{ and }(k=1), T \geq t)}{\Delta t}
 \end{aligned}
 \]</span>
 </p>
-<p>The competing risks model adjusts this to be the probability that an
-individual survived up to the time and experienced the event of
-interest, given that they did not experience an event up to that time OR
-they survived up to a previous time and experienced a different
-event:</p>
+<p>The competing risks model adjusts this to be the probability that an individual survived up to the time and experienced the event of interest, given that they did not experience an event up to that time OR they survived up to a previous time and experienced a different event:</p>
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
-    \lambda(t) = \lim_{\Delta t \to 0} \frac{(P(t \leq T \leq t + \Delta
-t)\text{ and }(k=1), (T \geq t)\text{ or }((T &lt; t)\text{ and }(k \neq
-1)))}{\Delta t}
+    \lambda(t) = \lim_{\Delta t \to 0} \frac{(P(t \leq T \leq t + \Delta t)\text{ and }(k=1), (T \geq t)\text{ or }((T &lt; t)\text{ and }(k \neq 1)))}{\Delta t}
 \end{aligned}
 \]</span>
 </p>
-<p>This means that risk groups would contain both intervals actually at
-risk and intervals with competing events treated as if they were at
-risk. If we assume that no time-dependent covariates are being used,
-then all that remains is to weigh the contribution of these competing
-events. In general, a weighting column is provided before regression,
-the values can be solved from a survival curve or by using the
-“finegray” function of the survival library.</p>
-<p>In code, the call is similar to the standard function. The process
-for finding a weighting is included below. In this example, we assume
-the event column, lung, to contain a 0 for no events, 1 for the primary
-event, and 2 for the competing event.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>pdata <span class="ot">&lt;-</span> <span class="fu">finegray</span>(<span class="fu">Surv</span>(time2, event) <span class="sc">~</span> ., <span class="at">data =</span> df)</span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a></span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>e <span class="ot">&lt;-</span> <span class="fu">CoxRun</span>(<span class="fu">FineGray</span>(fgstart, fgstop, fgstatus, fgwt) <span class="sc">~</span> <span class="fu">loglinear</span>(dose), pdata,</span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>  <span class="at">a_n =</span> a_n, <span class="at">control =</span> control</span>
-<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>)</span></code></pre></div>
+<p>This means that risk groups would contain both intervals actually at risk and intervals with competing events treated as if they were at risk. If we assume that no time-dependent covariates are being used, then all that remains is to weigh the contribution of these competing events. In general, a weighting column is provided before regression, the values can be solved from a survival curve or by using the “finegray” function of the survival library.</p>
+<p>In code, the call is similar to the standard function. The process for finding a weighting is included below. In this example, we assume the event column, lung, to contain a 0 for no events, 1 for the primary event, and 2 for the competing event.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a>pdata &lt;-<span class="st"> </span><span class="kw">finegray</span>(<span class="kw">Surv</span>(time2, event) <span class="op">~</span><span class="st"> </span>., <span class="dt">data =</span> df)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">CoxRun</span>(<span class="kw">FineGray</span>(fgstart, fgstop, fgstatus, fgwt) <span class="op">~</span><span class="st"> </span><span class="kw">loglinear</span>(dose), pdata,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a>  <span class="dt">a_n =</span> a_n, <span class="dt">control =</span> control</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a>)</span></code></pre></div>
 </div>
 <div id="poisson-joint-analysis" class="section level3">
 <h3>Poisson Joint Analysis</h3>
-<p>For a dataset with multiple outcomes, there are often two ways that
-Poisson models are fit. Either multiple independent models are fit or
-the events are combined and one model is fit to several events. These
-methods limit models to be completely independent or identical. The true
-model may be a combination of shared terms and terms specific to each
-event, which cannot be modeled with these methods. To fit this type of
-model a joint analysis method (Cologne, 2019) is available in
-Colossus.</p>
-<p>Suppose one has a table of person-years, a covariate, and counts for
-two events. Assume we are fitting the event rate (<span class="math inline">\(\lambda\)</span>) for each event and have reason
-to believe that the background rate (<span class="math inline">\(\beta\)</span>) is the same for each event.</p>
+<p>For a dataset with multiple outcomes, there are often two ways that Poisson models are fit. Either multiple independent models are fit or the events are combined and one model is fit to several events. These methods limit models to be completely independent or identical. The true model may be a combination of shared terms and terms specific to each event, which cannot be modeled with these methods. To fit this type of model a joint analysis method (Cologne, 2019) is available in Colossus.</p>
+<p>Suppose one has a table of person-years, a covariate, and counts for two events. Assume we are fitting the event rate (<span class="math inline">\(\lambda\)</span>) for each event and have reason to believe that the background rate (<span class="math inline">\(\beta\)</span>) is the same for each event.</p>
 <table>
 <thead>
 <tr class="header">
@@ -609,12 +539,7 @@ to believe that the background rate (<span class="math inline">\(\beta\)</span>)
 \end{aligned}
 \]</span>
 </p>
-<p>If one were to solve the equations separately the table would be
-split into two tables, each with one event column. The premise of a
-joint analysis is to write a model that can be applied to every event,
-including a factor covariate to select which event is being solved for.
-Then the split tables can be recombined and multiple events can be
-solved at once allowing for shared and event-specific parameters.</p>
+<p>If one were to solve the equations separately the table would be split into two tables, each with one event column. The premise of a joint analysis is to write a model that can be applied to every event, including a factor covariate to select which event is being solved for. Then the split tables can be recombined and multiple events can be solved at once allowing for shared and event-specific parameters.</p>
 <table>
 <thead>
 <tr class="header">
@@ -659,118 +584,106 @@ solved at once allowing for shared and event-specific parameters.</p>
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
-    \lambda(a,\alpha_y,\alpha_z) = \beta*\exp{(\mu_y*(a*\alpha_y) +
-\mu_z*(a*\alpha_z))}
+    \lambda(a,\alpha_y,\alpha_z) = \beta*\exp{(\mu_y*(a*\alpha_y) + \mu_z*(a*\alpha_z))}
 \end{aligned}
 \]</span>
 </p>
-<p>Colossus includes several functions to apply this method, a function
-that produces input for a joint analysis regression and a function that
-also runs the regression. The most general converts a table and lists of
-formula into the input for a regression.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>a <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>)</span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>b <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>)</span>
-<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>c <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span>
-<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>d <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>)</span>
-<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>e <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>)</span>
-<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.table</span>(<span class="st">&quot;t0&quot;</span> <span class="ot">=</span> a, <span class="st">&quot;t1&quot;</span> <span class="ot">=</span> b, <span class="st">&quot;e0&quot;</span> <span class="ot">=</span> c, <span class="st">&quot;e1&quot;</span> <span class="ot">=</span> d, <span class="st">&quot;fac&quot;</span> <span class="ot">=</span> e)</span>
-<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>time1 <span class="ot">&lt;-</span> <span class="st">&quot;t0&quot;</span></span>
-<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>time2 <span class="ot">&lt;-</span> <span class="st">&quot;t1&quot;</span></span>
-<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>df<span class="sc">$</span>pyr <span class="ot">&lt;-</span> df<span class="sc">$</span>t1 <span class="sc">-</span> df<span class="sc">$</span>t0</span>
-<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>pyr <span class="ot">&lt;-</span> <span class="st">&quot;pyr&quot;</span></span>
-<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>events <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;e0&quot;</span>, <span class="st">&quot;e1&quot;</span>)</span></code></pre></div>
-<p>Colossus generally accepts a formula to describe the elements of the
-model. For a joint analysis, Colossus instead expects a list of formula.
-The formula are expect to cover the model elements specific to each
-event, and potentially a model for shared elements. Colossus expects
-name of the shared model to be “shared”. The left hand side of the
-shared model is not used.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>model_1 <span class="ot">&lt;-</span> <span class="fu">Pois</span>(pyr, e0) <span class="sc">~</span> <span class="fu">loglin</span>(fac, <span class="dv">0</span>)</span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>model_2 <span class="ot">&lt;-</span> <span class="fu">Pois</span>(pyr, e1) <span class="sc">~</span> <span class="fu">loglin</span>(fac, <span class="dv">0</span>)</span>
-<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>model_s <span class="ot">&lt;-</span> <span class="fu">Pois</span>(pyr) <span class="sc">~</span> <span class="fu">plinear</span>(t0, <span class="dv">0</span>)</span>
-<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>formula_list <span class="ot">&lt;-</span> <span class="fu">list</span>(model_1, model_2, <span class="st">&quot;shared&quot;</span> <span class="ot">=</span> model_s)</span></code></pre></div>
-<p>The function returns a list containing the combined table and model
-object.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">get_form_joint</span>(formula_list, df)</span>
-<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="co">#&gt; $model</span></span>
-<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="co">#&gt; $person_year</span></span>
-<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="co">#&gt; [1] &quot;pyr&quot;</span></span>
-<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a><span class="co">#&gt; $event</span></span>
-<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a><span class="co">#&gt; [1] &quot;events&quot;</span></span>
-<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a><span class="co">#&gt; $strata</span></span>
-<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a><span class="co">#&gt; [1] &quot;NONE&quot;</span></span>
-<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a><span class="co">#&gt; $term_n</span></span>
-<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a><span class="co">#&gt; [1] 0 0 0</span></span>
-<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a><span class="co">#&gt; $tform</span></span>
-<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a><span class="co">#&gt; [1] &quot;plin&quot;   &quot;loglin&quot; &quot;loglin&quot;</span></span>
-<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb8-18"><a href="#cb8-18" tabindex="-1"></a><span class="co">#&gt; $names</span></span>
-<span id="cb8-19"><a href="#cb8-19" tabindex="-1"></a><span class="co">#&gt; [1] &quot;t0&quot;     &quot;fac_e0&quot; &quot;fac_e1&quot;</span></span>
-<span id="cb8-20"><a href="#cb8-20" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb8-21"><a href="#cb8-21" tabindex="-1"></a><span class="co">#&gt; $a_n</span></span>
-<span id="cb8-22"><a href="#cb8-22" tabindex="-1"></a><span class="co">#&gt; [1] 0 0 0</span></span>
-<span id="cb8-23"><a href="#cb8-23" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb8-24"><a href="#cb8-24" tabindex="-1"></a><span class="co">#&gt; $keep_constant</span></span>
-<span id="cb8-25"><a href="#cb8-25" tabindex="-1"></a><span class="co">#&gt; [1] 0 0 0</span></span>
-<span id="cb8-26"><a href="#cb8-26" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb8-27"><a href="#cb8-27" tabindex="-1"></a><span class="co">#&gt; $modelform</span></span>
-<span id="cb8-28"><a href="#cb8-28" tabindex="-1"></a><span class="co">#&gt; [1] &quot;M&quot;</span></span>
-<span id="cb8-29"><a href="#cb8-29" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb8-30"><a href="#cb8-30" tabindex="-1"></a><span class="co">#&gt; $gmix_term</span></span>
-<span id="cb8-31"><a href="#cb8-31" tabindex="-1"></a><span class="co">#&gt; NULL</span></span>
-<span id="cb8-32"><a href="#cb8-32" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb8-33"><a href="#cb8-33" tabindex="-1"></a><span class="co">#&gt; $gmix_theta</span></span>
-<span id="cb8-34"><a href="#cb8-34" tabindex="-1"></a><span class="co">#&gt; [1] 0</span></span>
-<span id="cb8-35"><a href="#cb8-35" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb8-36"><a href="#cb8-36" tabindex="-1"></a><span class="co">#&gt; $expres_calls</span></span>
-<span id="cb8-37"><a href="#cb8-37" tabindex="-1"></a><span class="co">#&gt; list()</span></span>
-<span id="cb8-38"><a href="#cb8-38" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb8-39"><a href="#cb8-39" tabindex="-1"></a><span class="co">#&gt; attr(,&quot;class&quot;)</span></span>
-<span id="cb8-40"><a href="#cb8-40" tabindex="-1"></a><span class="co">#&gt; [1] &quot;poismodel&quot;</span></span>
-<span id="cb8-41"><a href="#cb8-41" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb8-42"><a href="#cb8-42" tabindex="-1"></a><span class="co">#&gt; $data</span></span>
-<span id="cb8-43"><a href="#cb8-43" tabindex="-1"></a><span class="co">#&gt;        t0    t1 events    e0    e1   fac   pyr fac_e0 fac_e1</span></span>
-<span id="cb8-44"><a href="#cb8-44" tabindex="-1"></a><span class="co">#&gt;     &lt;num&gt; &lt;num&gt;  &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt;  &lt;num&gt;  &lt;num&gt;</span></span>
-<span id="cb8-45"><a href="#cb8-45" tabindex="-1"></a><span class="co">#&gt;  1:     0     1      0     1     0     0     1      0      0</span></span>
-<span id="cb8-46"><a href="#cb8-46" tabindex="-1"></a><span class="co">#&gt;  2:     0     1      1     1     0     1     1      1      0</span></span>
-<span id="cb8-47"><a href="#cb8-47" tabindex="-1"></a><span class="co">#&gt;  3:     0     1      2     1     0     1     1      1      0</span></span>
-<span id="cb8-48"><a href="#cb8-48" tabindex="-1"></a><span class="co">#&gt;  4:     1     2      2     1     0     1     1      1      0</span></span>
-<span id="cb8-49"><a href="#cb8-49" tabindex="-1"></a><span class="co">#&gt;  5:     1     2      1     1     0     0     1      0      0</span></span>
-<span id="cb8-50"><a href="#cb8-50" tabindex="-1"></a><span class="co">#&gt;  6:     1     2      0     1     0     0     1      0      0</span></span>
-<span id="cb8-51"><a href="#cb8-51" tabindex="-1"></a><span class="co">#&gt;  7:     0     1      1     0     1     0     1      0      0</span></span>
-<span id="cb8-52"><a href="#cb8-52" tabindex="-1"></a><span class="co">#&gt;  8:     0     1      1     0     1     1     1      0      1</span></span>
-<span id="cb8-53"><a href="#cb8-53" tabindex="-1"></a><span class="co">#&gt;  9:     0     1      0     0     1     1     1      0      1</span></span>
-<span id="cb8-54"><a href="#cb8-54" tabindex="-1"></a><span class="co">#&gt; 10:     1     2      0     0     1     1     1      0      1</span></span>
-<span id="cb8-55"><a href="#cb8-55" tabindex="-1"></a><span class="co">#&gt; 11:     1     2      1     0     1     0     1      0      0</span></span>
-<span id="cb8-56"><a href="#cb8-56" tabindex="-1"></a><span class="co">#&gt; 12:     1     2      1     0     1     0     1      0      0</span></span></code></pre></div>
-<p>These results could be used as input for any of the available
-regression functions. Colossus also includes a wrapper function to
-directly call the Poisson model regression function.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>control <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>  <span class="st">&quot;ncores&quot;</span> <span class="ot">=</span> <span class="dv">1</span>, <span class="st">&quot;lr&quot;</span> <span class="ot">=</span> <span class="fl">0.75</span>, <span class="st">&quot;maxiter&quot;</span> <span class="ot">=</span> <span class="dv">10</span>, <span class="st">&quot;halfmax&quot;</span> <span class="ot">=</span> <span class="dv">5</span>, <span class="st">&quot;epsilon&quot;</span> <span class="ot">=</span> <span class="fl">1e-6</span>,</span>
-<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>  <span class="st">&quot;deriv_epsilon&quot;</span> <span class="ot">=</span> <span class="fl">1e-6</span>, <span class="st">&quot;verbose&quot;</span> <span class="ot">=</span> <span class="dv">2</span>, <span class="st">&quot;ncores&quot;</span> <span class="ot">=</span> <span class="dv">2</span></span>
-<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>)</span>
-<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>e <span class="ot">&lt;-</span> <span class="fu">PoisRunJoint</span>(formula_list, df, <span class="at">control =</span> control)</span>
-<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="fu">print</span>(e)</span>
-<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
-<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="co">#&gt; Final Results</span></span>
-<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co">#&gt;    Covariate Subterm Term Number Central Estimate Standard Error 2-tail p-value</span></span>
-<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="co">#&gt;       &lt;char&gt;  &lt;char&gt;       &lt;int&gt;            &lt;num&gt;          &lt;num&gt;          &lt;num&gt;</span></span>
-<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a><span class="co">#&gt; 1:        t0    plin           0       -0.1844782      0.3845856      0.6314547</span></span>
-<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a><span class="co">#&gt; 2:    fac_e0  loglin           0        0.5742903      0.4676090      0.2193936</span></span>
-<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a><span class="co">#&gt; 3:    fac_e1  loglin           0       -1.0351460      1.0092852      0.3050693</span></span>
-<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a><span class="co">#&gt; Poisson Model Used</span></span>
-<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a><span class="co">#&gt; -2*Log-Likelihood: 20.89,  Deviation: 6.44,  AIC: 12.44,  BIC: 28.35</span></span>
-<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a><span class="co">#&gt; Iterations run: 10</span></span>
-<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a><span class="co">#&gt; maximum step size: 4.78e-06, maximum first derivative: 1.60e-06</span></span>
-<span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a><span class="co">#&gt; Analysis did not converge, check convergence criteria or run further</span></span>
-<span id="cb9-20"><a href="#cb9-20" tabindex="-1"></a><span class="co">#&gt; Run finished in 0.02 seconds</span></span>
-<span id="cb9-21"><a href="#cb9-21" tabindex="-1"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span></code></pre></div>
+<p>Colossus includes several functions to apply this method, a function that produces input for a joint analysis regression and a function that also runs the regression. The most general converts a table and lists of formula into the input for a regression.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a>a &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a>b &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a>c &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a>d &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a>df &lt;-<span class="st"> </span><span class="kw">data.table</span>(<span class="st">&quot;t0&quot;</span> =<span class="st"> </span>a, <span class="st">&quot;t1&quot;</span> =<span class="st"> </span>b, <span class="st">&quot;e0&quot;</span> =<span class="st"> </span>c, <span class="st">&quot;e1&quot;</span> =<span class="st"> </span>d, <span class="st">&quot;fac&quot;</span> =<span class="st"> </span>e)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true"></a>time1 &lt;-<span class="st"> &quot;t0&quot;</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true"></a>time2 &lt;-<span class="st"> &quot;t1&quot;</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true"></a>df<span class="op">$</span>pyr &lt;-<span class="st"> </span>df<span class="op">$</span>t1 <span class="op">-</span><span class="st"> </span>df<span class="op">$</span>t0</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true"></a>pyr &lt;-<span class="st"> &quot;pyr&quot;</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true"></a>events &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;e0&quot;</span>, <span class="st">&quot;e1&quot;</span>)</span></code></pre></div>
+<p>Colossus generally accepts a formula to describe the elements of the model. For a joint analysis, Colossus instead expects a list of formula. The formula are expect to cover the model elements specific to each event, and potentially a model for shared elements. Colossus expects name of the shared model to be “shared”. The left hand side of the shared model is not used.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a>model_<span class="dv">1</span> &lt;-<span class="st"> </span><span class="kw">Pois</span>(pyr, e0) <span class="op">~</span><span class="st"> </span><span class="kw">loglin</span>(fac, <span class="dv">0</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true"></a>model_<span class="dv">2</span> &lt;-<span class="st"> </span><span class="kw">Pois</span>(pyr, e1) <span class="op">~</span><span class="st"> </span><span class="kw">loglin</span>(fac, <span class="dv">0</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true"></a>model_s &lt;-<span class="st"> </span><span class="kw">Pois</span>(pyr) <span class="op">~</span><span class="st"> </span><span class="kw">plinear</span>(t0, <span class="dv">0</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true"></a>formula_list &lt;-<span class="st"> </span><span class="kw">list</span>(model_<span class="dv">1</span>, model_<span class="dv">2</span>, <span class="st">&quot;shared&quot;</span> =<span class="st"> </span>model_s)</span></code></pre></div>
+<p>The function returns a list containing the combined table and model object.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a><span class="kw">get_form_joint</span>(formula_list, df)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true"></a><span class="co">#&gt; $model</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true"></a><span class="co">#&gt; $person_year</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;pyr&quot;</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true"></a><span class="co">#&gt; $event</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;events&quot;</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true"></a><span class="co">#&gt; $strata</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;NONE&quot;</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true"></a><span class="co">#&gt; $term_n</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true"></a><span class="co">#&gt; [1] 0 0 0</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true"></a><span class="co">#&gt; $tform</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;plin&quot;   &quot;loglin&quot; &quot;loglin&quot;</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true"></a><span class="co">#&gt; $names</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;t0&quot;     &quot;fac_e0&quot; &quot;fac_e1&quot;</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true"></a><span class="co">#&gt; $a_n</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true"></a><span class="co">#&gt; [1] 0 0 0</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true"></a><span class="co">#&gt; $keep_constant</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true"></a><span class="co">#&gt; [1] 0 0 0</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true"></a><span class="co">#&gt; $modelform</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;ME&quot;</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true"></a><span class="co">#&gt; $gmix_term</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true"></a><span class="co">#&gt; [1] 1</span></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true"></a><span class="co">#&gt; $gmix_theta</span></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true"></a><span class="co">#&gt; [1] 0</span></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true"></a><span class="co">#&gt; $expres_calls</span></span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true"></a><span class="co">#&gt; list()</span></span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true"></a><span class="co">#&gt; attr(,&quot;class&quot;)</span></span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;poismodel&quot;</span></span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true"></a><span class="co">#&gt; $data</span></span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true"></a><span class="co">#&gt;        t0    t1 events    e0    e1   fac   pyr fac_e0 fac_e1</span></span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true"></a><span class="co">#&gt;     &lt;num&gt; &lt;num&gt;  &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt;  &lt;num&gt;  &lt;num&gt;</span></span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true"></a><span class="co">#&gt;  1:     0     1      0     1     0     0     1      0      0</span></span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true"></a><span class="co">#&gt;  2:     0     1      1     1     0     1     1      1      0</span></span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true"></a><span class="co">#&gt;  3:     0     1      2     1     0     1     1      1      0</span></span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true"></a><span class="co">#&gt;  4:     1     2      2     1     0     1     1      1      0</span></span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true"></a><span class="co">#&gt;  5:     1     2      1     1     0     0     1      0      0</span></span>
+<span id="cb8-50"><a href="#cb8-50" aria-hidden="true"></a><span class="co">#&gt;  6:     1     2      0     1     0     0     1      0      0</span></span>
+<span id="cb8-51"><a href="#cb8-51" aria-hidden="true"></a><span class="co">#&gt;  7:     0     1      1     0     1     0     1      0      0</span></span>
+<span id="cb8-52"><a href="#cb8-52" aria-hidden="true"></a><span class="co">#&gt;  8:     0     1      1     0     1     1     1      0      1</span></span>
+<span id="cb8-53"><a href="#cb8-53" aria-hidden="true"></a><span class="co">#&gt;  9:     0     1      0     0     1     1     1      0      1</span></span>
+<span id="cb8-54"><a href="#cb8-54" aria-hidden="true"></a><span class="co">#&gt; 10:     1     2      0     0     1     1     1      0      1</span></span>
+<span id="cb8-55"><a href="#cb8-55" aria-hidden="true"></a><span class="co">#&gt; 11:     1     2      1     0     1     0     1      0      0</span></span>
+<span id="cb8-56"><a href="#cb8-56" aria-hidden="true"></a><span class="co">#&gt; 12:     1     2      1     0     1     0     1      0      0</span></span></code></pre></div>
+<p>These results could be used as input for any of the available regression functions. Colossus also includes a wrapper function to directly call the Poisson model regression function.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true"></a>control &lt;-<span class="st"> </span><span class="kw">list</span>(</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true"></a>  <span class="st">&quot;ncores&quot;</span> =<span class="st"> </span><span class="dv">1</span>, <span class="st">&quot;lr&quot;</span> =<span class="st"> </span><span class="fl">0.75</span>, <span class="st">&quot;maxiter&quot;</span> =<span class="st"> </span><span class="dv">10</span>, <span class="st">&quot;halfmax&quot;</span> =<span class="st"> </span><span class="dv">5</span>, <span class="st">&quot;epsilon&quot;</span> =<span class="st"> </span><span class="fl">1e-6</span>,</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true"></a>  <span class="st">&quot;deriv_epsilon&quot;</span> =<span class="st"> </span><span class="fl">1e-6</span>, <span class="st">&quot;verbose&quot;</span> =<span class="st"> </span><span class="dv">2</span>, <span class="st">&quot;ncores&quot;</span> =<span class="st"> </span><span class="dv">2</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true"></a>)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">PoisRunJoint</span>(formula_list, df, <span class="dt">control =</span> control)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true"></a><span class="kw">print</span>(e)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true"></a><span class="co">#&gt; Final Results</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true"></a><span class="co">#&gt;    Covariate Subterm Term Number Central Estimate Standard Error 2-tail p-value</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true"></a><span class="co">#&gt;       &lt;char&gt;  &lt;char&gt;       &lt;int&gt;           &lt;char&gt;         &lt;char&gt;         &lt;char&gt;</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true"></a><span class="co">#&gt; 1:        t0    plin           0           -0.184          0.385          0.631</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true"></a><span class="co">#&gt; 2:    fac_e0  loglin           0            0.574          0.468          0.219</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true"></a><span class="co">#&gt; 3:    fac_e1  loglin           0           -1.035          1.009          0.305</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true"></a><span class="co">#&gt; Poisson Model Used</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true"></a><span class="co">#&gt; -2*Log-Likelihood: 20.891,  Deviation: 6.436,  AIC: 12.436,  BIC: 28.346</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true"></a><span class="co">#&gt; Iterations run: 10</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true"></a><span class="co">#&gt; maximum step size: 4.775e-06, maximum first derivative: 1.595e-06</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true"></a><span class="co">#&gt; Analysis did not converge, check convergence criteria or run further</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.076 seconds</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span></code></pre></div>
 </div>
 </div>
 

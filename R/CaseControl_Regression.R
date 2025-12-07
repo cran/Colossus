@@ -9,7 +9,7 @@
 #' @inheritParams R_template
 #'
 #' @return returns a list of the final results
-#' @export
+#' @noRd
 #' @family Case Control Wrapper Functions
 #' @examples
 #' library(data.table)
@@ -57,10 +57,10 @@ RunCaseControlRegression_Omnibus <- function(df, time1 = "%trunc%", time2 = "%tr
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
-        df <- setDT(df)
+        df <- setDT(df) # nocov
       },
-      error = function(e) {
-        df <- data.table(df)
+      error = function(e) { # nocov
+        df <- data.table(df) # nocov
       }
     )
   }
@@ -116,6 +116,15 @@ RunCaseControlRegression_Omnibus <- function(df, time1 = "%trunc%", time2 = "%tr
   #  }
   if (model_control$time_risk == TRUE) {
     if (model_control$strata == TRUE) {
+      if (!is.null(levels(df[[strat_col]]))) {
+        # The column is a factor, so we can convert to numbers
+        factor_lvl <- levels(df[[strat_col]])
+        df[[strat_col]] <- as.integer(factor(df[[strat_col]], levels = factor_lvl)) - 1
+      } else if (is(typeof(df[[strat_col]]), "character")) {
+        df[[strat_col]] <- factor(df[[strat_col]])
+        factor_lvl <- levels(df[[strat_col]])
+        df[[strat_col]] <- as.integer(factor(df[[strat_col]], levels = factor_lvl)) - 1
+      }
       dfend <- df[get(event0) == 1, ]
       uniq_end <- unlist(unique(dfend[, strat_col, with = FALSE]),
         use.names = FALSE
@@ -136,6 +145,15 @@ RunCaseControlRegression_Omnibus <- function(df, time1 = "%trunc%", time2 = "%tr
     }
   } else {
     if (model_control$strata == TRUE) {
+      if (!is.null(levels(df[[strat_col]]))) {
+        # The column is a factor, so we can convert to numbers
+        factor_lvl <- levels(df[[strat_col]])
+        df[[strat_col]] <- as.integer(factor(df[[strat_col]], levels = factor_lvl)) - 1
+      } else if (is(typeof(df[[strat_col]]), "character")) {
+        df[[strat_col]] <- factor(df[[strat_col]])
+        factor_lvl <- levels(df[[strat_col]])
+        df[[strat_col]] <- as.integer(factor(df[[strat_col]], levels = factor_lvl)) - 1
+      }
       dfend <- df[get(event0) == 1, ]
       uniq <- sort(unlist(unique(df[, strat_col, with = FALSE]),
         use.names = FALSE

@@ -78,10 +78,10 @@ res <- PoisRunJoint(formula_list, df, control = control)
 \seealso{
 Other Poisson Wrapper Functions: 
 \code{\link{EventAssignment.poisres}()},
+\code{\link{EventAssignment.poisresbound}()},
 \code{\link{LikelihoodBound.poisres}()},
 \code{\link{PoisRun}()},
 \code{\link{PoisRunMulti}()},
-\code{\link{Residual.poisres}()},
-\code{\link{RunPoissonRegression_Omnibus}()}
+\code{\link{Residual.poisres}()}
 }
 \concept{Poisson Wrapper Functions}

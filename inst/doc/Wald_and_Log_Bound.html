@@ -27,31 +27,46 @@ document.addEventListener('DOMContentLoaded', function(e) {
   }
 });
 </script>
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
+  }
+});
+</script>
 
 <style type="text/css">
-code{white-space: pre-wrap;}
-span.smallcaps{font-variant: small-caps;}
-span.underline{text-decoration: underline;}
-div.column{display: inline-block; vertical-align: top; width: 50%;}
-div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-ul.task-list{list-style: none;}
-</style>
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
 
 
 
 <style type="text/css">
-code {
-white-space: pre;
-}
-.sourceCode {
-overflow: visible;
-}
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
@@ -63,54 +78,55 @@ pre > code.sourceCode { white-space: pre-wrap; }
 pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
-{ counter-reset: source-line 0; }
+  { counter-reset: source-line 0; }
 pre.numberSource code > span
-{ position: relative; left: -4em; counter-increment: source-line; }
+  { position: relative; left: -4em; counter-increment: source-line; }
 pre.numberSource code > span > a:first-child::before
-{ content: counter(source-line);
-position: relative; left: -1em; text-align: right; vertical-align: baseline;
-border: none; display: inline-block;
--webkit-touch-callout: none; -webkit-user-select: none;
--khtml-user-select: none; -moz-user-select: none;
--ms-user-select: none; user-select: none;
-padding: 0 4px; width: 4em;
-color: #aaaaaa;
-}
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
 div.sourceCode
-{ }
+  {   }
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-code span.al { color: #ff0000; font-weight: bold; } 
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
-code span.at { color: #7d9029; } 
-code span.bn { color: #40a070; } 
-code span.bu { color: #008000; } 
-code span.cf { color: #007020; font-weight: bold; } 
-code span.ch { color: #4070a0; } 
-code span.cn { color: #880000; } 
-code span.co { color: #60a0b0; font-style: italic; } 
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
-code span.do { color: #ba2121; font-style: italic; } 
-code span.dt { color: #902000; } 
-code span.dv { color: #40a070; } 
-code span.er { color: #ff0000; font-weight: bold; } 
-code span.ex { } 
-code span.fl { color: #40a070; } 
-code span.fu { color: #06287e; } 
-code span.im { color: #008000; font-weight: bold; } 
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
-code span.kw { color: #007020; font-weight: bold; } 
-code span.op { color: #666666; } 
-code span.ot { color: #007020; } 
-code span.pp { color: #bc7a00; } 
-code span.sc { color: #4070a0; } 
-code span.ss { color: #bb6688; } 
-code span.st { color: #4070a0; } 
-code span.va { color: #19177c; } 
-code span.vs { color: #4070a0; } 
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
 </style>
 <script>
 // apply pandoc div.sourceCode style to pre.sourceCode instead
@@ -340,408 +356,284 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(Colossus)</span>
-<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(data.table)</span>
-<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">library</span>(survival)</span>
-<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">library</span>(Colossus)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="kw">library</span>(data.table)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a><span class="kw">library</span>(survival)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a><span class="kw">library</span>(dplyr)</span></code></pre></div>
 <div id="available-methods" class="section level2">
 <h2>Available Methods</h2>
-<p>Colossus supports two methods of calculating a confidence interval
-for model parameters for Cox proportional hazards models. The Wald
-method and a likelihood-based boundary method. This vignette will be
-focused on the differences and what issues may arise.</p>
+<p>Colossus supports two methods of calculating a confidence interval for model parameters for Cox proportional hazards models. The Wald method and a likelihood-based boundary method. This vignette will be focused on the differences and what issues may arise.</p>
 <div id="wald-method" class="section level3">
 <h3>Wald Method</h3>
-<p>When Colossus finishes a Cox regression, it returns both parameter
-estimates and standard errors. The simplest form of confidence interval
-is assuming a normal distribution with the parameter mean and deviation.
-The standard errors are calculated from the covariance matrix, which is
-calculated in line with the equation for the expected information matrix
-presented in the 32-bit Epicure manual. The covariance matrix is
-calculated using the inverse of the expected information matrix (<span class="math inline">\(I\)</span>). The derivation is outlined at the end
-of this vignette for clarity.</p>
-<p>For every event time (<span class="math inline">\(i\)</span>) there
-are a number of events (<span class="math inline">\(d_i\)</span>) and a
-list of subjects at risk (<span class="math inline">\(l \in
-R_i\)</span>). Every valid combination of subject and event time has a
-hazard ratio (<span class="math inline">\(r_{li}\)</span>) and a partial
-derivative of the hazard ratio with respect to each parameter (<span class="math inline">\(\beta\)</span>). This equation is used to compute
-the covariance matrix and standard errors returned by Colossus by
-default.</p>
+<p>When Colossus finishes a Cox regression, it returns both parameter estimates and standard errors. The simplest form of confidence interval is assuming a normal distribution with the parameter mean and deviation. The standard errors are calculated from the covariance matrix, which is calculated in line with the equation for the expected information matrix presented in the 32-bit Epicure manual. The covariance matrix is calculated using the inverse of the expected information matrix (<span class="math inline">\(I\)</span>). The derivation is outlined at the end of this vignette for clarity.</p>
+<p>For every event time (<span class="math inline">\(i\)</span>) there are a number of events (<span class="math inline">\(d_i\)</span>) and a list of subjects at risk (<span class="math inline">\(l \in R_i\)</span>). Every valid combination of subject and event time has a hazard ratio (<span class="math inline">\(r_{li}\)</span>) and a partial derivative of the hazard ratio with respect to each parameter (<span class="math inline">\(\beta\)</span>). This equation is used to compute the covariance matrix and standard errors returned by Colossus by default.</p>
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
-    I(\beta_\mu, \beta_\nu) = \sum_{i=1}^{N} \left ( d_i * \left[
-\sum_{l \in R_i} \frac{c_{li}^{\mu} c_{li}^{\nu} r_{li}}{E_i} -
-\frac{F_i^{\mu} F_i^{\nu}}{E_i^2} \right] \right )\\
-    c_{li}^{\mu} = \frac{b_{li}^{\mu}}{r_{li}}, \quad b_{li}^{\mu} =
-\frac{\partial r_{li}}{\partial \beta_{\mu}}, \quad E_{i} = \sum_{l \in
-R_i} r_{li}, \quad F_i^{\mu} = \sum_{l \in R_i} b_{li}^{\mu}
+    I(\beta_\mu, \beta_\nu) = \sum_{i=1}^{N} \left ( d_i * \left[ \sum_{l \in R_i} \frac{c_{li}^{\mu} c_{li}^{\nu} r_{li}}{E_i} - \frac{F_i^{\mu} F_i^{\nu}}{E_i^2} \right] \right )\\
+    c_{li}^{\mu} = \frac{b_{li}^{\mu}}{r_{li}}, \quad b_{li}^{\mu} = \frac{\partial r_{li}}{\partial \beta_{\mu}}, \quad E_{i} = \sum_{l \in R_i} r_{li}, \quad F_i^{\mu} = \sum_{l \in R_i} b_{li}^{\mu}
 \end{aligned}
 \]</span>
 </p>
-<p>This gives a symmetric parameter confidence interval which is often
-accurate for single-term log-linear models. However, this approximation
-is often inaccurate for models with linear effects, particularly if the
-confidence interval includes negative values. Because the Wald method
-approximates the likelihood confidence interval, there is no guarantee
-that the model is defined over the interval.</p>
+<p>This gives a symmetric parameter confidence interval which is often accurate for single-term log-linear models. However, this approximation is often inaccurate for models with linear effects, particularly if the confidence interval includes negative values. Because the Wald method approximates the likelihood confidence interval, there is no guarantee that the model is defined over the interval.</p>
 </div>
 <div id="likelihood-based-bound" class="section level3">
 <h3>Likelihood-Based Bound</h3>
-<p>The more exact solution is to directly solve for the boundary. The
-basic premise is that the model can be optimized with a single parameter
-(<span class="math inline">\(\beta\)</span>) fixed. Each value of <span class="math inline">\(\beta\)</span> has a corresponding maximum
-log-likelihood. The confidence interval is the range of values of <span class="math inline">\(\beta\)</span> such that the maximum
-log-likelihood is above a threshold, taken from the asymptotic <span class="math inline">\(\chi^2\)</span> distribution of the generalized
-likelihood ratio test. Colossus uses the Venzon-Moolgavkar algorithm to
-iteratively solve for the interval endpoints.</p>
-<p>There is one main issue that can arise from this method: this uses a
-Newton-Raphson algorithm, which may solve for local solutions instead of
-the global solution. Similar to the general Colossus regressions,
-limitations can be placed on step size to limit these effects. However,
-there is no analog to selecting multiple starting locations. This is the
-basis for ongoing work to code in an alternative that can more directly
-solve for the true optimum. Methods have been implemented to optimize
-multiple points and apply a bisection method instead of a
-derivative-based method.</p>
-<p>This method directly solves the confidence interval, which for linear
-cases may be non-symmetric or even not have upper or lower bounds.
-Linear models may be defined only above a parameter threshold. If the
-optimum value at that parameter threshold is above the <span class="math inline">\(\chi^2\)</span> threshold value, then the interval
-would not have a lower bound.</p>
+<p>The more exact solution is to directly solve for the boundary. The basic premise is that the model can be optimized with a single parameter (<span class="math inline">\(\beta\)</span>) fixed. Each value of <span class="math inline">\(\beta\)</span> has a corresponding maximum log-likelihood. The confidence interval is the range of values of <span class="math inline">\(\beta\)</span> such that the maximum log-likelihood is above a threshold, taken from the asymptotic <span class="math inline">\(\chi^2\)</span> distribution of the generalized likelihood ratio test. Colossus uses the Venzon-Moolgavkar algorithm to iteratively solve for the interval endpoints.</p>
+<p>There is one main issue that can arise from this method: this uses a Newton-Raphson algorithm, which may solve for local solutions instead of the global solution. Similar to the general Colossus regressions, limitations can be placed on step size to limit these effects. However, there is no analog to selecting multiple starting locations. This is the basis for ongoing work to code in an alternative that can more directly solve for the true optimum. Methods have been implemented to optimize multiple points and apply a bisection method instead of a derivative-based method.</p>
+<p>This method directly solves the confidence interval, which for linear cases may be non-symmetric or even not have upper or lower bounds. Linear models may be defined only above a parameter threshold. If the optimum value at that parameter threshold is above the <span class="math inline">\(\chi^2\)</span> threshold value, then the interval would not have a lower bound.</p>
 </div>
 <div id="example-and-comparison" class="section level3">
 <h3>Example and Comparison</h3>
-<p>For the sake of comparison, we will consider an analysis of the
-capacitor data available in the survival package. Consider the two
-regressions, one fully exponential and one with a linear effect. Both
-regressions converge with nearly identical scores.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">data</span>(reliability, <span class="at">package =</span> <span class="st">&quot;survival&quot;</span>)</span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>capacitor <span class="sc">%&gt;%</span> <span class="fu">setDT</span>()</span>
-<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">copy</span>(capacitor)</span>
-<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a></span>
-<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>df<span class="sc">$</span>voltage <span class="ot">&lt;-</span> (df<span class="sc">$</span>voltage <span class="sc">-</span> <span class="dv">200</span>) <span class="sc">/</span> <span class="dv">150</span></span>
-<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>df<span class="sc">$</span>temperature <span class="ot">&lt;-</span> (df<span class="sc">$</span>temperature <span class="sc">-</span> <span class="dv">170</span>) <span class="sc">/</span> <span class="dv">10</span></span>
-<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>df<span class="sc">$</span>time <span class="ot">&lt;-</span> (df<span class="sc">$</span>time <span class="sc">-</span> <span class="dv">216</span>) <span class="sc">/</span> (<span class="dv">1105</span> <span class="sc">-</span> <span class="dv">216</span>)</span>
-<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a></span>
-<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>control <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">&quot;Ncores&quot;</span> <span class="ot">=</span> <span class="dv">1</span>, <span class="st">&quot;maxiter&quot;</span> <span class="ot">=</span> <span class="dv">100</span>, <span class="st">&quot;verbose&quot;</span> <span class="ot">=</span> <span class="dv">2</span>)</span>
-<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a></span>
-<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>a_n <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.01</span>, <span class="fl">0.01</span>)</span>
-<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a></span>
-<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a>e1 <span class="ot">&lt;-</span> <span class="fu">CoxRun</span>(<span class="fu">Cox</span>(time, status) <span class="sc">~</span> <span class="fu">loglinear</span>(temperature, voltage, <span class="dv">0</span>), df, <span class="at">a_n =</span> a_n, <span class="at">control =</span> control)</span>
-<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a><span class="fu">print</span>(e1, <span class="dv">5</span>)</span>
-<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
-<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a><span class="co">#&gt; Final Results</span></span>
-<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a><span class="co">#&gt;      Covariate Central Estimate Standard Error 2-tail p-value</span></span>
-<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a><span class="co">#&gt;         &lt;char&gt;            &lt;num&gt;          &lt;num&gt;          &lt;num&gt;</span></span>
-<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a><span class="co">#&gt; 1: temperature        0.7599481      0.3964438    0.055249033</span></span>
-<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a><span class="co">#&gt; 2:     voltage        1.9883903      0.6063087    0.001039907</span></span>
-<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a><span class="co">#&gt; Cox Model Used</span></span>
-<span id="cb2-23"><a href="#cb2-23" tabindex="-1"></a><span class="co">#&gt; -2*Log-Likelihood: 210.77792,  AIC: 214.77792</span></span>
-<span id="cb2-24"><a href="#cb2-24" tabindex="-1"></a><span class="co">#&gt; Iterations run: 8</span></span>
-<span id="cb2-25"><a href="#cb2-25" tabindex="-1"></a><span class="co">#&gt; maximum step size: 5.90475e-05, maximum first derivative: 5.22560e-05</span></span>
-<span id="cb2-26"><a href="#cb2-26" tabindex="-1"></a><span class="co">#&gt; Analysis converged</span></span>
-<span id="cb2-27"><a href="#cb2-27" tabindex="-1"></a><span class="co">#&gt; Run finished in 0.01677 seconds</span></span>
-<span id="cb2-28"><a href="#cb2-28" tabindex="-1"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
-<span id="cb2-29"><a href="#cb2-29" tabindex="-1"></a></span>
-<span id="cb2-30"><a href="#cb2-30" tabindex="-1"></a>e2 <span class="ot">&lt;-</span> <span class="fu">CoxRun</span>(<span class="fu">Cox</span>(time, status) <span class="sc">~</span> <span class="fu">loglinear</span>(temperature, <span class="dv">0</span>) <span class="sc">+</span> <span class="fu">plinear</span>(voltage, <span class="dv">0</span>), df, <span class="at">a_n =</span> a_n, <span class="at">control =</span> control)</span>
-<span id="cb2-31"><a href="#cb2-31" tabindex="-1"></a><span class="fu">print</span>(e2, <span class="dv">5</span>)</span>
-<span id="cb2-32"><a href="#cb2-32" tabindex="-1"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
-<span id="cb2-33"><a href="#cb2-33" tabindex="-1"></a><span class="co">#&gt; Final Results</span></span>
-<span id="cb2-34"><a href="#cb2-34" tabindex="-1"></a><span class="co">#&gt;      Covariate Subterm Term Number Central Estimate Standard Error</span></span>
-<span id="cb2-35"><a href="#cb2-35" tabindex="-1"></a><span class="co">#&gt;         &lt;char&gt;  &lt;char&gt;       &lt;int&gt;            &lt;num&gt;          &lt;num&gt;</span></span>
-<span id="cb2-36"><a href="#cb2-36" tabindex="-1"></a><span class="co">#&gt; 1: temperature  loglin           0        0.9503468      0.4313006</span></span>
-<span id="cb2-37"><a href="#cb2-37" tabindex="-1"></a><span class="co">#&gt; 2:     voltage    plin           0        8.8171973      6.1905798</span></span>
-<span id="cb2-38"><a href="#cb2-38" tabindex="-1"></a><span class="co">#&gt;    2-tail p-value</span></span>
-<span id="cb2-39"><a href="#cb2-39" tabindex="-1"></a><span class="co">#&gt;             &lt;num&gt;</span></span>
-<span id="cb2-40"><a href="#cb2-40" tabindex="-1"></a><span class="co">#&gt; 1:     0.02756343</span></span>
-<span id="cb2-41"><a href="#cb2-41" tabindex="-1"></a><span class="co">#&gt; 2:     0.15436177</span></span>
-<span id="cb2-42"><a href="#cb2-42" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb2-43"><a href="#cb2-43" tabindex="-1"></a><span class="co">#&gt; Cox Model Used</span></span>
-<span id="cb2-44"><a href="#cb2-44" tabindex="-1"></a><span class="co">#&gt; -2*Log-Likelihood: 208.49028,  AIC: 212.49028</span></span>
-<span id="cb2-45"><a href="#cb2-45" tabindex="-1"></a><span class="co">#&gt; Iterations run: 13</span></span>
-<span id="cb2-46"><a href="#cb2-46" tabindex="-1"></a><span class="co">#&gt; maximum step size: 2.57874e-03, maximum first derivative: 3.62470e-05</span></span>
-<span id="cb2-47"><a href="#cb2-47" tabindex="-1"></a><span class="co">#&gt; Analysis converged</span></span>
-<span id="cb2-48"><a href="#cb2-48" tabindex="-1"></a><span class="co">#&gt; Run finished in 0.01413 seconds</span></span>
-<span id="cb2-49"><a href="#cb2-49" tabindex="-1"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span></code></pre></div>
-<p>Next, suppose we were interested in the confidence intervals. Suppose
-we want 95% confidence intervals for both the Wald and likelihood-based
-boundaries and for both parameters in each model. Let us start with the
-fully exponential model. The Wald boundary is estimated using the
-central estimates and standard deviations. The Likelihood boundary is
-solved using the “log_bound” option under the model control list. The
-parameter number needs to be provided (indexed starting at zero) and an
-alpha level needs to be provided. Overall, the likelihood boundaries
-were all solved with scores within a narrow margin of the threshold.
-However, the boundaries are not the same. The boundaries for temperature
-are (-0.017, 1.537) and (-0.01, 1.560), and the boundaries for voltage
-are (0.800, 3.177) and (0.841, 3.242). The two boundaries are off on a
-scale of less than 0.1.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>names <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;temperature&quot;</span>, <span class="st">&quot;voltage&quot;</span>)</span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>tform <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;loglin&quot;</span>, <span class="st">&quot;loglin&quot;</span>)</span>
-<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>ci_1 <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  e1<span class="sc">$</span>beta_0[<span class="dv">1</span>] <span class="sc">-</span> <span class="fl">1.96</span> <span class="sc">*</span> e1<span class="sc">$</span>Standard_Deviation[<span class="dv">1</span>],</span>
-<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>  e1<span class="sc">$</span>beta_0[<span class="dv">1</span>] <span class="sc">+</span> <span class="fl">1.96</span> <span class="sc">*</span> e1<span class="sc">$</span>Standard_Deviation[<span class="dv">1</span>]</span>
-<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>)</span>
-<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>ci_2 <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>  e1<span class="sc">$</span>beta_0[<span class="dv">2</span>] <span class="sc">-</span> <span class="fl">1.96</span> <span class="sc">*</span> e1<span class="sc">$</span>Standard_Deviation[<span class="dv">2</span>],</span>
-<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>  e1<span class="sc">$</span>beta_0[<span class="dv">2</span>] <span class="sc">+</span> <span class="fl">1.96</span> <span class="sc">*</span> e1<span class="sc">$</span>Standard_Deviation[<span class="dv">2</span>]</span>
-<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>)</span>
-<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a></span>
-<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a></span>
-<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a>curve_control <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a>  <span class="st">&quot;maxstep&quot;</span> <span class="ot">=</span> <span class="dv">100</span>,</span>
-<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a>  <span class="st">&quot;alpha&quot;</span> <span class="ot">=</span> <span class="fl">0.05</span>,</span>
-<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a>  <span class="st">&quot;para_number&quot;</span> <span class="ot">=</span> <span class="dv">1</span>, <span class="st">&quot;manual&quot;</span> <span class="ot">=</span> <span class="cn">TRUE</span></span>
-<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a>)</span>
-<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a>e <span class="ot">&lt;-</span> <span class="fu">LikelihoodBound</span>(e1, df, curve_control, <span class="at">control =</span> control)</span>
-<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a><span class="fu">print</span>(<span class="st">&quot;|------------------- Wald Estimate -------------------|&quot;</span>)</span>
-<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a><span class="co">#&gt; [1] &quot;|------------------- Wald Estimate -------------------|&quot;</span></span>
-<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a><span class="fu">print</span>(ci_1)</span>
-<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a><span class="co">#&gt; [1] -0.01708172  1.53697802</span></span>
-<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a><span class="fu">print</span>(e, <span class="dv">5</span>)</span>
-<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
-<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a><span class="co">#&gt; Likelihood Boundary Results</span></span>
-<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a><span class="co">#&gt; Solving for the boundary of element: 1</span></span>
-<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a><span class="co">#&gt; Applied to column: &#39;temperature&#39;</span></span>
-<span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a><span class="co">#&gt; Subterm: loglin</span></span>
-<span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a><span class="co">#&gt; Term number: 0</span></span>
-<span id="cb3-30"><a href="#cb3-30" tabindex="-1"></a><span class="co">#&gt; Lower limit converged to at -0.0099 at a score of -107.30968 with of goal of -107.30969</span></span>
-<span id="cb3-31"><a href="#cb3-31" tabindex="-1"></a><span class="co">#&gt; Central estimate was 0.75995</span></span>
-<span id="cb3-32"><a href="#cb3-32" tabindex="-1"></a><span class="co">#&gt; Upper limit converged to at 1.55991 at a score of -107.30968 with of goal of -107.30969</span></span>
-<span id="cb3-33"><a href="#cb3-33" tabindex="-1"></a><span class="co">#&gt; Run finished in 0.00834 seconds</span></span>
-<span id="cb3-34"><a href="#cb3-34" tabindex="-1"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
-<span id="cb3-35"><a href="#cb3-35" tabindex="-1"></a></span>
-<span id="cb3-36"><a href="#cb3-36" tabindex="-1"></a>curve_control <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb3-37"><a href="#cb3-37" tabindex="-1"></a>  <span class="st">&quot;maxstep&quot;</span> <span class="ot">=</span> <span class="dv">100</span>,</span>
-<span id="cb3-38"><a href="#cb3-38" tabindex="-1"></a>  <span class="st">&quot;alpha&quot;</span> <span class="ot">=</span> <span class="fl">0.05</span>,</span>
-<span id="cb3-39"><a href="#cb3-39" tabindex="-1"></a>  <span class="st">&quot;para_number&quot;</span> <span class="ot">=</span> <span class="dv">2</span>, <span class="st">&quot;manual&quot;</span> <span class="ot">=</span> <span class="cn">TRUE</span></span>
-<span id="cb3-40"><a href="#cb3-40" tabindex="-1"></a>)</span>
-<span id="cb3-41"><a href="#cb3-41" tabindex="-1"></a>e <span class="ot">&lt;-</span> <span class="fu">LikelihoodBound</span>(e1, df, curve_control, <span class="at">control =</span> control)</span>
-<span id="cb3-42"><a href="#cb3-42" tabindex="-1"></a><span class="fu">print</span>(<span class="st">&quot;|------------------- Likelihood Bound Estimate -------------------|&quot;</span>)</span>
-<span id="cb3-43"><a href="#cb3-43" tabindex="-1"></a><span class="co">#&gt; [1] &quot;|------------------- Likelihood Bound Estimate -------------------|&quot;</span></span>
-<span id="cb3-44"><a href="#cb3-44" tabindex="-1"></a><span class="fu">print</span>(ci_2)</span>
-<span id="cb3-45"><a href="#cb3-45" tabindex="-1"></a><span class="co">#&gt; [1] 0.8000252 3.1767554</span></span>
-<span id="cb3-46"><a href="#cb3-46" tabindex="-1"></a><span class="fu">print</span>(e, <span class="dv">5</span>)</span>
-<span id="cb3-47"><a href="#cb3-47" tabindex="-1"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
-<span id="cb3-48"><a href="#cb3-48" tabindex="-1"></a><span class="co">#&gt; Likelihood Boundary Results</span></span>
-<span id="cb3-49"><a href="#cb3-49" tabindex="-1"></a><span class="co">#&gt; Solving for the boundary of element: 2</span></span>
-<span id="cb3-50"><a href="#cb3-50" tabindex="-1"></a><span class="co">#&gt; Applied to column: &#39;voltage&#39;</span></span>
-<span id="cb3-51"><a href="#cb3-51" tabindex="-1"></a><span class="co">#&gt; Subterm: loglin</span></span>
-<span id="cb3-52"><a href="#cb3-52" tabindex="-1"></a><span class="co">#&gt; Term number: 0</span></span>
-<span id="cb3-53"><a href="#cb3-53" tabindex="-1"></a><span class="co">#&gt; Lower limit converged to at 0.84124 at a score of -107.30968 with of goal of -107.30969</span></span>
-<span id="cb3-54"><a href="#cb3-54" tabindex="-1"></a><span class="co">#&gt; Central estimate was 1.98839</span></span>
-<span id="cb3-55"><a href="#cb3-55" tabindex="-1"></a><span class="co">#&gt; Upper limit converged to at 3.24203 at a score of -107.30968 with of goal of -107.30969</span></span>
-<span id="cb3-56"><a href="#cb3-56" tabindex="-1"></a><span class="co">#&gt; Run finished in 0.00867 seconds</span></span>
-<span id="cb3-57"><a href="#cb3-57" tabindex="-1"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span></code></pre></div>
-<p>Next, we analyze a model with a linear effect. We would expect the
-predictions to be further off. The boundaries for temperature are
-(-0.523, 2.800) and (-0.010, 3.758), and the boundaries for voltage are
-(0.800, 3.177) and (0.841, 3.242). The estimates for the voltage
-boundary are the same, but the estimates for the temperature boundary
-are much further off.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>ci_1 <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>  e2<span class="sc">$</span>beta_0[<span class="dv">1</span>] <span class="sc">-</span> <span class="fl">1.96</span> <span class="sc">*</span> e2<span class="sc">$</span>Standard_Deviation[<span class="dv">1</span>],</span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  e2<span class="sc">$</span>beta_0[<span class="dv">1</span>] <span class="sc">+</span> <span class="fl">1.96</span> <span class="sc">*</span> e2<span class="sc">$</span>Standard_Deviation[<span class="dv">1</span>]</span>
-<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>)</span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>ci_2 <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>  e2<span class="sc">$</span>beta_0[<span class="dv">2</span>] <span class="sc">-</span> <span class="fl">1.96</span> <span class="sc">*</span> e2<span class="sc">$</span>Standard_Deviation[<span class="dv">2</span>],</span>
-<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>  e2<span class="sc">$</span>beta_0[<span class="dv">2</span>] <span class="sc">+</span> <span class="fl">1.96</span> <span class="sc">*</span> e2<span class="sc">$</span>Standard_Deviation[<span class="dv">2</span>]</span>
-<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>)</span>
-<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a></span>
-<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>curve_control <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>  <span class="st">&quot;maxstep&quot;</span> <span class="ot">=</span> <span class="dv">100</span>,</span>
-<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a>  <span class="st">&quot;alpha&quot;</span> <span class="ot">=</span> <span class="fl">0.05</span>,</span>
-<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a>  <span class="st">&quot;para_number&quot;</span> <span class="ot">=</span> <span class="dv">1</span>, <span class="st">&quot;manual&quot;</span> <span class="ot">=</span> <span class="cn">TRUE</span></span>
-<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a>)</span>
-<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a>e <span class="ot">&lt;-</span> <span class="fu">LikelihoodBound</span>(e2, df, curve_control, <span class="at">control =</span> control)</span>
-<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="fu">print</span>(<span class="st">&quot;|------------------- Wald Estimate -------------------|&quot;</span>)</span>
-<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="co">#&gt; [1] &quot;|------------------- Wald Estimate -------------------|&quot;</span></span>
-<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="fu">print</span>(ci_1)</span>
-<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="co">#&gt; [1] 0.1049977 1.7956959</span></span>
-<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a><span class="fu">print</span>(e, <span class="dv">5</span>)</span>
-<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
-<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a><span class="co">#&gt; Likelihood Boundary Results</span></span>
-<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a><span class="co">#&gt; Solving for the boundary of element: 1</span></span>
-<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a><span class="co">#&gt; Applied to column: &#39;temperature&#39;</span></span>
-<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a><span class="co">#&gt; Subterm: loglin</span></span>
-<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a><span class="co">#&gt; Term number: 0</span></span>
-<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a><span class="co">#&gt; Lower limit converged to at 0.12897 at a score of -106.16586 with of goal of -106.16587</span></span>
-<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a><span class="co">#&gt; Central estimate was 0.95035</span></span>
-<span id="cb4-29"><a href="#cb4-29" tabindex="-1"></a><span class="co">#&gt; Upper limit converged to at 1.8401 at a score of -106.16587 with of goal of -106.16587</span></span>
-<span id="cb4-30"><a href="#cb4-30" tabindex="-1"></a><span class="co">#&gt; Run finished in 0.00908 seconds</span></span>
-<span id="cb4-31"><a href="#cb4-31" tabindex="-1"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
-<span id="cb4-32"><a href="#cb4-32" tabindex="-1"></a></span>
-<span id="cb4-33"><a href="#cb4-33" tabindex="-1"></a>a_n <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">1.138152</span>, <span class="fl">1.988403</span>)</span>
-<span id="cb4-34"><a href="#cb4-34" tabindex="-1"></a>curve_control <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb4-35"><a href="#cb4-35" tabindex="-1"></a>  <span class="st">&quot;maxstep&quot;</span> <span class="ot">=</span> <span class="dv">100</span>,</span>
-<span id="cb4-36"><a href="#cb4-36" tabindex="-1"></a>  <span class="st">&quot;alpha&quot;</span> <span class="ot">=</span> <span class="fl">0.05</span>,</span>
-<span id="cb4-37"><a href="#cb4-37" tabindex="-1"></a>  <span class="st">&quot;para_number&quot;</span> <span class="ot">=</span> <span class="dv">2</span>, <span class="st">&quot;manual&quot;</span> <span class="ot">=</span> <span class="cn">TRUE</span></span>
-<span id="cb4-38"><a href="#cb4-38" tabindex="-1"></a>)</span>
-<span id="cb4-39"><a href="#cb4-39" tabindex="-1"></a>e <span class="ot">&lt;-</span> <span class="fu">LikelihoodBound</span>(e2, df, curve_control, <span class="at">control =</span> control)</span>
-<span id="cb4-40"><a href="#cb4-40" tabindex="-1"></a><span class="fu">print</span>(<span class="st">&quot;|------------------- Wald Estimate -------------------|&quot;</span>)</span>
-<span id="cb4-41"><a href="#cb4-41" tabindex="-1"></a><span class="co">#&gt; [1] &quot;|------------------- Wald Estimate -------------------|&quot;</span></span>
-<span id="cb4-42"><a href="#cb4-42" tabindex="-1"></a><span class="fu">print</span>(ci_2)</span>
-<span id="cb4-43"><a href="#cb4-43" tabindex="-1"></a><span class="co">#&gt; [1] -3.316339 20.950734</span></span>
-<span id="cb4-44"><a href="#cb4-44" tabindex="-1"></a><span class="fu">print</span>(e, <span class="dv">5</span>)</span>
-<span id="cb4-45"><a href="#cb4-45" tabindex="-1"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
-<span id="cb4-46"><a href="#cb4-46" tabindex="-1"></a><span class="co">#&gt; Likelihood Boundary Results</span></span>
-<span id="cb4-47"><a href="#cb4-47" tabindex="-1"></a><span class="co">#&gt; Solving for the boundary of element: 2</span></span>
-<span id="cb4-48"><a href="#cb4-48" tabindex="-1"></a><span class="co">#&gt; Applied to column: &#39;voltage&#39;</span></span>
-<span id="cb4-49"><a href="#cb4-49" tabindex="-1"></a><span class="co">#&gt; Subterm: plin</span></span>
-<span id="cb4-50"><a href="#cb4-50" tabindex="-1"></a><span class="co">#&gt; Term number: 0</span></span>
-<span id="cb4-51"><a href="#cb4-51" tabindex="-1"></a><span class="co">#&gt; Lower limit converged to at 1.97087 at a score of -106.16585 with of goal of -106.16587</span></span>
-<span id="cb4-52"><a href="#cb4-52" tabindex="-1"></a><span class="co">#&gt; Central estimate was 8.8172</span></span>
-<span id="cb4-53"><a href="#cb4-53" tabindex="-1"></a><span class="co">#&gt; Upper limit converged to at 34.47154 at a score of -106.16587 with of goal of -106.16587</span></span>
-<span id="cb4-54"><a href="#cb4-54" tabindex="-1"></a><span class="co">#&gt; Run finished in 0.01025 seconds</span></span>
-<span id="cb4-55"><a href="#cb4-55" tabindex="-1"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span></code></pre></div>
+<p>For the sake of comparison, we will consider an analysis of the capacitor data available in the survival package. Consider the two regressions, one fully exponential and one with a linear effect. Both regressions converge with nearly identical scores.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="kw">data</span>(reliability, <span class="dt">package =</span> <span class="st">&quot;survival&quot;</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>capacitor <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">setDT</span>()</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>df &lt;-<span class="st"> </span><span class="kw">copy</span>(capacitor)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>df<span class="op">$</span>voltage &lt;-<span class="st"> </span>(df<span class="op">$</span>voltage <span class="op">-</span><span class="st"> </span><span class="dv">200</span>) <span class="op">/</span><span class="st"> </span><span class="dv">150</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a>df<span class="op">$</span>temperature &lt;-<span class="st"> </span>(df<span class="op">$</span>temperature <span class="op">-</span><span class="st"> </span><span class="dv">170</span>) <span class="op">/</span><span class="st"> </span><span class="dv">10</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a>df<span class="op">$</span>time &lt;-<span class="st"> </span>(df<span class="op">$</span>time <span class="op">-</span><span class="st"> </span><span class="dv">216</span>) <span class="op">/</span><span class="st"> </span>(<span class="dv">1105</span> <span class="op">-</span><span class="st"> </span><span class="dv">216</span>)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true"></a>control &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="st">&quot;Ncores&quot;</span> =<span class="st"> </span><span class="dv">1</span>, <span class="st">&quot;maxiter&quot;</span> =<span class="st"> </span><span class="dv">100</span>, <span class="st">&quot;verbose&quot;</span> =<span class="st"> </span><span class="dv">2</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true"></a>a_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.01</span>, <span class="fl">0.01</span>)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true"></a>e1 &lt;-<span class="st"> </span><span class="kw">CoxRun</span>(<span class="kw">Cox</span>(time, status) <span class="op">~</span><span class="st"> </span><span class="kw">loglinear</span>(temperature, voltage, <span class="dv">0</span>), df, <span class="dt">a_n =</span> a_n, <span class="dt">control =</span> control)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true"></a><span class="kw">print</span>(e1, <span class="dv">5</span>)</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true"></a><span class="co">#&gt; Final Results</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true"></a><span class="co">#&gt;      Covariate Central Estimate Standard Error 2-tail p-value</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true"></a><span class="co">#&gt;         &lt;char&gt;           &lt;char&gt;         &lt;char&gt;         &lt;char&gt;</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true"></a><span class="co">#&gt; 1: temperature          0.75995        0.39644      0.0552490</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true"></a><span class="co">#&gt; 2:     voltage          1.98839        0.60631      0.0010399</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true"></a><span class="co">#&gt; Cox Model Used</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true"></a><span class="co">#&gt; -2*Log-Likelihood: 210.77792,  AIC: 214.77792</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true"></a><span class="co">#&gt; Iterations run: 8</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true"></a><span class="co">#&gt; maximum step size: 5.90475e-05, maximum first derivative: 5.22560e-05</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true"></a><span class="co">#&gt; Analysis converged</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.15538 seconds</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true"></a></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true"></a>e2 &lt;-<span class="st"> </span><span class="kw">CoxRun</span>(<span class="kw">Cox</span>(time, status) <span class="op">~</span><span class="st"> </span><span class="kw">loglinear</span>(temperature, <span class="dv">0</span>) <span class="op">+</span><span class="st"> </span><span class="kw">plinear</span>(voltage, <span class="dv">0</span>), df, <span class="dt">a_n =</span> a_n, <span class="dt">control =</span> control)</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true"></a><span class="kw">print</span>(e2, <span class="dv">5</span>)</span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true"></a><span class="co">#&gt; Final Results</span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true"></a><span class="co">#&gt;      Covariate Subterm Term Number Central Estimate Standard Error</span></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true"></a><span class="co">#&gt;         &lt;char&gt;  &lt;char&gt;       &lt;int&gt;           &lt;char&gt;         &lt;char&gt;</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true"></a><span class="co">#&gt; 1: temperature  loglin           0          0.95035         0.4313</span></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true"></a><span class="co">#&gt; 2:     voltage    plin           0          8.81720         6.1906</span></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true"></a><span class="co">#&gt;    2-tail p-value</span></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true"></a><span class="co">#&gt;            &lt;char&gt;</span></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true"></a><span class="co">#&gt; 1:       0.027563</span></span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true"></a><span class="co">#&gt; 2:       0.154362</span></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true"></a><span class="co">#&gt; Cox Model Used</span></span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true"></a><span class="co">#&gt; -2*Log-Likelihood: 208.49028,  AIC: 212.49028</span></span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true"></a><span class="co">#&gt; Iterations run: 13</span></span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true"></a><span class="co">#&gt; maximum step size: 2.57874e-03, maximum first derivative: 3.62470e-05</span></span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true"></a><span class="co">#&gt; Analysis converged</span></span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.10699 seconds</span></span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span></code></pre></div>
+<p>Next, suppose we were interested in the confidence intervals. Suppose we want 95% confidence intervals for both the Wald and likelihood-based boundaries and for both parameters in each model. Let us start with the fully exponential model. The Wald boundary is estimated using the central estimates and standard deviations. The Likelihood boundary is solved using the “log_bound” option under the model control list. The parameter number needs to be provided (indexed starting at zero) and an alpha level needs to be provided. Overall, the likelihood boundaries were all solved with scores within a narrow margin of the threshold. However, the boundaries are not the same. The boundaries for temperature are (-0.017, 1.537) and (-0.01, 1.560), and the boundaries for voltage are (0.800, 3.177) and (0.841, 3.242). The two boundaries are off on a scale of less than 0.1.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>names &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;temperature&quot;</span>, <span class="st">&quot;voltage&quot;</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>tform &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;loglin&quot;</span>, <span class="st">&quot;loglin&quot;</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>ci_<span class="dv">1</span> &lt;-<span class="st"> </span><span class="kw">c</span>(</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a>  e1<span class="op">$</span>beta_<span class="dv">0</span>[<span class="dv">1</span>] <span class="op">-</span><span class="st"> </span><span class="fl">1.96</span> <span class="op">*</span><span class="st"> </span>e1<span class="op">$</span>Standard_Deviation[<span class="dv">1</span>],</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true"></a>  e1<span class="op">$</span>beta_<span class="dv">0</span>[<span class="dv">1</span>] <span class="op">+</span><span class="st"> </span><span class="fl">1.96</span> <span class="op">*</span><span class="st"> </span>e1<span class="op">$</span>Standard_Deviation[<span class="dv">1</span>]</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true"></a>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true"></a>ci_<span class="dv">2</span> &lt;-<span class="st"> </span><span class="kw">c</span>(</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true"></a>  e1<span class="op">$</span>beta_<span class="dv">0</span>[<span class="dv">2</span>] <span class="op">-</span><span class="st"> </span><span class="fl">1.96</span> <span class="op">*</span><span class="st"> </span>e1<span class="op">$</span>Standard_Deviation[<span class="dv">2</span>],</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true"></a>  e1<span class="op">$</span>beta_<span class="dv">0</span>[<span class="dv">2</span>] <span class="op">+</span><span class="st"> </span><span class="fl">1.96</span> <span class="op">*</span><span class="st"> </span>e1<span class="op">$</span>Standard_Deviation[<span class="dv">2</span>]</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true"></a>)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true"></a>curve_control &lt;-<span class="st"> </span><span class="kw">list</span>(</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true"></a>  <span class="st">&quot;maxstep&quot;</span> =<span class="st"> </span><span class="dv">100</span>,</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true"></a>  <span class="st">&quot;alpha&quot;</span> =<span class="st"> </span><span class="fl">0.05</span>,</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true"></a>  <span class="st">&quot;para_number&quot;</span> =<span class="st"> </span><span class="dv">1</span>, <span class="st">&quot;manual&quot;</span> =<span class="st"> </span><span class="ot">TRUE</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true"></a>)</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">LikelihoodBound</span>(e1, df, curve_control, <span class="dt">control =</span> control)</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true"></a><span class="co">#&gt; Warning in RunCoxRegression_Omnibus(df, time1 = time1, time2 = time2, event0 =</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true"></a><span class="co">#&gt; event0, : Warning: Basic loglinear model used, but multiplicative model not</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true"></a><span class="co">#&gt; used. Modelform corrected</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true"></a><span class="kw">print</span>(<span class="st">&quot;|------------------- Wald Estimate -------------------|&quot;</span>)</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;|------------------- Wald Estimate -------------------|&quot;</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true"></a><span class="kw">print</span>(ci_<span class="dv">1</span>)</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true"></a><span class="co">#&gt; [1] -0.01708172  1.53697802</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true"></a><span class="kw">print</span>(e, <span class="dv">5</span>)</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true"></a><span class="co">#&gt; Likelihood Boundary Results</span></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true"></a><span class="co">#&gt; Solving for the boundary of element: 1</span></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true"></a><span class="co">#&gt; Applied to column: &#39;temperature&#39;</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true"></a><span class="co">#&gt; Subterm: loglin</span></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true"></a><span class="co">#&gt; Term number: 0</span></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true"></a><span class="co">#&gt; Lower limit converged to at -0.0098967 at a score of -107.30968 with of goal of -107.30969</span></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true"></a><span class="co">#&gt; Central estimate was 0.75995</span></span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true"></a><span class="co">#&gt; Upper limit converged to at 1.5599 at a score of -107.30968 with of goal of -107.30969</span></span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.05017 seconds</span></span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true"></a></span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true"></a>curve_control &lt;-<span class="st"> </span><span class="kw">list</span>(</span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true"></a>  <span class="st">&quot;maxstep&quot;</span> =<span class="st"> </span><span class="dv">100</span>,</span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true"></a>  <span class="st">&quot;alpha&quot;</span> =<span class="st"> </span><span class="fl">0.05</span>,</span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true"></a>  <span class="st">&quot;para_number&quot;</span> =<span class="st"> </span><span class="dv">2</span>, <span class="st">&quot;manual&quot;</span> =<span class="st"> </span><span class="ot">TRUE</span></span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true"></a>)</span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">LikelihoodBound</span>(e1, df, curve_control, <span class="dt">control =</span> control)</span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true"></a><span class="co">#&gt; Warning in RunCoxRegression_Omnibus(df, time1 = time1, time2 = time2, event0 =</span></span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true"></a><span class="co">#&gt; event0, : Warning: Basic loglinear model used, but multiplicative model not</span></span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true"></a><span class="co">#&gt; used. Modelform corrected</span></span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true"></a><span class="kw">print</span>(<span class="st">&quot;|------------------- Likelihood Bound Estimate -------------------|&quot;</span>)</span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;|------------------- Likelihood Bound Estimate -------------------|&quot;</span></span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true"></a><span class="kw">print</span>(ci_<span class="dv">2</span>)</span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true"></a><span class="co">#&gt; [1] 0.8000252 3.1767554</span></span>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true"></a><span class="kw">print</span>(e, <span class="dv">5</span>)</span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true"></a><span class="co">#&gt; Likelihood Boundary Results</span></span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true"></a><span class="co">#&gt; Solving for the boundary of element: 2</span></span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true"></a><span class="co">#&gt; Applied to column: &#39;voltage&#39;</span></span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true"></a><span class="co">#&gt; Subterm: loglin</span></span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true"></a><span class="co">#&gt; Term number: 0</span></span>
+<span id="cb3-59"><a href="#cb3-59" aria-hidden="true"></a><span class="co">#&gt; Lower limit converged to at 0.84124 at a score of -107.30968 with of goal of -107.30969</span></span>
+<span id="cb3-60"><a href="#cb3-60" aria-hidden="true"></a><span class="co">#&gt; Central estimate was 1.9884</span></span>
+<span id="cb3-61"><a href="#cb3-61" aria-hidden="true"></a><span class="co">#&gt; Upper limit converged to at 3.242 at a score of -107.30968 with of goal of -107.30969</span></span>
+<span id="cb3-62"><a href="#cb3-62" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.02584 seconds</span></span>
+<span id="cb3-63"><a href="#cb3-63" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span></code></pre></div>
+<p>Next, we analyze a model with a linear effect. We would expect the predictions to be further off. The boundaries for temperature are (-0.523, 2.800) and (-0.010, 3.758), and the boundaries for voltage are (0.800, 3.177) and (0.841, 3.242). The estimates for the voltage boundary are the same, but the estimates for the temperature boundary are much further off.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a>ci_<span class="dv">1</span> &lt;-<span class="st"> </span><span class="kw">c</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a>  e2<span class="op">$</span>beta_<span class="dv">0</span>[<span class="dv">1</span>] <span class="op">-</span><span class="st"> </span><span class="fl">1.96</span> <span class="op">*</span><span class="st"> </span>e2<span class="op">$</span>Standard_Deviation[<span class="dv">1</span>],</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a>  e2<span class="op">$</span>beta_<span class="dv">0</span>[<span class="dv">1</span>] <span class="op">+</span><span class="st"> </span><span class="fl">1.96</span> <span class="op">*</span><span class="st"> </span>e2<span class="op">$</span>Standard_Deviation[<span class="dv">1</span>]</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true"></a>)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true"></a>ci_<span class="dv">2</span> &lt;-<span class="st"> </span><span class="kw">c</span>(</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true"></a>  e2<span class="op">$</span>beta_<span class="dv">0</span>[<span class="dv">2</span>] <span class="op">-</span><span class="st"> </span><span class="fl">1.96</span> <span class="op">*</span><span class="st"> </span>e2<span class="op">$</span>Standard_Deviation[<span class="dv">2</span>],</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true"></a>  e2<span class="op">$</span>beta_<span class="dv">0</span>[<span class="dv">2</span>] <span class="op">+</span><span class="st"> </span><span class="fl">1.96</span> <span class="op">*</span><span class="st"> </span>e2<span class="op">$</span>Standard_Deviation[<span class="dv">2</span>]</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true"></a>)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true"></a>curve_control &lt;-<span class="st"> </span><span class="kw">list</span>(</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true"></a>  <span class="st">&quot;maxstep&quot;</span> =<span class="st"> </span><span class="dv">100</span>,</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true"></a>  <span class="st">&quot;alpha&quot;</span> =<span class="st"> </span><span class="fl">0.05</span>,</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true"></a>  <span class="st">&quot;para_number&quot;</span> =<span class="st"> </span><span class="dv">1</span>, <span class="st">&quot;manual&quot;</span> =<span class="st"> </span><span class="ot">TRUE</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true"></a>)</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">LikelihoodBound</span>(e2, df, curve_control, <span class="dt">control =</span> control)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true"></a><span class="co">#&gt; Warning in RunCoxRegression_Omnibus(df, time1 = time1, time2 = time2, event0 =</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true"></a><span class="co">#&gt; event0, : Warning: Linear ERR model used, but multiplicative model not used.</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true"></a><span class="co">#&gt; Modelform corrected</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true"></a><span class="kw">print</span>(<span class="st">&quot;|------------------- Wald Estimate -------------------|&quot;</span>)</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;|------------------- Wald Estimate -------------------|&quot;</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true"></a><span class="kw">print</span>(ci_<span class="dv">1</span>)</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true"></a><span class="co">#&gt; [1] 0.1049977 1.7956959</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true"></a><span class="kw">print</span>(e, <span class="dv">5</span>)</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true"></a><span class="co">#&gt; Likelihood Boundary Results</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true"></a><span class="co">#&gt; Solving for the boundary of element: 1</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true"></a><span class="co">#&gt; Applied to column: &#39;temperature&#39;</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true"></a><span class="co">#&gt; Subterm: loglin</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true"></a><span class="co">#&gt; Term number: 0</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true"></a><span class="co">#&gt; Lower limit converged to at 0.12897 at a score of -106.16586 with of goal of -106.16587</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true"></a><span class="co">#&gt; Central estimate was 0.95035</span></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true"></a><span class="co">#&gt; Upper limit converged to at 1.8401 at a score of -106.16587 with of goal of -106.16587</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.02916 seconds</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true"></a></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true"></a>a_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">1.138152</span>, <span class="fl">1.988403</span>)</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true"></a>curve_control &lt;-<span class="st"> </span><span class="kw">list</span>(</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true"></a>  <span class="st">&quot;maxstep&quot;</span> =<span class="st"> </span><span class="dv">100</span>,</span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true"></a>  <span class="st">&quot;alpha&quot;</span> =<span class="st"> </span><span class="fl">0.05</span>,</span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true"></a>  <span class="st">&quot;para_number&quot;</span> =<span class="st"> </span><span class="dv">2</span>, <span class="st">&quot;manual&quot;</span> =<span class="st"> </span><span class="ot">TRUE</span></span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true"></a>)</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">LikelihoodBound</span>(e2, df, curve_control, <span class="dt">control =</span> control)</span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true"></a><span class="co">#&gt; Warning in RunCoxRegression_Omnibus(df, time1 = time1, time2 = time2, event0 =</span></span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true"></a><span class="co">#&gt; event0, : Warning: Linear ERR model used, but multiplicative model not used.</span></span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true"></a><span class="co">#&gt; Modelform corrected</span></span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true"></a><span class="kw">print</span>(<span class="st">&quot;|------------------- Wald Estimate -------------------|&quot;</span>)</span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;|------------------- Wald Estimate -------------------|&quot;</span></span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true"></a><span class="kw">print</span>(ci_<span class="dv">2</span>)</span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true"></a><span class="co">#&gt; [1] -3.316339 20.950734</span></span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true"></a><span class="kw">print</span>(e, <span class="dv">5</span>)</span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true"></a><span class="co">#&gt; Likelihood Boundary Results</span></span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true"></a><span class="co">#&gt; Solving for the boundary of element: 2</span></span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true"></a><span class="co">#&gt; Applied to column: &#39;voltage&#39;</span></span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true"></a><span class="co">#&gt; Subterm: plin</span></span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true"></a><span class="co">#&gt; Term number: 0</span></span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true"></a><span class="co">#&gt; Lower limit converged to at 1.9709 at a score of -106.16585 with of goal of -106.16587</span></span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true"></a><span class="co">#&gt; Central estimate was 8.8172</span></span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true"></a><span class="co">#&gt; Upper limit converged to at 34.472 at a score of -106.16587 with of goal of -106.16587</span></span>
+<span id="cb4-60"><a href="#cb4-60" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.02006 seconds</span></span>
+<span id="cb4-61"><a href="#cb4-61" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span></code></pre></div>
 </div>
 <div id="illustration-of-issues-with-likelihood-boundary-algorithm" class="section level3">
 <h3>Illustration of Issues with Likelihood-Boundary Algorithm</h3>
-<p>One important thing to keep in mind is that the likelihood-based
-boundary algorithm is not perfect, and at times it may be important to
-manually solve for the likelihood curve. The following example outlines
-how this is done and what details about the curve can cause issues for
-the boundary algorithm. The following uses a dataset used by Colossus
-for unit testing. The linear parameter was selected for analysis. For
-each point on a grid, the linear parameter was fixed and the model was
-optimized.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>fname <span class="ot">&lt;-</span> <span class="st">&quot;base_example.csv&quot;</span></span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">fread</span>(fname)</span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a></span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>keep_constant <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>)</span>
-<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>a_n <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">1.493177</span>, <span class="fl">5.020007</span>, <span class="fl">1.438377</span>)</span>
-<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">Cox</span>(entry, exit, event) <span class="sc">~</span> <span class="fu">loglinear</span>(dose0, dose1, <span class="dv">0</span>) <span class="sc">+</span> <span class="fu">linear</span>(dose0, <span class="dv">1</span>)</span>
-<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co">#</span></span>
-<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>control <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>  <span class="st">&quot;ncores&quot;</span> <span class="ot">=</span> <span class="dv">2</span>, <span class="st">&quot;lr&quot;</span> <span class="ot">=</span> <span class="fl">0.75</span>, <span class="st">&quot;maxiters&quot;</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">100</span>, <span class="dv">100</span>), <span class="st">&quot;halfmax&quot;</span> <span class="ot">=</span> <span class="dv">5</span>,</span>
-<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>  <span class="st">&quot;epsilon&quot;</span> <span class="ot">=</span> <span class="fl">1e-6</span>, <span class="st">&quot;deriv_epsilon&quot;</span> <span class="ot">=</span> <span class="fl">1e-6</span>, <span class="st">&quot;step_max&quot;</span> <span class="ot">=</span> <span class="fl">1.0</span>,</span>
-<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>  <span class="st">&quot;thres_step_max&quot;</span> <span class="ot">=</span> <span class="fl">100.0</span>, <span class="st">&quot;verbose&quot;</span> <span class="ot">=</span> <span class="dv">2</span>,</span>
-<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a>  <span class="st">&quot;ties&quot;</span> <span class="ot">=</span> <span class="st">&quot;breslow&quot;</span></span>
-<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a>)</span>
-<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a></span>
-<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a>v0 <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">c</span>((<span class="dv">0</span><span class="sc">:</span><span class="dv">50</span> <span class="sc">/</span> <span class="dv">50</span> <span class="sc">-</span> <span class="fl">1.0</span>) <span class="sc">*</span> <span class="fl">0.8</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">50</span> <span class="sc">/</span> <span class="dv">50</span> <span class="sc">*</span> <span class="dv">3</span>, <span class="fl">1.438377</span>, <span class="sc">-</span><span class="fl">0.5909</span>))</span>
-<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a><span class="cf">for</span> (v <span class="cf">in</span> v0) {</span>
-<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a>  a_n <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">1.493177</span>, <span class="fl">5.020007</span>, v)</span>
-<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a>  e <span class="ot">&lt;-</span> <span class="fu">CoxRun</span>(model, df, <span class="at">a_n =</span> a_n, <span class="at">control =</span> control)</span>
-<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a>  ll <span class="ot">&lt;-</span> e<span class="sc">$</span>LogLik</span>
-<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a>  beta <span class="ot">&lt;-</span> e<span class="sc">$</span>beta_0</span>
-<span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a>  <span class="fu">print</span>(<span class="fu">c</span>(ll, beta[<span class="dv">3</span>]))</span>
-<span id="cb5-22"><a href="#cb5-22" tabindex="-1"></a>}</span></code></pre></div>
-<p>What is important to note is that there are two local optimums within
-a small range (-0.6 and the global solution at 1.4). The algorithms used
-for solving the likelihood boundary, similar to the standard regression
-optimizing algorithm, can be trapped by local optimums. This means that
-if the algorithm at any point has to cross over the local optimum, it
-can be trapped. The two optimums have scores close enough that a 95%
-confidence interval has a lower boundary below -0.5, but a 50%
-confidence interval has a lower bound between -0.5 and 1.4. This meant
-that the algorithm converged to the 50% confidence interval boundary,
-but failed to converge for the lower boundary of the 95% confidence
-interval boundary. Development is ongoing to automate the process for
-solving the complete likelihood curve.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">0.8</span>, <span class="sc">-</span><span class="fl">0.784</span>, <span class="sc">-</span><span class="fl">0.768</span>, <span class="sc">-</span><span class="fl">0.752</span>, <span class="sc">-</span><span class="fl">0.736</span>, <span class="sc">-</span><span class="fl">0.72</span>, <span class="sc">-</span><span class="fl">0.704</span>, <span class="sc">-</span><span class="fl">0.688</span>, <span class="sc">-</span><span class="fl">0.672</span>, <span class="sc">-</span><span class="fl">0.656</span>, <span class="sc">-</span><span class="fl">0.64</span>, <span class="sc">-</span><span class="fl">0.624</span>, <span class="sc">-</span><span class="fl">0.608</span>, <span class="sc">-</span><span class="fl">0.592</span>, <span class="sc">-</span><span class="fl">0.5909</span>, <span class="sc">-</span><span class="fl">0.576</span>, <span class="sc">-</span><span class="fl">0.56</span>, <span class="sc">-</span><span class="fl">0.544</span>, <span class="sc">-</span><span class="fl">0.528</span>, <span class="sc">-</span><span class="fl">0.512</span>, <span class="sc">-</span><span class="fl">0.496</span>, <span class="sc">-</span><span class="fl">0.48</span>, <span class="sc">-</span><span class="fl">0.464</span>, <span class="sc">-</span><span class="fl">0.448</span>, <span class="sc">-</span><span class="fl">0.432</span>, <span class="sc">-</span><span class="fl">0.416</span>, <span class="sc">-</span><span class="fl">0.4</span>, <span class="sc">-</span><span class="fl">0.384</span>, <span class="sc">-</span><span class="fl">0.368</span>, <span class="sc">-</span><span class="fl">0.352</span>, <span class="sc">-</span><span class="fl">0.336</span>, <span class="sc">-</span><span class="fl">0.32</span>, <span class="sc">-</span><span class="fl">0.304</span>, <span class="sc">-</span><span class="fl">0.288</span>, <span class="sc">-</span><span class="fl">0.272</span>, <span class="sc">-</span><span class="fl">0.256</span>, <span class="sc">-</span><span class="fl">0.24</span>, <span class="sc">-</span><span class="fl">0.224</span>, <span class="sc">-</span><span class="fl">0.208</span>, <span class="sc">-</span><span class="fl">0.192</span>, <span class="sc">-</span><span class="fl">0.176</span>, <span class="sc">-</span><span class="fl">0.16</span>, <span class="sc">-</span><span class="fl">0.144</span>, <span class="sc">-</span><span class="fl">0.128</span>, <span class="sc">-</span><span class="fl">0.112</span>, <span class="sc">-</span><span class="fl">0.096</span>, <span class="sc">-</span><span class="fl">0.08</span>, <span class="sc">-</span><span class="fl">0.064</span>, <span class="sc">-</span><span class="fl">0.048</span>, <span class="sc">-</span><span class="fl">0.032</span>, <span class="sc">-</span><span class="fl">0.016</span>, <span class="fl">0.0</span>, <span class="fl">0.06</span>, <span class="fl">0.12</span>, <span class="fl">0.18</span>, <span class="fl">0.24</span>, <span class="fl">0.3</span>, <span class="fl">0.36</span>, <span class="fl">0.42</span>, <span class="fl">0.48</span>, <span class="fl">0.54</span>, <span class="fl">0.6</span>, <span class="fl">0.66</span>, <span class="fl">0.72</span>, <span class="fl">0.78</span>, <span class="fl">0.84</span>, <span class="fl">0.9</span>, <span class="fl">0.96</span>, <span class="fl">1.02</span>, <span class="fl">1.08</span>, <span class="fl">1.14</span>, <span class="fl">1.2</span>, <span class="fl">1.26</span>, <span class="fl">1.32</span>, <span class="fl">1.38</span>, <span class="fl">1.438377</span>, <span class="fl">1.44</span>, <span class="fl">1.5</span>, <span class="fl">1.56</span>, <span class="fl">1.62</span>, <span class="fl">1.68</span>, <span class="fl">1.74</span>, <span class="fl">1.8</span>, <span class="fl">1.86</span>, <span class="fl">1.92</span>, <span class="fl">1.98</span>, <span class="fl">2.04</span>, <span class="fl">2.1</span>, <span class="fl">2.16</span>, <span class="fl">2.22</span>, <span class="fl">2.28</span>, <span class="fl">2.34</span>, <span class="fl">2.4</span>, <span class="fl">2.46</span>, <span class="fl">2.52</span>, <span class="fl">2.58</span>, <span class="fl">2.64</span>, <span class="fl">2.7</span>, <span class="fl">2.76</span>, <span class="fl">2.82</span>, <span class="fl">2.88</span>, <span class="fl">2.94</span>, <span class="fl">3.0</span>)</span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">18500.53</span>, <span class="sc">-</span><span class="fl">18499.829</span>, <span class="sc">-</span><span class="fl">18499.273</span>, <span class="sc">-</span><span class="fl">18498.831</span>, <span class="sc">-</span><span class="fl">18498.482</span>, <span class="sc">-</span><span class="fl">18498.21</span>, <span class="sc">-</span><span class="fl">18497.995</span>, <span class="sc">-</span><span class="fl">18497.832</span>, <span class="sc">-</span><span class="fl">18497.71</span>, <span class="sc">-</span><span class="fl">18497.621</span>, <span class="sc">-</span><span class="fl">18497.56</span>, <span class="sc">-</span><span class="fl">18497.519</span>, <span class="sc">-</span><span class="fl">18497.498</span>, <span class="sc">-</span><span class="fl">18497.49</span>, <span class="sc">-</span><span class="fl">18497.4904</span>, <span class="sc">-</span><span class="fl">18497.495</span>, <span class="sc">-</span><span class="fl">18497.51</span>, <span class="sc">-</span><span class="fl">18497.53</span>, <span class="sc">-</span><span class="fl">18497.558</span>, <span class="sc">-</span><span class="fl">18497.589</span>, <span class="sc">-</span><span class="fl">18497.624</span>, <span class="sc">-</span><span class="fl">18497.66</span>, <span class="sc">-</span><span class="fl">18497.7</span>, <span class="sc">-</span><span class="fl">18497.739</span>, <span class="sc">-</span><span class="fl">18497.779</span>, <span class="sc">-</span><span class="fl">18497.818</span>, <span class="sc">-</span><span class="fl">18497.86</span>, <span class="sc">-</span><span class="fl">18497.896</span>, <span class="sc">-</span><span class="fl">18497.933</span>, <span class="sc">-</span><span class="fl">18497.969</span>, <span class="sc">-</span><span class="fl">18498.003</span>, <span class="sc">-</span><span class="fl">18498.04</span>, <span class="sc">-</span><span class="fl">18498.067</span>, <span class="sc">-</span><span class="fl">18498.096</span>, <span class="sc">-</span><span class="fl">18498.124</span>, <span class="sc">-</span><span class="fl">18498.15</span>, <span class="sc">-</span><span class="fl">18498.17</span>, <span class="sc">-</span><span class="fl">18498.196</span>, <span class="sc">-</span><span class="fl">18498.216</span>, <span class="sc">-</span><span class="fl">18498.235</span>, <span class="sc">-</span><span class="fl">18498.252</span>, <span class="sc">-</span><span class="fl">18498.27</span>, <span class="sc">-</span><span class="fl">18498.281</span>, <span class="sc">-</span><span class="fl">18498.292</span>, <span class="sc">-</span><span class="fl">18498.303</span>, <span class="sc">-</span><span class="fl">18498.311</span>, <span class="sc">-</span><span class="fl">18498.32</span>, <span class="sc">-</span><span class="fl">18498.324</span>, <span class="sc">-</span><span class="fl">18498.329</span>, <span class="sc">-</span><span class="fl">18498.332</span>, <span class="sc">-</span><span class="fl">18498.334</span>, <span class="sc">-</span><span class="fl">18498.33</span>, <span class="sc">-</span><span class="fl">18498.33</span>, <span class="sc">-</span><span class="fl">18498.31</span>, <span class="sc">-</span><span class="fl">18498.27</span>, <span class="sc">-</span><span class="fl">18498.23</span>, <span class="sc">-</span><span class="fl">18498.18</span>, <span class="sc">-</span><span class="fl">18498.13</span>, <span class="sc">-</span><span class="fl">18498.07</span>, <span class="sc">-</span><span class="fl">18498.01</span>, <span class="sc">-</span><span class="fl">18497.96</span>, <span class="sc">-</span><span class="fl">18497.9</span>, <span class="sc">-</span><span class="fl">18497.84</span>, <span class="sc">-</span><span class="fl">18497.78</span>, <span class="sc">-</span><span class="fl">18497.73</span>, <span class="sc">-</span><span class="fl">18497.68</span>, <span class="sc">-</span><span class="fl">18497.63</span>, <span class="sc">-</span><span class="fl">18497.59</span>, <span class="sc">-</span><span class="fl">18497.56</span>, <span class="sc">-</span><span class="fl">18497.52</span>, <span class="sc">-</span><span class="fl">18497.49</span>, <span class="sc">-</span><span class="fl">18497.47</span>, <span class="sc">-</span><span class="fl">18497.45</span>, <span class="sc">-</span><span class="fl">18497.44</span>, <span class="sc">-</span><span class="fl">18497.43</span>, <span class="sc">-</span><span class="fl">18497.429487</span>, <span class="sc">-</span><span class="fl">18497.43</span>, <span class="sc">-</span><span class="fl">18497.43</span>, <span class="sc">-</span><span class="fl">18497.44</span>, <span class="sc">-</span><span class="fl">18497.45</span>, <span class="sc">-</span><span class="fl">18497.47</span>, <span class="sc">-</span><span class="fl">18497.5</span>, <span class="sc">-</span><span class="fl">18497.52</span>, <span class="sc">-</span><span class="fl">18497.56</span>, <span class="sc">-</span><span class="fl">18497.6</span>, <span class="sc">-</span><span class="fl">18497.64</span>, <span class="sc">-</span><span class="fl">18497.69</span>, <span class="sc">-</span><span class="fl">18497.74</span>, <span class="sc">-</span><span class="fl">18497.8</span>, <span class="sc">-</span><span class="fl">18497.86</span>, <span class="sc">-</span><span class="fl">18497.93</span>, <span class="sc">-</span><span class="fl">18498.0</span>, <span class="sc">-</span><span class="fl">18498.07</span>, <span class="sc">-</span><span class="fl">18498.15</span>, <span class="sc">-</span><span class="fl">18498.23</span>, <span class="sc">-</span><span class="fl">18498.32</span>, <span class="sc">-</span><span class="fl">18498.41</span>, <span class="sc">-</span><span class="fl">18498.5</span>, <span class="sc">-</span><span class="fl">18498.6</span>, <span class="sc">-</span><span class="fl">18498.7</span>, <span class="sc">-</span><span class="fl">18498.81</span>, <span class="sc">-</span><span class="fl">18498.92</span>, <span class="sc">-</span><span class="fl">18499.03</span>)</span>
-<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a></span>
-<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.table</span>(<span class="st">&quot;x&quot;</span> <span class="ot">=</span> x, <span class="st">&quot;y&quot;</span> <span class="ot">=</span> y)</span>
-<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a></span>
-<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>g <span class="ot">&lt;-</span> ggplot2<span class="sc">::</span><span class="fu">ggplot</span>(df, ggplot2<span class="sc">::</span><span class="fu">aes</span>(<span class="at">x =</span> .data<span class="sc">$</span>x, <span class="at">y =</span> .data<span class="sc">$</span>y)) <span class="sc">+</span></span>
-<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>  ggplot2<span class="sc">::</span><span class="fu">geom_line</span>(<span class="at">color =</span> <span class="st">&quot;black&quot;</span>, <span class="at">alpha =</span> <span class="dv">1</span>, <span class="st">&quot;linewidth&quot;</span> <span class="ot">=</span> <span class="fl">1.5</span>) <span class="sc">+</span></span>
-<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>  ggplot2<span class="sc">::</span><span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;Linear Parameter Value&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Log-Likelihood&quot;</span>) <span class="sc">+</span></span>
-<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>  ggplot2<span class="sc">::</span><span class="fu">ggtitle</span>(<span class="st">&quot;Multi-Peak Curve&quot;</span>)</span>
-<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>g</span></code></pre></div>
-<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p>One important thing to keep in mind is that the likelihood-based boundary algorithm is not perfect, and at times it may be important to manually solve for the likelihood curve. The following example outlines how this is done and what details about the curve can cause issues for the boundary algorithm. The following uses a dataset used by Colossus for unit testing. The linear parameter was selected for analysis. For each point on a grid, the linear parameter was fixed and the model was optimized.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a>fname &lt;-<span class="st"> &quot;base_example.csv&quot;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a>df &lt;-<span class="st"> </span><span class="kw">fread</span>(fname)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a>keep_constant &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a>a_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="op">-</span><span class="fl">1.493177</span>, <span class="fl">5.020007</span>, <span class="fl">1.438377</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a>model &lt;-<span class="st"> </span><span class="kw">Cox</span>(entry, exit, event) <span class="op">~</span><span class="st"> </span><span class="kw">loglinear</span>(dose0, dose1, <span class="dv">0</span>) <span class="op">+</span><span class="st"> </span><span class="kw">linear</span>(dose0, <span class="dv">1</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true"></a><span class="co">#</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true"></a>control &lt;-<span class="st"> </span><span class="kw">list</span>(</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true"></a>  <span class="st">&quot;ncores&quot;</span> =<span class="st"> </span><span class="dv">2</span>, <span class="st">&quot;lr&quot;</span> =<span class="st"> </span><span class="fl">0.75</span>, <span class="st">&quot;maxiters&quot;</span> =<span class="st"> </span><span class="kw">c</span>(<span class="dv">100</span>, <span class="dv">100</span>), <span class="st">&quot;halfmax&quot;</span> =<span class="st"> </span><span class="dv">5</span>,</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true"></a>  <span class="st">&quot;epsilon&quot;</span> =<span class="st"> </span><span class="fl">1e-6</span>, <span class="st">&quot;deriv_epsilon&quot;</span> =<span class="st"> </span><span class="fl">1e-6</span>, <span class="st">&quot;step_max&quot;</span> =<span class="st"> </span><span class="fl">1.0</span>,</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true"></a>  <span class="st">&quot;thres_step_max&quot;</span> =<span class="st"> </span><span class="fl">100.0</span>, <span class="st">&quot;verbose&quot;</span> =<span class="st"> </span><span class="dv">2</span>,</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true"></a>  <span class="st">&quot;ties&quot;</span> =<span class="st"> &quot;breslow&quot;</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true"></a>)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true"></a></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true"></a>v0 &lt;-<span class="st"> </span><span class="kw">sort</span>(<span class="kw">c</span>((<span class="dv">0</span><span class="op">:</span><span class="dv">50</span> <span class="op">/</span><span class="st"> </span><span class="dv">50</span> <span class="op">-</span><span class="st"> </span><span class="fl">1.0</span>) <span class="op">*</span><span class="st"> </span><span class="fl">0.8</span>, <span class="dv">1</span><span class="op">:</span><span class="dv">50</span> <span class="op">/</span><span class="st"> </span><span class="dv">50</span> <span class="op">*</span><span class="st"> </span><span class="dv">3</span>, <span class="fl">1.438377</span>, <span class="fl">-0.5909</span>))</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true"></a><span class="cf">for</span> (v <span class="cf">in</span> v0) {</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true"></a>  a_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="op">-</span><span class="fl">1.493177</span>, <span class="fl">5.020007</span>, v)</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true"></a>  e &lt;-<span class="st"> </span><span class="kw">CoxRun</span>(model, df, <span class="dt">a_n =</span> a_n, <span class="dt">control =</span> control)</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true"></a>  ll &lt;-<span class="st"> </span>e<span class="op">$</span>LogLik</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true"></a>  beta &lt;-<span class="st"> </span>e<span class="op">$</span>beta_<span class="dv">0</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true"></a>  <span class="kw">print</span>(<span class="kw">c</span>(ll, beta[<span class="dv">3</span>]))</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true"></a>}</span></code></pre></div>
+<p>What is important to note is that there are two local optimums within a small range (-0.6 and the global solution at 1.4). The algorithms used for solving the likelihood boundary, similar to the standard regression optimizing algorithm, can be trapped by local optimums. This means that if the algorithm at any point has to cross over the local optimum, it can be trapped. The two optimums have scores close enough that a 95% confidence interval has a lower boundary below -0.5, but a 50% confidence interval has a lower bound between -0.5 and 1.4. This meant that the algorithm converged to the 50% confidence interval boundary, but failed to converge for the lower boundary of the 95% confidence interval boundary. Development is ongoing to automate the process for solving the complete likelihood curve.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a>x &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="op">-</span><span class="fl">0.8</span>, <span class="fl">-0.784</span>, <span class="fl">-0.768</span>, <span class="fl">-0.752</span>, <span class="fl">-0.736</span>, <span class="fl">-0.72</span>, <span class="fl">-0.704</span>, <span class="fl">-0.688</span>, <span class="fl">-0.672</span>, <span class="fl">-0.656</span>, <span class="fl">-0.64</span>, <span class="fl">-0.624</span>, <span class="fl">-0.608</span>, <span class="fl">-0.592</span>, <span class="fl">-0.5909</span>, <span class="fl">-0.576</span>, <span class="fl">-0.56</span>, <span class="fl">-0.544</span>, <span class="fl">-0.528</span>, <span class="fl">-0.512</span>, <span class="fl">-0.496</span>, <span class="fl">-0.48</span>, <span class="fl">-0.464</span>, <span class="fl">-0.448</span>, <span class="fl">-0.432</span>, <span class="fl">-0.416</span>, <span class="fl">-0.4</span>, <span class="fl">-0.384</span>, <span class="fl">-0.368</span>, <span class="fl">-0.352</span>, <span class="fl">-0.336</span>, <span class="fl">-0.32</span>, <span class="fl">-0.304</span>, <span class="fl">-0.288</span>, <span class="fl">-0.272</span>, <span class="fl">-0.256</span>, <span class="fl">-0.24</span>, <span class="fl">-0.224</span>, <span class="fl">-0.208</span>, <span class="fl">-0.192</span>, <span class="fl">-0.176</span>, <span class="fl">-0.16</span>, <span class="fl">-0.144</span>, <span class="fl">-0.128</span>, <span class="fl">-0.112</span>, <span class="fl">-0.096</span>, <span class="fl">-0.08</span>, <span class="fl">-0.064</span>, <span class="fl">-0.048</span>, <span class="fl">-0.032</span>, <span class="fl">-0.016</span>, <span class="fl">0.0</span>, <span class="fl">0.06</span>, <span class="fl">0.12</span>, <span class="fl">0.18</span>, <span class="fl">0.24</span>, <span class="fl">0.3</span>, <span class="fl">0.36</span>, <span class="fl">0.42</span>, <span class="fl">0.48</span>, <span class="fl">0.54</span>, <span class="fl">0.6</span>, <span class="fl">0.66</span>, <span class="fl">0.72</span>, <span class="fl">0.78</span>, <span class="fl">0.84</span>, <span class="fl">0.9</span>, <span class="fl">0.96</span>, <span class="fl">1.02</span>, <span class="fl">1.08</span>, <span class="fl">1.14</span>, <span class="fl">1.2</span>, <span class="fl">1.26</span>, <span class="fl">1.32</span>, <span class="fl">1.38</span>, <span class="fl">1.438377</span>, <span class="fl">1.44</span>, <span class="fl">1.5</span>, <span class="fl">1.56</span>, <span class="fl">1.62</span>, <span class="fl">1.68</span>, <span class="fl">1.74</span>, <span class="fl">1.8</span>, <span class="fl">1.86</span>, <span class="fl">1.92</span>, <span class="fl">1.98</span>, <span class="fl">2.04</span>, <span class="fl">2.1</span>, <span class="fl">2.16</span>, <span class="fl">2.22</span>, <span class="fl">2.28</span>, <span class="fl">2.34</span>, <span class="fl">2.4</span>, <span class="fl">2.46</span>, <span class="fl">2.52</span>, <span class="fl">2.58</span>, <span class="fl">2.64</span>, <span class="fl">2.7</span>, <span class="fl">2.76</span>, <span class="fl">2.82</span>, <span class="fl">2.88</span>, <span class="fl">2.94</span>, <span class="fl">3.0</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a>y &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="op">-</span><span class="fl">18500.53</span>, <span class="fl">-18499.829</span>, <span class="fl">-18499.273</span>, <span class="fl">-18498.831</span>, <span class="fl">-18498.482</span>, <span class="fl">-18498.21</span>, <span class="fl">-18497.995</span>, <span class="fl">-18497.832</span>, <span class="fl">-18497.71</span>, <span class="fl">-18497.621</span>, <span class="fl">-18497.56</span>, <span class="fl">-18497.519</span>, <span class="fl">-18497.498</span>, <span class="fl">-18497.49</span>, <span class="fl">-18497.4904</span>, <span class="fl">-18497.495</span>, <span class="fl">-18497.51</span>, <span class="fl">-18497.53</span>, <span class="fl">-18497.558</span>, <span class="fl">-18497.589</span>, <span class="fl">-18497.624</span>, <span class="fl">-18497.66</span>, <span class="fl">-18497.7</span>, <span class="fl">-18497.739</span>, <span class="fl">-18497.779</span>, <span class="fl">-18497.818</span>, <span class="fl">-18497.86</span>, <span class="fl">-18497.896</span>, <span class="fl">-18497.933</span>, <span class="fl">-18497.969</span>, <span class="fl">-18498.003</span>, <span class="fl">-18498.04</span>, <span class="fl">-18498.067</span>, <span class="fl">-18498.096</span>, <span class="fl">-18498.124</span>, <span class="fl">-18498.15</span>, <span class="fl">-18498.17</span>, <span class="fl">-18498.196</span>, <span class="fl">-18498.216</span>, <span class="fl">-18498.235</span>, <span class="fl">-18498.252</span>, <span class="fl">-18498.27</span>, <span class="fl">-18498.281</span>, <span class="fl">-18498.292</span>, <span class="fl">-18498.303</span>, <span class="fl">-18498.311</span>, <span class="fl">-18498.32</span>, <span class="fl">-18498.324</span>, <span class="fl">-18498.329</span>, <span class="fl">-18498.332</span>, <span class="fl">-18498.334</span>, <span class="fl">-18498.33</span>, <span class="fl">-18498.33</span>, <span class="fl">-18498.31</span>, <span class="fl">-18498.27</span>, <span class="fl">-18498.23</span>, <span class="fl">-18498.18</span>, <span class="fl">-18498.13</span>, <span class="fl">-18498.07</span>, <span class="fl">-18498.01</span>, <span class="fl">-18497.96</span>, <span class="fl">-18497.9</span>, <span class="fl">-18497.84</span>, <span class="fl">-18497.78</span>, <span class="fl">-18497.73</span>, <span class="fl">-18497.68</span>, <span class="fl">-18497.63</span>, <span class="fl">-18497.59</span>, <span class="fl">-18497.56</span>, <span class="fl">-18497.52</span>, <span class="fl">-18497.49</span>, <span class="fl">-18497.47</span>, <span class="fl">-18497.45</span>, <span class="fl">-18497.44</span>, <span class="fl">-18497.43</span>, <span class="fl">-18497.429487</span>, <span class="fl">-18497.43</span>, <span class="fl">-18497.43</span>, <span class="fl">-18497.44</span>, <span class="fl">-18497.45</span>, <span class="fl">-18497.47</span>, <span class="fl">-18497.5</span>, <span class="fl">-18497.52</span>, <span class="fl">-18497.56</span>, <span class="fl">-18497.6</span>, <span class="fl">-18497.64</span>, <span class="fl">-18497.69</span>, <span class="fl">-18497.74</span>, <span class="fl">-18497.8</span>, <span class="fl">-18497.86</span>, <span class="fl">-18497.93</span>, <span class="fl">-18498.0</span>, <span class="fl">-18498.07</span>, <span class="fl">-18498.15</span>, <span class="fl">-18498.23</span>, <span class="fl">-18498.32</span>, <span class="fl">-18498.41</span>, <span class="fl">-18498.5</span>, <span class="fl">-18498.6</span>, <span class="fl">-18498.7</span>, <span class="fl">-18498.81</span>, <span class="fl">-18498.92</span>, <span class="fl">-18499.03</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a>df &lt;-<span class="st"> </span><span class="kw">data.table</span>(<span class="st">&quot;x&quot;</span> =<span class="st"> </span>x, <span class="st">&quot;y&quot;</span> =<span class="st"> </span>y)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a>g &lt;-<span class="st"> </span>ggplot2<span class="op">::</span><span class="kw">ggplot</span>(df, ggplot2<span class="op">::</span><span class="kw">aes</span>(<span class="dt">x =</span> .data<span class="op">$</span>x, <span class="dt">y =</span> .data<span class="op">$</span>y)) <span class="op">+</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true"></a><span class="st">  </span>ggplot2<span class="op">::</span><span class="kw">geom_line</span>(<span class="dt">color =</span> <span class="st">&quot;black&quot;</span>, <span class="dt">alpha =</span> <span class="dv">1</span>, <span class="st">&quot;linewidth&quot;</span> =<span class="st"> </span><span class="fl">1.5</span>) <span class="op">+</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true"></a><span class="st">  </span>ggplot2<span class="op">::</span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Linear Parameter Value&quot;</span>, <span class="dt">y =</span> <span class="st">&quot;Log-Likelihood&quot;</span>) <span class="op">+</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true"></a><span class="st">  </span>ggplot2<span class="op">::</span><span class="kw">ggtitle</span>(<span class="st">&quot;Multi-Peak Curve&quot;</span>)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true"></a>g</span></code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
 </div>
 <div id="likelihood-boundary-algorithm-alternative" class="section level3">
 <h3>Likelihood Boundary Algorithm Alternative</h3>
-<p>As an alternative to the likelihood algorithm, a direct curve-solving
-method is implemented. The CoxCurveSolver function solves the boundary
-values by iteratively optimizing points and using the bisection method.
-Each step is approximately as fast as running a single regression. The
-same model_control options are used to select which parameter is
-selected and what alpha to use, but with an option “step_size” which is
-the default search window width used. The bisection method functions by
-(1) selecting an interval, (2) optimizing at the upper, lower, and
-midpoint of the interval, and (3) checking if the goal likelihood is
-crossed. If at least one of the interval points is on each side of the
-goal then the interval is narrowed, and if not then the interval is
-shifted away from the optimum.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>fname <span class="ot">&lt;-</span> <span class="st">&quot;base_example.csv&quot;</span></span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">fread</span>(fname)</span>
-<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a></span>
-<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">Cox</span>(entry, exit, event) <span class="sc">~</span> <span class="fu">loglinear</span>(dose0, dose1, <span class="dv">0</span>) <span class="sc">+</span> <span class="fu">linear</span>(dose0, <span class="dv">1</span>)</span>
-<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>keep_constant <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>)</span>
-<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>a_n <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">1.493177</span>, <span class="fl">5.020007</span>, <span class="fl">1.438377</span>)</span>
-<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="co">#</span></span>
-<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>control <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>  <span class="st">&quot;ncores&quot;</span> <span class="ot">=</span> <span class="dv">2</span>, <span class="st">&quot;lr&quot;</span> <span class="ot">=</span> <span class="fl">0.75</span>, <span class="st">&quot;maxiter&quot;</span> <span class="ot">=</span> <span class="dv">100</span>, <span class="st">&quot;halfmax&quot;</span> <span class="ot">=</span> <span class="dv">5</span>,</span>
-<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a>  <span class="st">&quot;verbose&quot;</span> <span class="ot">=</span> <span class="dv">2</span></span>
-<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a>)</span>
-<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a>coxres <span class="ot">&lt;-</span> <span class="fu">CoxRun</span>(model, df, <span class="at">a_n =</span> a_n, <span class="at">control =</span> control)</span>
-<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a></span>
-<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a>curve_control <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">&quot;maxstep&quot;</span> <span class="ot">=</span> <span class="dv">20</span>, <span class="st">&quot;alpha&quot;</span> <span class="ot">=</span> <span class="fl">0.005</span>, <span class="st">&quot;para_number&quot;</span> <span class="ot">=</span> <span class="dv">3</span>, <span class="st">&quot;step_size&quot;</span> <span class="ot">=</span> <span class="fl">0.5</span>, <span class="st">&quot;bisect&quot;</span> <span class="ot">=</span> <span class="cn">TRUE</span>)</span>
-<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a>e <span class="ot">&lt;-</span> <span class="fu">LikelihoodBound</span>(coxres, df, curve_control, <span class="at">control =</span> control)</span></code></pre></div>
-<p>There are three functions available for calculating likelihood-based
-boundaries. The first method is the standard Venzon-Moolgavkar
-algorithm. This method attempts to both optimize the model and guide the
-desired parameter to the boundary value. This method is the fastest, but
-most susceptible to local extrema. Using this algorithm depends on the
-initial step not being close to a local extrema, so the initial step can
-be scaled up or down. The second method is a modification of the
-Venzon-Moolgavkar algorithm. In the second method, the initial step is
-split into multiple guesses, and each guess is optimized independently.
-The Venzon-Moolgavkar algorithm is then continued at the closest guess
-that did not exceed the target likelihood. In theory, this method makes
-it more likely for the algorithm to start at an appropriate point, so it
-is slower but slightly less susceptible to local extrema. However the
-final portion of the algorithm is still based on derivatives, so it is
-still susceptible to local extrema. The third method is an iterative
-bisection method. In this algorithm, the desired parameter is fixed, and
-the model is optimized at the endpoints of an interval until an interval
-is located which contains the goal likelihood. Then the interval is
-split in half until the interval width is within a user-set limit. This
-method takes advantage of the fact that the likelihood curve is
-continuous and we know that the optimum point must be above the goal.
-The algorithm is split into two steps: optimizing the model at fixed
-points and determining if the interval contains the goal. The second
-step does not depend on the likelihood derivatives, so it is not prone
-to getting stuck in local extrema. However, the interval width must be
-small enough not to step over the solution. Given a small enough
-interval width, every optimization is likely to converge and the
-solution is unlikely to be skipped. This method requires the model to be
-optimized repeatedly, so it is expected to take the longest. However,
-the bisection method is the least likely to have issues converging.</p>
+<p>As an alternative to the likelihood algorithm, a direct curve-solving method is implemented. The bisect option solves the boundary values by iteratively optimizing points and using the bisection method. Each step is approximately as fast as running a single regression. The same model_control options are used to select which parameter is selected and what alpha to use, but with an option “step_size” which is the default search window width used. The bisection method functions by (1) selecting an interval, (2) optimizing at the upper, lower, and midpoint of the interval, and (3) checking if the goal likelihood is crossed. If at least one of the interval points is on each side of the goal then the interval is narrowed, and if not then the interval is shifted away from the optimum.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a>fname &lt;-<span class="st"> &quot;base_example.csv&quot;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true"></a>df &lt;-<span class="st"> </span><span class="kw">fread</span>(fname)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true"></a>model &lt;-<span class="st"> </span><span class="kw">Cox</span>(entry, exit, event) <span class="op">~</span><span class="st"> </span><span class="kw">loglinear</span>(dose0, dose1, <span class="dv">0</span>) <span class="op">+</span><span class="st"> </span><span class="kw">linear</span>(dose0, <span class="dv">1</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true"></a>keep_constant &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true"></a>a_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="op">-</span><span class="fl">1.493177</span>, <span class="fl">5.020007</span>, <span class="fl">1.438377</span>)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true"></a><span class="co">#</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true"></a>control &lt;-<span class="st"> </span><span class="kw">list</span>(</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true"></a>  <span class="st">&quot;ncores&quot;</span> =<span class="st"> </span><span class="dv">2</span>, <span class="st">&quot;lr&quot;</span> =<span class="st"> </span><span class="fl">0.75</span>, <span class="st">&quot;maxiter&quot;</span> =<span class="st"> </span><span class="dv">100</span>, <span class="st">&quot;halfmax&quot;</span> =<span class="st"> </span><span class="dv">5</span>,</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true"></a>  <span class="st">&quot;verbose&quot;</span> =<span class="st"> </span><span class="dv">2</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true"></a>)</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true"></a>coxres &lt;-<span class="st"> </span><span class="kw">CoxRun</span>(model, df, <span class="dt">a_n =</span> a_n, <span class="dt">control =</span> control)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true"></a></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true"></a>curve_control &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="st">&quot;maxstep&quot;</span> =<span class="st"> </span><span class="dv">20</span>, <span class="st">&quot;alpha&quot;</span> =<span class="st"> </span><span class="fl">0.005</span>, <span class="st">&quot;para_number&quot;</span> =<span class="st"> </span><span class="dv">3</span>, <span class="st">&quot;step_size&quot;</span> =<span class="st"> </span><span class="fl">0.5</span>, <span class="st">&quot;bisect&quot;</span> =<span class="st"> </span><span class="ot">TRUE</span>)</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">LikelihoodBound</span>(coxres, df, curve_control, <span class="dt">control =</span> control)</span></code></pre></div>
+<p>There are three functions available for calculating likelihood-based boundaries. The first method is the standard Venzon-Moolgavkar algorithm. This method attempts to both optimize the model and guide the desired parameter to the boundary value. This method is the fastest, but most susceptible to local extrema. Using this algorithm depends on the initial step not being close to a local extrema, so the initial step can be scaled up or down. The second method is a modification of the Venzon-Moolgavkar algorithm. In the second method, the initial step is split into multiple guesses, and each guess is optimized independently. The Venzon-Moolgavkar algorithm is then continued at the closest guess that did not exceed the target likelihood. In theory, this method makes it more likely for the algorithm to start at an appropriate point, so it is slower but slightly less susceptible to local extrema. However the final portion of the algorithm is still based on derivatives, so it is still susceptible to local extrema. The third method is an iterative bisection method. In this algorithm, the desired parameter is fixed, and the model is optimized at the endpoints of an interval until an interval is located which contains the goal likelihood. Then the interval is split in half until the interval width is within a user-set limit. This method takes advantage of the fact that the likelihood curve is continuous and we know that the optimum point must be above the goal. The algorithm is split into two steps: optimizing the model at fixed points and determining if the interval contains the goal. The second step does not depend on the likelihood derivatives, so it is not prone to getting stuck in local extrema. However, the interval width must be small enough not to step over the solution. Given a small enough interval width, every optimization is likely to converge and the solution is unlikely to be skipped. This method requires the model to be optimized repeatedly, so it is expected to take the longest. However, the bisection method is the least likely to have issues converging.</p>
 </div>
 </div>
 <div id="expected-information-matrix-derivation" class="section level2">
 <h2>Expected Information Matrix Derivation</h2>
-<p>The expected information matrix is calculated using two equations,
-the second derivative of log-likelihood and the probability of a subject
-having an event given the rows at risk and the number of events. To
-begin, the second derivative of log-likelihood is expressed as
-follows:</p>
+<p>The expected information matrix is calculated using two equations, the second derivative of log-likelihood and the probability of a subject having an event given the rows at risk and the number of events. To begin, the second derivative of log-likelihood is expressed as follows:</p>
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
-    \frac{\partial^2 LL}{\partial \vec{\beta}_{\mu} \partial
-\vec{\beta}_{\nu}} = \sum_{i=1}^N \left[ \delta_i \left( [A_{i,\mu,\nu}
-- B_{i,\mu}*B_{i,\nu} ] - [C_{i,\mu,\nu} - D_{i,\mu}*D_{i,\nu}
-]  \right)\right]\\
-    A_{i,\mu,\nu} = \frac{\frac{\partial^2 r_i}{\partial \vec{\beta}_\mu
-\partial \vec{\beta}_\nu}}{r_i}, \quad B_{i,\mu} = \frac{\frac{\partial
-r_i}{\partial \vec{\beta}_\mu}}{r_i} \\
-    C_{i,\mu,\nu} = \frac{\sum_{l \in R_i} \frac{\partial^2
-r_l}{\partial \vec{\beta}_\mu \partial \vec{\beta}_\nu}}{E_i},\quad
-D_{i,\mu} = \frac{\sum_{l \in R_i} \frac{\partial r_l}{\partial
-\vec{\beta}_\mu}}{E_i}, \quad E_{i} = \sum_{l \in R_i} r_l \\
+    \frac{\partial^2 LL}{\partial \vec{\beta}_{\mu} \partial \vec{\beta}_{\nu}} = \sum_{i=1}^N \left[ \delta_i \left( [A_{i,\mu,\nu} - B_{i,\mu}*B_{i,\nu} ] - [C_{i,\mu,\nu} - D_{i,\mu}*D_{i,\nu} ]  \right)\right]\\
+    A_{i,\mu,\nu} = \frac{\frac{\partial^2 r_i}{\partial \vec{\beta}_\mu \partial \vec{\beta}_\nu}}{r_i}, \quad B_{i,\mu} = \frac{\frac{\partial r_i}{\partial \vec{\beta}_\mu}}{r_i} \\
+    C_{i,\mu,\nu} = \frac{\sum_{l \in R_i} \frac{\partial^2 r_l}{\partial \vec{\beta}_\mu \partial \vec{\beta}_\nu}}{E_i},\quad D_{i,\mu} = \frac{\sum_{l \in R_i} \frac{\partial r_l}{\partial \vec{\beta}_\mu}}{E_i}, \quad E_{i} = \sum_{l \in R_i} r_l \\
 \end{aligned}
 \]</span>
 </p>
-<p>Next, we assume we have independent failure and censoring, and <span class="math inline">\(d\)</span> events in a risk group <span class="math inline">\(R\)</span>. Assuming each row at risk has an
-approximately equal background rate, the probability of any given
-subject having an event is as follows:</p>
+<p>Next, we assume we have independent failure and censoring, and <span class="math inline">\(d\)</span> events in a risk group <span class="math inline">\(R\)</span>. Assuming each row at risk has an approximately equal background rate, the probability of any given subject having an event is as follows:</p>
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
@@ -749,49 +641,30 @@ subject having an event is as follows:</p>
 \end{aligned}
 \]</span>
 </p>
-<p>Finally, we want to evaluate the expected information matrix given
-the following:</p>
+<p>Finally, we want to evaluate the expected information matrix given the following:</p>
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
-    I(\mu, \nu) = E \left[-\frac{\partial^2 LL}{\partial
-\vec{\beta}_{\mu} \partial \vec{\beta}_{\nu}} \right]
+    I(\mu, \nu) = E \left[-\frac{\partial^2 LL}{\partial \vec{\beta}_{\mu} \partial \vec{\beta}_{\nu}} \right]
 \end{aligned}
 \]</span>
 </p>
-<p>We can start by splitting the equation into the expected contribution
-at each event time (<span class="math inline">\(i\)</span>) and then
-simplifying the expected value of constant terms. Note that we switch
-from the event indicator of each row (<span class="math inline">\(\delta_i\)</span>) to the number of events in each
-risk group (<span class="math inline">\(d_i\)</span>):</p>
+<p>We can start by splitting the equation into the expected contribution at each event time (<span class="math inline">\(i\)</span>) and then simplifying the expected value of constant terms. Note that we switch from the event indicator of each row (<span class="math inline">\(\delta_i\)</span>) to the number of events in each risk group (<span class="math inline">\(d_i\)</span>):</p>
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
-    I(\mu, \nu)_i = - E \left[ \sum_{k \in R_i} \left ( \delta_k \left(
-[A_{i,\mu,\nu} - B_{i,\mu}*B_{i,\nu} ] - [C_{i,\mu,\nu} -
-D_{i,\mu}*D_{i,\nu} ]  \right) \right )\right] \\
-    I(\mu, \nu)_i = d_i*[C_{i,\mu,\nu} - D_{i,\mu}*D_{i,\nu} ] - E \left
-[ \sum_{k \in R_i} \left ( \delta_k \left( [A_{i,\mu,\nu} -
-B_{i,\mu}*B_{i,\nu} ] \right ) \right ) \right] \\
-    E \left [ \sum_{k \in R_i} \delta_k A_{i,\mu,\nu} \right] = \sum_{l
-\in R_i} A_{l,\mu,\nu} * pr(\delta_l = 1) = d_i * \frac{\sum_{l \in R_i}
-\frac{\frac{\partial^2 r_l}{\partial \vec{\beta}_\mu \partial
-\vec{\beta}_\nu}}{r_l} * r_l}{ \sum_{l \in R_i} r_l} = d_i *
-C_{i,\mu,\nu}\\
-    E \left [ B_{i,\mu}*B_{i,\nu} \right] = \sum_{l \in R_i}
-B_{i,\mu}*B_{i,\nu}*pr(\delta_l = 1) = d_i * \frac{\sum_{l \in R_i}
-c_{l}^{\mu}c_{l}^{\nu}r_l}{\sum_{l \in R_i} r_l}
+    I(\mu, \nu)_i = - E \left[ \sum_{k \in R_i} \left ( \delta_k \left( [A_{i,\mu,\nu} - B_{i,\mu}*B_{i,\nu} ] - [C_{i,\mu,\nu} - D_{i,\mu}*D_{i,\nu} ]  \right) \right )\right] \\
+    I(\mu, \nu)_i = d_i*[C_{i,\mu,\nu} - D_{i,\mu}*D_{i,\nu} ] - E \left [ \sum_{k \in R_i} \left ( \delta_k \left( [A_{i,\mu,\nu} - B_{i,\mu}*B_{i,\nu} ] \right ) \right ) \right] \\
+    E \left [ \sum_{k \in R_i} \delta_k A_{i,\mu,\nu} \right] = \sum_{l \in R_i} A_{l,\mu,\nu} * pr(\delta_l = 1) = d_i * \frac{\sum_{l \in R_i} \frac{\frac{\partial^2 r_l}{\partial \vec{\beta}_\mu \partial \vec{\beta}_\nu}}{r_l} * r_l}{ \sum_{l \in R_i} r_l} = d_i * C_{i,\mu,\nu}\\
+    E \left [ B_{i,\mu}*B_{i,\nu} \right] = \sum_{l \in R_i} B_{i,\mu}*B_{i,\nu}*pr(\delta_l = 1) = d_i * \frac{\sum_{l \in R_i} c_{l}^{\mu}c_{l}^{\nu}r_l}{\sum_{l \in R_i} r_l}
 \end{aligned}
 \]</span>
 </p>
-<p>Finally, we substitute, cancel, and use the function definitions
-above and we have the expected information matrix derived from the
-observed information matrix formula.</p>
+<p>Finally, we substitute, cancel, and use the function definitions above and we have the expected information matrix derived from the observed information matrix formula.</p>
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
-    I(\mu, \nu)_i = d_i * \left[ \sum_{l \in R_i} \frac{c_{li}^{\mu}
-c_{li}^{\nu} r_{li}}{E_i} - \frac{F_i^{\mu} F_i^{\nu}}{E_i^2} \right]
+    I(\mu, \nu)_i = d_i * \left[ \sum_{l \in R_i} \frac{c_{li}^{\mu} c_{li}^{\nu} r_{li}}{E_i} - \frac{F_i^{\mu} F_i^{\nu}}{E_i^2} \right]
 \end{aligned}
 \]</span>
 </p>

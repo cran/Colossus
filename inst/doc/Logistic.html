@@ -27,31 +27,46 @@ document.addEventListener('DOMContentLoaded', function(e) {
   }
 });
 </script>
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
+  }
+});
+</script>
 
 <style type="text/css">
-code{white-space: pre-wrap;}
-span.smallcaps{font-variant: small-caps;}
-span.underline{text-decoration: underline;}
-div.column{display: inline-block; vertical-align: top; width: 50%;}
-div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-ul.task-list{list-style: none;}
-</style>
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
 
 
 
 <style type="text/css">
-code {
-white-space: pre;
-}
-.sourceCode {
-overflow: visible;
-}
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
@@ -63,54 +78,55 @@ pre > code.sourceCode { white-space: pre-wrap; }
 pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
-{ counter-reset: source-line 0; }
+  { counter-reset: source-line 0; }
 pre.numberSource code > span
-{ position: relative; left: -4em; counter-increment: source-line; }
+  { position: relative; left: -4em; counter-increment: source-line; }
 pre.numberSource code > span > a:first-child::before
-{ content: counter(source-line);
-position: relative; left: -1em; text-align: right; vertical-align: baseline;
-border: none; display: inline-block;
--webkit-touch-callout: none; -webkit-user-select: none;
--khtml-user-select: none; -moz-user-select: none;
--ms-user-select: none; user-select: none;
-padding: 0 4px; width: 4em;
-color: #aaaaaa;
-}
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
 div.sourceCode
-{ }
+  {   }
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-code span.al { color: #ff0000; font-weight: bold; } 
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
-code span.at { color: #7d9029; } 
-code span.bn { color: #40a070; } 
-code span.bu { color: #008000; } 
-code span.cf { color: #007020; font-weight: bold; } 
-code span.ch { color: #4070a0; } 
-code span.cn { color: #880000; } 
-code span.co { color: #60a0b0; font-style: italic; } 
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
-code span.do { color: #ba2121; font-style: italic; } 
-code span.dt { color: #902000; } 
-code span.dv { color: #40a070; } 
-code span.er { color: #ff0000; font-weight: bold; } 
-code span.ex { } 
-code span.fl { color: #40a070; } 
-code span.fu { color: #06287e; } 
-code span.im { color: #008000; font-weight: bold; } 
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
-code span.kw { color: #007020; font-weight: bold; } 
-code span.op { color: #666666; } 
-code span.ot { color: #007020; } 
-code span.pp { color: #bc7a00; } 
-code span.sc { color: #4070a0; } 
-code span.ss { color: #bb6688; } 
-code span.st { color: #4070a0; } 
-code span.va { color: #19177c; } 
-code span.vs { color: #4070a0; } 
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
 </style>
 <script>
 // apply pandoc div.sourceCode style to pre.sourceCode instead
@@ -340,214 +356,157 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(Colossus)</span>
-<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(data.table)</span>
-<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">library</span>(survival)</span>
-<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="co">#&gt; Attaching package: &#39;dplyr&#39;</span></span>
-<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="co">#&gt; The following objects are masked from &#39;package:data.table&#39;:</span></span>
-<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a><span class="co">#&gt;     between, first, last</span></span>
-<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a><span class="co">#&gt; The following objects are masked from &#39;package:stats&#39;:</span></span>
-<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a><span class="co">#&gt;     filter, lag</span></span>
-<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a><span class="co">#&gt; The following objects are masked from &#39;package:base&#39;:</span></span>
-<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">library</span>(Colossus)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="kw">library</span>(data.table)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a><span class="kw">library</span>(survival)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a><span class="kw">library</span>(dplyr)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true"></a><span class="co">#&gt; Attaching package: &#39;dplyr&#39;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true"></a><span class="co">#&gt; The following objects are masked from &#39;package:data.table&#39;:</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true"></a><span class="co">#&gt;     between, first, last</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true"></a><span class="co">#&gt; The following objects are masked from &#39;package:stats&#39;:</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true"></a><span class="co">#&gt;     filter, lag</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true"></a><span class="co">#&gt; The following objects are masked from &#39;package:base&#39;:</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true"></a><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span></code></pre></div>
 <div id="logistic-modeling-for-binomial-odds-and-binary-data" class="section level2">
 <h2>Logistic Modeling for Binomial Odds and Binary Data</h2>
-<p>One alternative regression method in Colossus for predicting the
-probability of an event in independent trials is logistic regression.
-The theory is presented in the following section.</p>
+<p>One alternative regression method in Colossus for predicting the probability of an event in independent trials is logistic regression. The theory is presented in the following section.</p>
 <div id="general-theory" class="section level3">
 <h3>General Theory</h3>
-<p>We start by describing the structure of the data. The logistic
-regression models in Colossus assume the data can be represented in
-terms of trials, events, and risk factors. Similar to a Poisson model
-using person-years and number of events in each row, a logistic model
-requires some measure of the number of independent trials and events for
-each group. A special case is an analysis in which each row represents
-one trial, and either 0 or 1 events are observed. The likelihood (<span class="math inline">\(L\)</span>) for a logistic model is a function of
-the trials (<span class="math inline">\(N_i\)</span>), events (<span class="math inline">\(y_i\)</span>), and the probability of a success
-(<span class="math inline">\(p_i\)</span>) for each row, <span class="math inline">\(i\)</span>. In Colossus, the log-likelihood (<span class="math inline">\(Ll\)</span>) is optimized.</p>
+<p>We start by describing the structure of the data. The logistic regression models in Colossus assume the data can be represented in terms of trials, events, and risk factors. Similar to a Poisson model using person-years and number of events in each row, a logistic model requires some measure of the number of independent trials and events for each group. A special case is an analysis in which each row represents one trial, and either 0 or 1 events are observed. The likelihood (<span class="math inline">\(L\)</span>) for a logistic model is a function of the trials (<span class="math inline">\(N_i\)</span>), events (<span class="math inline">\(y_i\)</span>), and the probability of a success (<span class="math inline">\(p_i\)</span>) for each row, <span class="math inline">\(i\)</span>. In Colossus, the log-likelihood (<span class="math inline">\(Ll\)</span>) is optimized.</p>
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
     L = \prod_i \left [ p_i^{y_i} \times (1-p_i)^{N_i - y_i} \right ] \\
-    Ll = \sum_i \left [ y_i \ln(p_i) + (N_i - y_i) \ln(1-p_i) \right ]
-\\
+    Ll = \sum_i \left [ y_i \ln(p_i) + (N_i - y_i) \ln(1-p_i) \right ] \\
 \end{aligned}
 \]</span>
 </p>
-<p>Similar to other survival models in Colossus, a model is written as a
-function of the various risk factors (<span class="math inline">\(f(\vec{\beta}, \vec{x})\)</span>). This function
-is related to the probability through a linking function. Three options
-are currently available: odds, identity, and complementary log linking,
-based on the options present in 32-bit Epicure.</p>
+<p>Similar to other survival models in Colossus, a model is written as a function of the various risk factors (<span class="math inline">\(f(\vec{\beta}, \vec{x})\)</span>). This function is related to the probability through a linking function. Three options are currently available: odds, identity, and complementary log linking, based on the options present in 32-bit Epicure.</p>
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
-    p_{odds} = \frac{f(\vec{\beta}, \vec{x})}{1+f(\vec{\beta}, \vec{x})}
-\\
+    p_{odds} = \frac{f(\vec{\beta}, \vec{x})}{1+f(\vec{\beta}, \vec{x})} \\
     p_{id} = f(\vec{\beta}, \vec{x}) \\
     p_{comp} = e^{-f(\vec{\beta}, \vec{x})}
 \end{aligned}
 \]</span>
 </p>
-<p>Similar to other regression models in Colossus, the first derivative
-vector and second derivative matrix are calculated to optimize the model
-parameters.</p>
+<p>Similar to other regression models in Colossus, the first derivative vector and second derivative matrix are calculated to optimize the model parameters.</p>
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
-    \frac{\partial Ll}{\partial \mu} = \sum_i \left [ y_i \frac{\partial
-p_i/\partial \mu}{p_i} - (N_i - y_i) \frac{\partial p_i/\partial
-\mu}{1-p_i} \right ] \\
-    \frac{\partial^2 Ll}{\partial \mu \partial \nu} = \sum_i \left [ y_i
-\left (\frac{\partial^2 p_i/\partial \mu \partial \nu}{p_i} -
-\frac{\partial p_i/\partial \mu}{p_i} \frac{\partial p_i/\partial
-\nu}{p_i} \right ) - (N_i - y_i) \left ( \frac{\partial^2 p_i/\partial
-\mu \partial \nu}{1-p_i} + \frac{\partial p_i/\partial \mu}{1-p_i}
-\frac{\partial p_i/\partial \nu}{1-p_i} \right ) \right ] \\
+    \frac{\partial Ll}{\partial \mu} = \sum_i \left [ y_i \frac{\partial p_i/\partial \mu}{p_i} - (N_i - y_i) \frac{\partial p_i/\partial \mu}{1-p_i} \right ] \\
+    \frac{\partial^2 Ll}{\partial \mu \partial \nu} = \sum_i \left [ y_i \left (\frac{\partial^2 p_i/\partial \mu \partial \nu}{p_i} - \frac{\partial p_i/\partial \mu}{p_i} \frac{\partial p_i/\partial \nu}{p_i} \right ) - (N_i - y_i) \left ( \frac{\partial^2 p_i/\partial \mu \partial \nu}{1-p_i} + \frac{\partial p_i/\partial \mu}{1-p_i} \frac{\partial p_i/\partial \nu}{1-p_i} \right ) \right ] \\
 \end{aligned}
 \]</span>
 </p>
 </div>
 <div id="examples-of-use" class="section level3">
 <h3>Examples of Use</h3>
-<p>The use of a logistic model in Colossus closely follows the other
-regression options. We start by loading and preparing the data. In this
-example, we will be using the Veterans’ Administration Lung Cancer study
-data from the survival package. Every row has 1 trial and a binary event
-status column. Once again, our model uses a trial column, an event
-column, and the “risk” equation that will be converted to a probability.
-In this case, the number of trials is 1, so the column can be omitted,
-but to illustrate, we will artificially create a trial column named
-“trial”.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co">#</span></span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>veteran <span class="sc">%&gt;%</span> <span class="fu">setDT</span>()</span>
-<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">copy</span>(veteran)</span>
-<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co"># Make the same adjustments as Epicure example 6.5</span></span>
-<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>karno <span class="ot">&lt;-</span> df<span class="sc">$</span>karno</span>
-<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>karno[<span class="dv">93</span>] <span class="ot">&lt;-</span> <span class="dv">20</span></span>
-<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>df<span class="sc">$</span>karno <span class="ot">&lt;-</span> karno</span>
-<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>df<span class="sc">$</span>trt <span class="ot">&lt;-</span> df<span class="sc">$</span>trt <span class="sc">-</span> <span class="dv">1</span></span>
-<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>df<span class="sc">$</span>trt <span class="ot">&lt;-</span> <span class="fu">as.integer</span>(df<span class="sc">$</span>trt <span class="sc">==</span> <span class="dv">0</span>)</span>
-<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>cell_string <span class="ot">&lt;-</span> df<span class="sc">$</span>celltype</span>
-<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>cell <span class="ot">&lt;-</span> <span class="fu">case_when</span>(</span>
-<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>  cell_string <span class="sc">==</span> <span class="st">&quot;squamous&quot;</span> <span class="sc">~</span> <span class="dv">1</span>,</span>
-<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a>  cell_string <span class="sc">==</span> <span class="st">&quot;smallcell&quot;</span> <span class="sc">~</span> <span class="dv">2</span>,</span>
-<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a>  cell_string <span class="sc">==</span> <span class="st">&quot;adeno&quot;</span> <span class="sc">~</span> <span class="dv">3</span>,</span>
-<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a>  cell_string <span class="sc">==</span> <span class="st">&quot;large&quot;</span> <span class="sc">~</span> <span class="dv">0</span></span>
-<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a>)</span>
-<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a>df<span class="sc">$</span>cell <span class="ot">&lt;-</span> cell</span>
-<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a></span>
-<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a>df<span class="sc">$</span>karno50 <span class="ot">&lt;-</span> df<span class="sc">$</span>karno <span class="sc">-</span> <span class="dv">50</span></span>
-<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a></span>
-<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a>df<span class="sc">$</span>trial <span class="ot">&lt;-</span> <span class="dv">1</span></span></code></pre></div>
-<p>We will start with testing the effects of cell type. By default,
-Colossus will always remove the first level of a factored column. We can
-force Colossus to include every level by defining the lowest level to an
-unused value, -1 in this case. This gives the same final model as if we
-removed the baseline and added an intercept column (CONST). In this
-case, the p-values are for the null hypothesis that the cell type has no
-effect. If we removed the baseline and added an intercept, the p-values
-would be for the null hypothesis that the cell type has no effect above
-the baseline.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>df<span class="sc">$</span>cell <span class="ot">&lt;-</span> <span class="fu">factor</span>(df<span class="sc">$</span>cell, <span class="at">levels =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>))</span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a></span>
-<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">Logit</span>(trial, status) <span class="sc">~</span> <span class="fu">loglinear</span>(cell)</span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">Logit</span>(status) <span class="sc">~</span> <span class="fu">loglinear</span>(cell)</span>
-<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a></span>
-<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>control <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">verbose =</span> <span class="dv">0</span>, <span class="at">ncores =</span> <span class="dv">2</span>)</span>
-<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>e <span class="ot">&lt;-</span> <span class="fu">LogisticRun</span>(model, df, <span class="at">control =</span> control)</span>
-<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="fu">print</span>(e)</span>
-<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
-<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co">#&gt; Final Results</span></span>
-<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co">#&gt;    Covariate Subterm Term Number Central Estimate Standard Error 2-tail p-value</span></span>
-<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co">#&gt;       &lt;char&gt;  &lt;char&gt;       &lt;int&gt;            &lt;num&gt;          &lt;num&gt;          &lt;num&gt;</span></span>
-<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="co">#&gt; 1:    cell_0  loglin           0         3.258061      1.0190324   1.387638e-03</span></span>
-<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co">#&gt; 2:    cell_1  loglin           0         2.047690      0.5312790   1.160781e-04</span></span>
-<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="co">#&gt; 3:    cell_2  loglin           0         2.708038      0.5962816   5.584424e-06</span></span>
-<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="co">#&gt; 4:    cell_3  loglin           0         3.258061      1.0190324   1.387638e-03</span></span>
-<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="co">#&gt; Logisitic Model Used</span></span>
-<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a><span class="co">#&gt; -2*Log-Likelihood: 64.43,  Deviation: 64.43,  AIC: 72.43,  BIC: 84.11</span></span>
-<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a><span class="co">#&gt; Iterations run: 11</span></span>
-<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a><span class="co">#&gt; maximum step size: 1.07e-04, maximum first derivative: 3.45e-05</span></span>
-<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a><span class="co">#&gt; Analysis converged</span></span>
-<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a><span class="co">#&gt; Run finished in 0.02 seconds</span></span>
-<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span></code></pre></div>
-<p>In this analysis, we were using the default of the odds ratio. The
-linking function can be changed by using the “link” option. The
-following examples show the impact of using each linking function. Note
-that the probability must be between 0-1, so the starting values are set
-to ensure that the initial probability estimates are valid. Because we
-are using categorical risk factors, every model converges to the same
-score and event probabilities; however, the standard error and p-values
-are affected. If we were using continuous variables, the linking
-functions would give a way to define further complicated risk
-models.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>a_n <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>)</span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>e <span class="ot">&lt;-</span> <span class="fu">LogisticRun</span>(model, df, <span class="at">control =</span> control, <span class="at">a_n =</span> a_n, <span class="at">link =</span> <span class="st">&quot;odds&quot;</span>)</span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="fu">print</span>(e)</span>
-<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co">#&gt; Final Results</span></span>
-<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="co">#&gt;    Covariate Subterm Term Number Central Estimate Standard Error 2-tail p-value</span></span>
-<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="co">#&gt;       &lt;char&gt;  &lt;char&gt;       &lt;int&gt;            &lt;num&gt;          &lt;num&gt;          &lt;num&gt;</span></span>
-<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#&gt; 1:    cell_0  loglin           0         3.258065      1.0190343   1.387648e-03</span></span>
-<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt; 2:    cell_1  loglin           0         2.047690      0.5312791   1.160781e-04</span></span>
-<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co">#&gt; 3:    cell_2  loglin           0         2.708039      0.5962820   5.584436e-06</span></span>
-<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt; 4:    cell_3  loglin           0         3.258065      1.0190343   1.387648e-03</span></span>
-<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt; Logisitic Model Used</span></span>
-<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="co">#&gt; -2*Log-Likelihood: 64.43,  Deviation: 64.43,  AIC: 72.43,  BIC: 84.11</span></span>
-<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="co">#&gt; Iterations run: 11</span></span>
-<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="co">#&gt; maximum step size: 9.57e-05, maximum first derivative: 3.07e-05</span></span>
-<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="co">#&gt; Analysis converged</span></span>
-<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="co">#&gt; Run finished in 0.02 seconds</span></span>
-<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
-<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a></span>
-<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a>a_n <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="sc">-</span><span class="dv">1</span>, <span class="sc">-</span><span class="dv">1</span>, <span class="sc">-</span><span class="dv">1</span>)</span>
-<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a>e <span class="ot">&lt;-</span> <span class="fu">LogisticRun</span>(model, df, <span class="at">control =</span> control, <span class="at">a_n =</span> a_n, <span class="at">link =</span> <span class="st">&quot;ident&quot;</span>)</span>
-<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a><span class="fu">print</span>(e)</span>
-<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
-<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a><span class="co">#&gt; Final Results</span></span>
-<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a><span class="co">#&gt;    Covariate Subterm Term Number Central Estimate Standard Error 2-tail p-value</span></span>
-<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a><span class="co">#&gt;       &lt;char&gt;  &lt;char&gt;       &lt;int&gt;            &lt;num&gt;          &lt;num&gt;          &lt;num&gt;</span></span>
-<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a><span class="co">#&gt; 1:    cell_0  loglin           0      -0.03772402     0.03773426     0.31744183</span></span>
-<span id="cb4-29"><a href="#cb4-29" tabindex="-1"></a><span class="co">#&gt; 2:    cell_1  loglin           0      -0.12136126     0.06071778     0.04563257</span></span>
-<span id="cb4-30"><a href="#cb4-30" tabindex="-1"></a><span class="co">#&gt; 3:    cell_2  loglin           0      -0.06453783     0.03726759     0.08331963</span></span>
-<span id="cb4-31"><a href="#cb4-31" tabindex="-1"></a><span class="co">#&gt; 4:    cell_3  loglin           0      -0.03772402     0.03773426     0.31744183</span></span>
-<span id="cb4-32"><a href="#cb4-32" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-33"><a href="#cb4-33" tabindex="-1"></a><span class="co">#&gt; Logisitic Model Used</span></span>
-<span id="cb4-34"><a href="#cb4-34" tabindex="-1"></a><span class="co">#&gt; -2*Log-Likelihood: 64.43,  Deviation: 64.43,  AIC: 72.43,  BIC: 84.11</span></span>
-<span id="cb4-35"><a href="#cb4-35" tabindex="-1"></a><span class="co">#&gt; Iterations run: 11</span></span>
-<span id="cb4-36"><a href="#cb4-36" tabindex="-1"></a><span class="co">#&gt; maximum step size: 4.86e-05, maximum first derivative: 1.15e-02</span></span>
-<span id="cb4-37"><a href="#cb4-37" tabindex="-1"></a><span class="co">#&gt; Analysis did not converge, check convergence criteria or run further</span></span>
-<span id="cb4-38"><a href="#cb4-38" tabindex="-1"></a><span class="co">#&gt; Run finished in 0.02 seconds</span></span>
-<span id="cb4-39"><a href="#cb4-39" tabindex="-1"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
-<span id="cb4-40"><a href="#cb4-40" tabindex="-1"></a></span>
-<span id="cb4-41"><a href="#cb4-41" tabindex="-1"></a>a_n <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>)</span>
-<span id="cb4-42"><a href="#cb4-42" tabindex="-1"></a>e <span class="ot">&lt;-</span> <span class="fu">LogisticRun</span>(model, df, <span class="at">control =</span> control, <span class="at">a_n =</span> a_n, <span class="at">link =</span> <span class="st">&quot;loglink&quot;</span>)</span>
-<span id="cb4-43"><a href="#cb4-43" tabindex="-1"></a><span class="fu">print</span>(e)</span>
-<span id="cb4-44"><a href="#cb4-44" tabindex="-1"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
-<span id="cb4-45"><a href="#cb4-45" tabindex="-1"></a><span class="co">#&gt; Final Results</span></span>
-<span id="cb4-46"><a href="#cb4-46" tabindex="-1"></a><span class="co">#&gt;    Covariate Subterm Term Number Central Estimate Standard Error 2-tail p-value</span></span>
-<span id="cb4-47"><a href="#cb4-47" tabindex="-1"></a><span class="co">#&gt;       &lt;char&gt;  &lt;char&gt;       &lt;int&gt;            &lt;num&gt;          &lt;num&gt;          &lt;num&gt;</span></span>
-<span id="cb4-48"><a href="#cb4-48" tabindex="-1"></a><span class="co">#&gt; 1:    cell_0  loglin           0        -3.276984      1.0000387   1.049695e-03</span></span>
-<span id="cb4-49"><a href="#cb4-49" tabindex="-1"></a><span class="co">#&gt; 2:    cell_1  loglin           0        -2.108983      0.5003059   2.493510e-05</span></span>
-<span id="cb4-50"><a href="#cb4-50" tabindex="-1"></a><span class="co">#&gt; 3:    cell_2  loglin           0        -2.740478      0.5774463   2.076244e-06</span></span>
-<span id="cb4-51"><a href="#cb4-51" tabindex="-1"></a><span class="co">#&gt; 4:    cell_3  loglin           0        -3.276984      1.0000387   1.049695e-03</span></span>
-<span id="cb4-52"><a href="#cb4-52" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-53"><a href="#cb4-53" tabindex="-1"></a><span class="co">#&gt; Logisitic Model Used</span></span>
-<span id="cb4-54"><a href="#cb4-54" tabindex="-1"></a><span class="co">#&gt; -2*Log-Likelihood: 64.43,  Deviation: 64.43,  AIC: 72.43,  BIC: 84.11</span></span>
-<span id="cb4-55"><a href="#cb4-55" tabindex="-1"></a><span class="co">#&gt; Iterations run: 12</span></span>
-<span id="cb4-56"><a href="#cb4-56" tabindex="-1"></a><span class="co">#&gt; maximum step size: 1.26e-04, maximum first derivative: 4.51e-05</span></span>
-<span id="cb4-57"><a href="#cb4-57" tabindex="-1"></a><span class="co">#&gt; Analysis converged</span></span>
-<span id="cb4-58"><a href="#cb4-58" tabindex="-1"></a><span class="co">#&gt; Run finished in 0.02 seconds</span></span>
-<span id="cb4-59"><a href="#cb4-59" tabindex="-1"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span></code></pre></div>
+<p>The use of a logistic model in Colossus closely follows the other regression options. We start by loading and preparing the data. In this example, we will be using the Veterans’ Administration Lung Cancer study data from the survival package. Every row has 1 trial and a binary event status column. Once again, our model uses a trial column, an event column, and the “risk” equation that will be converted to a probability. In this case, the number of trials is 1, so the column can be omitted, but to illustrate, we will artificially create a trial column named “trial”.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="co">#</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>veteran <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">setDT</span>()</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>df &lt;-<span class="st"> </span><span class="kw">copy</span>(veteran)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a><span class="co"># Make the same adjustments as Epicure example 6.5</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>karno &lt;-<span class="st"> </span>df<span class="op">$</span>karno</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a>karno[<span class="dv">93</span>] &lt;-<span class="st"> </span><span class="dv">20</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a>df<span class="op">$</span>karno &lt;-<span class="st"> </span>karno</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true"></a>df<span class="op">$</span>trt &lt;-<span class="st"> </span>df<span class="op">$</span>trt <span class="op">-</span><span class="st"> </span><span class="dv">1</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true"></a>df<span class="op">$</span>trt &lt;-<span class="st"> </span><span class="kw">as.integer</span>(df<span class="op">$</span>trt <span class="op">==</span><span class="st"> </span><span class="dv">0</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true"></a>cell_lvl &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;large&quot;</span>, <span class="st">&quot;squamous&quot;</span>, <span class="st">&quot;smallcell&quot;</span>, <span class="st">&quot;adeno&quot;</span>)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true"></a>df<span class="op">$</span>cell &lt;-<span class="st"> </span><span class="kw">as.integer</span>(<span class="kw">factor</span>(df<span class="op">$</span>celltype, <span class="dt">level =</span> cell_lvl)) <span class="op">-</span><span class="st"> </span><span class="dv">1</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true"></a>df<span class="op">$</span>karno50 &lt;-<span class="st"> </span>df<span class="op">$</span>karno <span class="op">-</span><span class="st"> </span><span class="dv">50</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true"></a>df<span class="op">$</span>trial &lt;-<span class="st"> </span><span class="dv">1</span></span></code></pre></div>
+<p>We will start with testing the effects of cell type. By default, Colossus will always remove the first level of a factored column. We can force Colossus to include every level by defining the lowest level to an unused value, -1 in this case. This gives the same final model as if we removed the baseline and added an intercept column (CONST). In this case, the p-values are for the null hypothesis that the cell type has no effect. If we removed the baseline and added an intercept, the p-values would be for the null hypothesis that the cell type has no effect above the baseline.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>df<span class="op">$</span>cell &lt;-<span class="st"> </span><span class="kw">factor</span>(df<span class="op">$</span>cell, <span class="dt">levels =</span> <span class="kw">c</span>(<span class="op">-</span><span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>))</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>model &lt;-<span class="st"> </span><span class="kw">Logit</span>(trial, status) <span class="op">~</span><span class="st"> </span><span class="kw">loglinear</span>(cell)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a>model &lt;-<span class="st"> </span><span class="kw">Logit</span>(status) <span class="op">~</span><span class="st"> </span><span class="kw">loglinear</span>(cell)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true"></a>control &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">verbose =</span> <span class="dv">0</span>, <span class="dt">ncores =</span> <span class="dv">2</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">LogisticRun</span>(model, df, <span class="dt">control =</span> control)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true"></a><span class="kw">print</span>(e)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true"></a><span class="co">#&gt; Final Results</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true"></a><span class="co">#&gt;    Covariate Subterm Term Number Central Estimate Standard Error 2-tail p-value</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true"></a><span class="co">#&gt;       &lt;char&gt;  &lt;char&gt;       &lt;int&gt;           &lt;char&gt;         &lt;char&gt;         &lt;char&gt;</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true"></a><span class="co">#&gt; 1:    cell_0  loglin           0             3.26          1.019       1.39e-03</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true"></a><span class="co">#&gt; 2:    cell_1  loglin           0             2.05          0.531       1.16e-04</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true"></a><span class="co">#&gt; 3:    cell_2  loglin           0             2.71          0.596       5.58e-06</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true"></a><span class="co">#&gt; 4:    cell_3  loglin           0             3.26          1.019       1.39e-03</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true"></a><span class="co">#&gt; Logisitic Model Used</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true"></a><span class="co">#&gt; -2*Log-Likelihood: 64.429,  Deviation: 64.429,  AIC: 72.429,  BIC: 84.109</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true"></a><span class="co">#&gt; Iterations run: 11</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true"></a><span class="co">#&gt; maximum step size: 1.075e-04, maximum first derivative: 3.454e-05</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true"></a><span class="co">#&gt; Analysis converged</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.072 seconds</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span></code></pre></div>
+<p>In this analysis, we were using the default of the odds ratio. The linking function can be changed by using the “link” option. The following examples show the impact of using each linking function. Note that the probability must be between 0-1, so the starting values are set to ensure that the initial probability estimates are valid. Because we are using categorical risk factors, every model converges to the same score and event probabilities; however, the standard error and p-values are affected. If we were using continuous variables, the linking functions would give a way to define further complicated risk models.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a>a_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">LogisticRun</span>(model, df, <span class="dt">control =</span> control, <span class="dt">a_n =</span> a_n, <span class="dt">link =</span> <span class="st">&quot;odds&quot;</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a><span class="kw">print</span>(e)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true"></a><span class="co">#&gt; Final Results</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true"></a><span class="co">#&gt;    Covariate Subterm Term Number Central Estimate Standard Error 2-tail p-value</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true"></a><span class="co">#&gt;       &lt;char&gt;  &lt;char&gt;       &lt;int&gt;           &lt;char&gt;         &lt;char&gt;         &lt;char&gt;</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true"></a><span class="co">#&gt; 1:    cell_0  loglin           0             3.26          1.019       1.39e-03</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true"></a><span class="co">#&gt; 2:    cell_1  loglin           0             2.05          0.531       1.16e-04</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true"></a><span class="co">#&gt; 3:    cell_2  loglin           0             2.71          0.596       5.58e-06</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true"></a><span class="co">#&gt; 4:    cell_3  loglin           0             3.26          1.019       1.39e-03</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true"></a><span class="co">#&gt; Logisitic Model Used</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true"></a><span class="co">#&gt; -2*Log-Likelihood: 64.429,  Deviation: 64.429,  AIC: 72.429,  BIC: 84.109</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true"></a><span class="co">#&gt; Iterations run: 11</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true"></a><span class="co">#&gt; maximum step size: 9.569e-05, maximum first derivative: 3.072e-05</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true"></a><span class="co">#&gt; Analysis converged</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.049 seconds</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true"></a></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true"></a>a_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="op">-</span><span class="dv">1</span>, <span class="dv">-1</span>, <span class="dv">-1</span>, <span class="dv">-1</span>)</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">LogisticRun</span>(model, df, <span class="dt">control =</span> control, <span class="dt">a_n =</span> a_n, <span class="dt">link =</span> <span class="st">&quot;ident&quot;</span>)</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true"></a><span class="kw">print</span>(e)</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true"></a><span class="co">#&gt; Final Results</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true"></a><span class="co">#&gt;    Covariate Subterm Term Number Central Estimate Standard Error 2-tail p-value</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true"></a><span class="co">#&gt;       &lt;char&gt;  &lt;char&gt;       &lt;int&gt;           &lt;char&gt;         &lt;char&gt;         &lt;char&gt;</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true"></a><span class="co">#&gt; 1:    cell_0  loglin           0          -0.0377         0.0377         0.3174</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true"></a><span class="co">#&gt; 2:    cell_1  loglin           0          -0.1214         0.0607         0.0456</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true"></a><span class="co">#&gt; 3:    cell_2  loglin           0          -0.0645         0.0373         0.0833</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true"></a><span class="co">#&gt; 4:    cell_3  loglin           0          -0.0377         0.0377         0.3174</span></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true"></a><span class="co">#&gt; Logisitic Model Used</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true"></a><span class="co">#&gt; -2*Log-Likelihood: 64.429,  Deviation: 64.429,  AIC: 72.429,  BIC: 84.109</span></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true"></a><span class="co">#&gt; Iterations run: 11</span></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true"></a><span class="co">#&gt; maximum step size: 4.859e-05, maximum first derivative: 1.145e-02</span></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true"></a><span class="co">#&gt; Analysis did not converge, check convergence criteria or run further</span></span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.071 seconds</span></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true"></a></span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true"></a>a_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>)</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true"></a>e &lt;-<span class="st"> </span><span class="kw">LogisticRun</span>(model, df, <span class="dt">control =</span> control, <span class="dt">a_n =</span> a_n, <span class="dt">link =</span> <span class="st">&quot;loglink&quot;</span>)</span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true"></a><span class="kw">print</span>(e)</span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true"></a><span class="co">#&gt; Final Results</span></span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true"></a><span class="co">#&gt;    Covariate Subterm Term Number Central Estimate Standard Error 2-tail p-value</span></span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true"></a><span class="co">#&gt;       &lt;char&gt;  &lt;char&gt;       &lt;int&gt;           &lt;char&gt;         &lt;char&gt;         &lt;char&gt;</span></span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true"></a><span class="co">#&gt; 1:    cell_0  loglin           0            -3.28          1.000       1.05e-03</span></span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true"></a><span class="co">#&gt; 2:    cell_1  loglin           0            -2.11          0.500       2.49e-05</span></span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true"></a><span class="co">#&gt; 3:    cell_2  loglin           0            -2.74          0.577       2.08e-06</span></span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true"></a><span class="co">#&gt; 4:    cell_3  loglin           0            -3.28          1.000       1.05e-03</span></span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true"></a><span class="co">#&gt; Logisitic Model Used</span></span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true"></a><span class="co">#&gt; -2*Log-Likelihood: 64.429,  Deviation: 64.429,  AIC: 72.429,  BIC: 84.109</span></span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true"></a><span class="co">#&gt; Iterations run: 12</span></span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true"></a><span class="co">#&gt; maximum step size: 1.263e-04, maximum first derivative: 4.514e-05</span></span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true"></a><span class="co">#&gt; Analysis converged</span></span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.051 seconds</span></span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span></code></pre></div>
 </div>
 </div>
 

@@ -10,15 +10,8 @@ test_that("check errors", {
     df$karno <- karno
     df$trt <- df$trt - 1
     df$trt <- as.integer(df$trt == 0)
-    cell_string <- df$celltype
-    cell <- case_when(
-      cell_string == "squamous" ~ 1,
-      cell_string == "smallcell" ~ 2,
-      cell_string == "adeno" ~ 3,
-      cell_string == "large" ~ 0
-    )
-    df$cell <- cell
-
+    cell_lvl <- c("large", "squamous", "smallcell", "adeno")
+    df$cell <- as.integer(factor(df$celltype, level = cell_lvl)) - 1
     df$karno50 <- df$karno - 50
     a_n <- c(0.1, 0.1)
 
@@ -45,14 +38,8 @@ test_that("threshold nonfail", {
     df$karno <- karno
     df$trt <- df$trt - 1
     df$trt <- as.integer(df$trt == 0)
-    cell_string <- df$celltype
-    cell <- case_when(
-      cell_string == "squamous" ~ 1,
-      cell_string == "smallcell" ~ 2,
-      cell_string == "adeno" ~ 3,
-      cell_string == "large" ~ 0
-    )
-    df$cell <- cell
+    cell_lvl <- c("large", "squamous", "smallcell", "adeno")
+    df$cell <- as.integer(factor(df$celltype, level = cell_lvl)) - 1
 
     df$karno50 <- df$karno - 50
     a_n <- c(0.1, 0.1)
@@ -103,14 +90,8 @@ test_that("threshold nonfail, single", {
     df$karno <- karno
     df$trt <- df$trt - 1
     df$trt <- as.integer(df$trt == 0)
-    cell_string <- df$celltype
-    cell <- case_when(
-      cell_string == "squamous" ~ 1,
-      cell_string == "smallcell" ~ 2,
-      cell_string == "adeno" ~ 3,
-      cell_string == "large" ~ 0
-    )
-    df$cell <- cell
+    cell_lvl <- c("large", "squamous", "smallcell", "adeno")
+    df$cell <- as.integer(factor(df$celltype, level = cell_lvl)) - 1
 
     df$karno50 <- df$karno - 50
     a_n <- c(0.1, 0.1)
@@ -162,14 +143,8 @@ test_that("threshold nonfail, null", {
     df$karno <- karno
     df$trt <- df$trt - 1
     df$trt <- as.integer(df$trt == 0)
-    cell_string <- df$celltype
-    cell <- case_when(
-      cell_string == "squamous" ~ 1,
-      cell_string == "smallcell" ~ 2,
-      cell_string == "adeno" ~ 3,
-      cell_string == "large" ~ 0
-    )
-    df$cell <- cell
+    cell_lvl <- c("large", "squamous", "smallcell", "adeno")
+    df$cell <- as.integer(factor(df$celltype, level = cell_lvl)) - 1
 
     df$karno50 <- df$karno - 50
     a_n <- c(0.1, 0.1)
@@ -221,14 +196,8 @@ test_that("threshold nonfail, gradient", {
     df$karno <- karno
     df$trt <- df$trt - 1
     df$trt <- as.integer(df$trt == 0)
-    cell_string <- df$celltype
-    cell <- case_when(
-      cell_string == "squamous" ~ 1,
-      cell_string == "smallcell" ~ 2,
-      cell_string == "adeno" ~ 3,
-      cell_string == "large" ~ 0
-    )
-    df$cell <- cell
+    cell_lvl <- c("large", "squamous", "smallcell", "adeno")
+    df$cell <- as.integer(factor(df$celltype, level = cell_lvl)) - 1
 
     df$karno50 <- df$karno - 50
     a_n <- c(0.1, 0.1)
@@ -296,14 +265,14 @@ test_that("threshold nonfail, gradient", {
         }
       }
     }
-    devs <- c(75.325, 62.48172, 63.38723, 75.325, 62.48172, 63.38723, 75.325, 62.48172, 63.38723)
-    free_strat <- c(1, 1, 1, 1, 1, 1, 1, 1, 1)
+    devs <- c(75.325, 62.48172, 63.38723, 113.11, 75.325, 62.48172, 63.38723, 113.11, 75.325, 62.48172, 63.38723, 113.11)
+    free_strat <- c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
     i_index <- 1
     for (time_bool in c(F)) {
       for (strat_bool in c(F)) {
         model <- CaseCon(status) ~ loglinear(karno50, trt)
         for (thres in c(0, 40, 100)) {
-          for (method in c("momentum", "adadelta", "adam")) {
+          for (method in c("momentum", "adadelta", "adam", "none")) {
             gradient_control <- list()
             gradient_control[[method]] <- TRUE
             e <- CaseControlRun(model, df, gradient_control = gradient_control, control = control, conditional_threshold = thres, a_n = a_n)
@@ -330,14 +299,8 @@ test_that("information matrix calculations", {
     df$karno <- karno
     df$trt <- df$trt - 1
     df$trt <- as.integer(df$trt == 0)
-    cell_string <- df$celltype
-    cell <- case_when(
-      cell_string == "squamous" ~ 1,
-      cell_string == "smallcell" ~ 2,
-      cell_string == "adeno" ~ 3,
-      cell_string == "large" ~ 0
-    )
-    df$cell <- cell
+    cell_lvl <- c("large", "squamous", "smallcell", "adeno")
+    df$cell <- as.integer(factor(df$celltype, level = cell_lvl)) - 1
 
     df$karno50 <- df$karno - 50
     a_n <- c(0.1, 0.1)

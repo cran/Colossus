@@ -35,20 +35,14 @@ test_that("basic regression with link non-fail", {
     df$karno <- karno
     df$trt <- df$trt - 1
     df$trt <- as.integer(df$trt == 0)
-    cell_string <- df$celltype
-    cell <- case_when(
-      cell_string == "squamous" ~ 1,
-      cell_string == "smallcell" ~ 2,
-      cell_string == "adeno" ~ 3,
-      cell_string == "large" ~ 0
-    )
-    df$cell <- cell
+    cell_lvl <- c("large", "squamous", "smallcell", "adeno")
+    df$cell <- as.integer(factor(df$celltype, level = cell_lvl)) - 1
 
     df$karno50 <- df$karno - 50
     a_n <- c(0.1, 0.1)
 
 
-    control <- list(verbose = 0, step_max = 0.1, maxiters = 100, ncores = 2)
+    control <- list(verbose = 0, step_max = 0.1, maxiter = 100, ncores = 2)
     #
     def_rate <- log(sum(df$status) / length(df$status))
     a_n <- c(0.001, -0.95, def_rate)
