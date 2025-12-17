@@ -402,39 +402,35 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb2-14"><a href="#cb2-14" aria-hidden="true"></a><span class="kw">print</span>(e1, <span class="dv">5</span>)</span>
 <span id="cb2-15"><a href="#cb2-15" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
 <span id="cb2-16"><a href="#cb2-16" aria-hidden="true"></a><span class="co">#&gt; Final Results</span></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true"></a><span class="co">#&gt;      Covariate Central Estimate Standard Error 2-tail p-value</span></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true"></a><span class="co">#&gt;         &lt;char&gt;           &lt;char&gt;         &lt;char&gt;         &lt;char&gt;</span></span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true"></a><span class="co">#&gt; 1: temperature          0.75995        0.39644      0.0552490</span></span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true"></a><span class="co">#&gt; 2:     voltage          1.98839        0.60631      0.0010399</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true"></a><span class="co">#&gt;      Covariate Subterm Central Estimate Standard Error 2-tail p-value</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true"></a><span class="co">#&gt;         &lt;char&gt;  &lt;char&gt;            &lt;num&gt;          &lt;num&gt;          &lt;num&gt;</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true"></a><span class="co">#&gt; 1: temperature  loglin          0.75995        0.39644      0.0552490</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true"></a><span class="co">#&gt; 2:     voltage  loglin          1.98839        0.60631      0.0010399</span></span>
 <span id="cb2-21"><a href="#cb2-21" aria-hidden="true"></a><span class="co">#&gt; </span></span>
 <span id="cb2-22"><a href="#cb2-22" aria-hidden="true"></a><span class="co">#&gt; Cox Model Used</span></span>
 <span id="cb2-23"><a href="#cb2-23" aria-hidden="true"></a><span class="co">#&gt; -2*Log-Likelihood: 210.77792,  AIC: 214.77792</span></span>
 <span id="cb2-24"><a href="#cb2-24" aria-hidden="true"></a><span class="co">#&gt; Iterations run: 8</span></span>
 <span id="cb2-25"><a href="#cb2-25" aria-hidden="true"></a><span class="co">#&gt; maximum step size: 5.90475e-05, maximum first derivative: 5.22560e-05</span></span>
 <span id="cb2-26"><a href="#cb2-26" aria-hidden="true"></a><span class="co">#&gt; Analysis converged</span></span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.15538 seconds</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.15473 seconds</span></span>
 <span id="cb2-28"><a href="#cb2-28" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
 <span id="cb2-29"><a href="#cb2-29" aria-hidden="true"></a></span>
 <span id="cb2-30"><a href="#cb2-30" aria-hidden="true"></a>e2 &lt;-<span class="st"> </span><span class="kw">CoxRun</span>(<span class="kw">Cox</span>(time, status) <span class="op">~</span><span class="st"> </span><span class="kw">loglinear</span>(temperature, <span class="dv">0</span>) <span class="op">+</span><span class="st"> </span><span class="kw">plinear</span>(voltage, <span class="dv">0</span>), df, <span class="dt">a_n =</span> a_n, <span class="dt">control =</span> control)</span>
 <span id="cb2-31"><a href="#cb2-31" aria-hidden="true"></a><span class="kw">print</span>(e2, <span class="dv">5</span>)</span>
 <span id="cb2-32"><a href="#cb2-32" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
 <span id="cb2-33"><a href="#cb2-33" aria-hidden="true"></a><span class="co">#&gt; Final Results</span></span>
-<span id="cb2-34"><a href="#cb2-34" aria-hidden="true"></a><span class="co">#&gt;      Covariate Subterm Term Number Central Estimate Standard Error</span></span>
-<span id="cb2-35"><a href="#cb2-35" aria-hidden="true"></a><span class="co">#&gt;         &lt;char&gt;  &lt;char&gt;       &lt;int&gt;           &lt;char&gt;         &lt;char&gt;</span></span>
-<span id="cb2-36"><a href="#cb2-36" aria-hidden="true"></a><span class="co">#&gt; 1: temperature  loglin           0          0.95035         0.4313</span></span>
-<span id="cb2-37"><a href="#cb2-37" aria-hidden="true"></a><span class="co">#&gt; 2:     voltage    plin           0          8.81720         6.1906</span></span>
-<span id="cb2-38"><a href="#cb2-38" aria-hidden="true"></a><span class="co">#&gt;    2-tail p-value</span></span>
-<span id="cb2-39"><a href="#cb2-39" aria-hidden="true"></a><span class="co">#&gt;            &lt;char&gt;</span></span>
-<span id="cb2-40"><a href="#cb2-40" aria-hidden="true"></a><span class="co">#&gt; 1:       0.027563</span></span>
-<span id="cb2-41"><a href="#cb2-41" aria-hidden="true"></a><span class="co">#&gt; 2:       0.154362</span></span>
-<span id="cb2-42"><a href="#cb2-42" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb2-43"><a href="#cb2-43" aria-hidden="true"></a><span class="co">#&gt; Cox Model Used</span></span>
-<span id="cb2-44"><a href="#cb2-44" aria-hidden="true"></a><span class="co">#&gt; -2*Log-Likelihood: 208.49028,  AIC: 212.49028</span></span>
-<span id="cb2-45"><a href="#cb2-45" aria-hidden="true"></a><span class="co">#&gt; Iterations run: 13</span></span>
-<span id="cb2-46"><a href="#cb2-46" aria-hidden="true"></a><span class="co">#&gt; maximum step size: 2.57874e-03, maximum first derivative: 3.62470e-05</span></span>
-<span id="cb2-47"><a href="#cb2-47" aria-hidden="true"></a><span class="co">#&gt; Analysis converged</span></span>
-<span id="cb2-48"><a href="#cb2-48" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.10699 seconds</span></span>
-<span id="cb2-49"><a href="#cb2-49" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span></code></pre></div>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true"></a><span class="co">#&gt;      Covariate Subterm Central Estimate Standard Error 2-tail p-value</span></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true"></a><span class="co">#&gt;         &lt;char&gt;  &lt;char&gt;            &lt;num&gt;          &lt;num&gt;          &lt;num&gt;</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true"></a><span class="co">#&gt; 1: temperature  loglin          0.95035         0.4313       0.027563</span></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true"></a><span class="co">#&gt; 2:     voltage    plin          8.81720         6.1906       0.154362</span></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true"></a><span class="co">#&gt; Cox Model Used</span></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true"></a><span class="co">#&gt; -2*Log-Likelihood: 208.49028,  AIC: 212.49028</span></span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true"></a><span class="co">#&gt; Iterations run: 13</span></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true"></a><span class="co">#&gt; maximum step size: 2.57874e-03, maximum first derivative: 3.62470e-05</span></span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true"></a><span class="co">#&gt; Analysis converged</span></span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.13314 seconds</span></span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span></code></pre></div>
 <p>Next, suppose we were interested in the confidence intervals. Suppose we want 95% confidence intervals for both the Wald and likelihood-based boundaries and for both parameters in each model. Let us start with the fully exponential model. The Wald boundary is estimated using the central estimates and standard deviations. The Likelihood boundary is solved using the “log_bound” option under the model control list. The parameter number needs to be provided (indexed starting at zero) and an alpha level needs to be provided. Overall, the likelihood boundaries were all solved with scores within a narrow margin of the threshold. However, the boundaries are not the same. The boundaries for temperature are (-0.017, 1.537) and (-0.01, 1.560), and the boundaries for voltage are (0.800, 3.177) and (0.841, 3.242). The two boundaries are off on a scale of less than 0.1.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>names &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;temperature&quot;</span>, <span class="st">&quot;voltage&quot;</span>)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>tform &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;loglin&quot;</span>, <span class="st">&quot;loglin&quot;</span>)</span>
@@ -471,7 +467,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb3-33"><a href="#cb3-33" aria-hidden="true"></a><span class="co">#&gt; Lower limit converged to at -0.0098967 at a score of -107.30968 with of goal of -107.30969</span></span>
 <span id="cb3-34"><a href="#cb3-34" aria-hidden="true"></a><span class="co">#&gt; Central estimate was 0.75995</span></span>
 <span id="cb3-35"><a href="#cb3-35" aria-hidden="true"></a><span class="co">#&gt; Upper limit converged to at 1.5599 at a score of -107.30968 with of goal of -107.30969</span></span>
-<span id="cb3-36"><a href="#cb3-36" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.05017 seconds</span></span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.03897 seconds</span></span>
 <span id="cb3-37"><a href="#cb3-37" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
 <span id="cb3-38"><a href="#cb3-38" aria-hidden="true"></a></span>
 <span id="cb3-39"><a href="#cb3-39" aria-hidden="true"></a>curve_control &lt;-<span class="st"> </span><span class="kw">list</span>(</span>
@@ -497,7 +493,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb3-59"><a href="#cb3-59" aria-hidden="true"></a><span class="co">#&gt; Lower limit converged to at 0.84124 at a score of -107.30968 with of goal of -107.30969</span></span>
 <span id="cb3-60"><a href="#cb3-60" aria-hidden="true"></a><span class="co">#&gt; Central estimate was 1.9884</span></span>
 <span id="cb3-61"><a href="#cb3-61" aria-hidden="true"></a><span class="co">#&gt; Upper limit converged to at 3.242 at a score of -107.30968 with of goal of -107.30969</span></span>
-<span id="cb3-62"><a href="#cb3-62" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.02584 seconds</span></span>
+<span id="cb3-62"><a href="#cb3-62" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.0384 seconds</span></span>
 <span id="cb3-63"><a href="#cb3-63" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span></code></pre></div>
 <p>Next, we analyze a model with a linear effect. We would expect the predictions to be further off. The boundaries for temperature are (-0.523, 2.800) and (-0.010, 3.758), and the boundaries for voltage are (0.800, 3.177) and (0.841, 3.242). The estimates for the voltage boundary are the same, but the estimates for the temperature boundary are much further off.</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a>ci_<span class="dv">1</span> &lt;-<span class="st"> </span><span class="kw">c</span>(</span>
@@ -532,7 +528,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb4-30"><a href="#cb4-30" aria-hidden="true"></a><span class="co">#&gt; Lower limit converged to at 0.12897 at a score of -106.16586 with of goal of -106.16587</span></span>
 <span id="cb4-31"><a href="#cb4-31" aria-hidden="true"></a><span class="co">#&gt; Central estimate was 0.95035</span></span>
 <span id="cb4-32"><a href="#cb4-32" aria-hidden="true"></a><span class="co">#&gt; Upper limit converged to at 1.8401 at a score of -106.16587 with of goal of -106.16587</span></span>
-<span id="cb4-33"><a href="#cb4-33" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.02916 seconds</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.03801 seconds</span></span>
 <span id="cb4-34"><a href="#cb4-34" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
 <span id="cb4-35"><a href="#cb4-35" aria-hidden="true"></a></span>
 <span id="cb4-36"><a href="#cb4-36" aria-hidden="true"></a>a_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">1.138152</span>, <span class="fl">1.988403</span>)</span>
@@ -559,7 +555,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb4-57"><a href="#cb4-57" aria-hidden="true"></a><span class="co">#&gt; Lower limit converged to at 1.9709 at a score of -106.16585 with of goal of -106.16587</span></span>
 <span id="cb4-58"><a href="#cb4-58" aria-hidden="true"></a><span class="co">#&gt; Central estimate was 8.8172</span></span>
 <span id="cb4-59"><a href="#cb4-59" aria-hidden="true"></a><span class="co">#&gt; Upper limit converged to at 34.472 at a score of -106.16587 with of goal of -106.16587</span></span>
-<span id="cb4-60"><a href="#cb4-60" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.02006 seconds</span></span>
+<span id="cb4-60"><a href="#cb4-60" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.05219 seconds</span></span>
 <span id="cb4-61"><a href="#cb4-61" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span></code></pre></div>
 </div>
 <div id="illustration-of-issues-with-likelihood-boundary-algorithm" class="section level3">

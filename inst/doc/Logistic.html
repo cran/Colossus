@@ -433,19 +433,19 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true"></a><span class="kw">print</span>(e)</span>
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
 <span id="cb3-10"><a href="#cb3-10" aria-hidden="true"></a><span class="co">#&gt; Final Results</span></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true"></a><span class="co">#&gt;    Covariate Subterm Term Number Central Estimate Standard Error 2-tail p-value</span></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true"></a><span class="co">#&gt;       &lt;char&gt;  &lt;char&gt;       &lt;int&gt;           &lt;char&gt;         &lt;char&gt;         &lt;char&gt;</span></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true"></a><span class="co">#&gt; 1:    cell_0  loglin           0             3.26          1.019       1.39e-03</span></span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true"></a><span class="co">#&gt; 2:    cell_1  loglin           0             2.05          0.531       1.16e-04</span></span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true"></a><span class="co">#&gt; 3:    cell_2  loglin           0             2.71          0.596       5.58e-06</span></span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true"></a><span class="co">#&gt; 4:    cell_3  loglin           0             3.26          1.019       1.39e-03</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true"></a><span class="co">#&gt;    Covariate Subterm Central Estimate Standard Error 2-tail p-value</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true"></a><span class="co">#&gt;       &lt;char&gt;  &lt;char&gt;            &lt;num&gt;          &lt;num&gt;          &lt;num&gt;</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true"></a><span class="co">#&gt; 1:    cell_0  loglin             3.26          1.019       1.39e-03</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true"></a><span class="co">#&gt; 2:    cell_1  loglin             2.05          0.531       1.16e-04</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true"></a><span class="co">#&gt; 3:    cell_2  loglin             2.71          0.596       5.58e-06</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true"></a><span class="co">#&gt; 4:    cell_3  loglin             3.26          1.019       1.39e-03</span></span>
 <span id="cb3-17"><a href="#cb3-17" aria-hidden="true"></a><span class="co">#&gt; </span></span>
 <span id="cb3-18"><a href="#cb3-18" aria-hidden="true"></a><span class="co">#&gt; Logisitic Model Used</span></span>
 <span id="cb3-19"><a href="#cb3-19" aria-hidden="true"></a><span class="co">#&gt; -2*Log-Likelihood: 64.429,  Deviation: 64.429,  AIC: 72.429,  BIC: 84.109</span></span>
 <span id="cb3-20"><a href="#cb3-20" aria-hidden="true"></a><span class="co">#&gt; Iterations run: 11</span></span>
 <span id="cb3-21"><a href="#cb3-21" aria-hidden="true"></a><span class="co">#&gt; maximum step size: 1.075e-04, maximum first derivative: 3.454e-05</span></span>
 <span id="cb3-22"><a href="#cb3-22" aria-hidden="true"></a><span class="co">#&gt; Analysis converged</span></span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.072 seconds</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.083 seconds</span></span>
 <span id="cb3-24"><a href="#cb3-24" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span></code></pre></div>
 <p>In this analysis, we were using the default of the odds ratio. The linking function can be changed by using the “link” option. The following examples show the impact of using each linking function. Note that the probability must be between 0-1, so the starting values are set to ensure that the initial probability estimates are valid. Because we are using categorical risk factors, every model converges to the same score and event probabilities; however, the standard error and p-values are affected. If we were using continuous variables, the linking functions would give a way to define further complicated risk models.</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a>a_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>)</span>
@@ -453,19 +453,19 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a><span class="kw">print</span>(e)</span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true"></a><span class="co">#&gt; Final Results</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true"></a><span class="co">#&gt;    Covariate Subterm Term Number Central Estimate Standard Error 2-tail p-value</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true"></a><span class="co">#&gt;       &lt;char&gt;  &lt;char&gt;       &lt;int&gt;           &lt;char&gt;         &lt;char&gt;         &lt;char&gt;</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true"></a><span class="co">#&gt; 1:    cell_0  loglin           0             3.26          1.019       1.39e-03</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true"></a><span class="co">#&gt; 2:    cell_1  loglin           0             2.05          0.531       1.16e-04</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true"></a><span class="co">#&gt; 3:    cell_2  loglin           0             2.71          0.596       5.58e-06</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true"></a><span class="co">#&gt; 4:    cell_3  loglin           0             3.26          1.019       1.39e-03</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true"></a><span class="co">#&gt;    Covariate Subterm Central Estimate Standard Error 2-tail p-value</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true"></a><span class="co">#&gt;       &lt;char&gt;  &lt;char&gt;            &lt;num&gt;          &lt;num&gt;          &lt;num&gt;</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true"></a><span class="co">#&gt; 1:    cell_0  loglin             3.26          1.019       1.39e-03</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true"></a><span class="co">#&gt; 2:    cell_1  loglin             2.05          0.531       1.16e-04</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true"></a><span class="co">#&gt; 3:    cell_2  loglin             2.71          0.596       5.58e-06</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true"></a><span class="co">#&gt; 4:    cell_3  loglin             3.26          1.019       1.39e-03</span></span>
 <span id="cb4-12"><a href="#cb4-12" aria-hidden="true"></a><span class="co">#&gt; </span></span>
 <span id="cb4-13"><a href="#cb4-13" aria-hidden="true"></a><span class="co">#&gt; Logisitic Model Used</span></span>
 <span id="cb4-14"><a href="#cb4-14" aria-hidden="true"></a><span class="co">#&gt; -2*Log-Likelihood: 64.429,  Deviation: 64.429,  AIC: 72.429,  BIC: 84.109</span></span>
 <span id="cb4-15"><a href="#cb4-15" aria-hidden="true"></a><span class="co">#&gt; Iterations run: 11</span></span>
 <span id="cb4-16"><a href="#cb4-16" aria-hidden="true"></a><span class="co">#&gt; maximum step size: 9.569e-05, maximum first derivative: 3.072e-05</span></span>
 <span id="cb4-17"><a href="#cb4-17" aria-hidden="true"></a><span class="co">#&gt; Analysis converged</span></span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.049 seconds</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.064 seconds</span></span>
 <span id="cb4-19"><a href="#cb4-19" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
 <span id="cb4-20"><a href="#cb4-20" aria-hidden="true"></a></span>
 <span id="cb4-21"><a href="#cb4-21" aria-hidden="true"></a>a_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="op">-</span><span class="dv">1</span>, <span class="dv">-1</span>, <span class="dv">-1</span>, <span class="dv">-1</span>)</span>
@@ -473,19 +473,19 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb4-23"><a href="#cb4-23" aria-hidden="true"></a><span class="kw">print</span>(e)</span>
 <span id="cb4-24"><a href="#cb4-24" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
 <span id="cb4-25"><a href="#cb4-25" aria-hidden="true"></a><span class="co">#&gt; Final Results</span></span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true"></a><span class="co">#&gt;    Covariate Subterm Term Number Central Estimate Standard Error 2-tail p-value</span></span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true"></a><span class="co">#&gt;       &lt;char&gt;  &lt;char&gt;       &lt;int&gt;           &lt;char&gt;         &lt;char&gt;         &lt;char&gt;</span></span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true"></a><span class="co">#&gt; 1:    cell_0  loglin           0          -0.0377         0.0377         0.3174</span></span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true"></a><span class="co">#&gt; 2:    cell_1  loglin           0          -0.1214         0.0607         0.0456</span></span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true"></a><span class="co">#&gt; 3:    cell_2  loglin           0          -0.0645         0.0373         0.0833</span></span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true"></a><span class="co">#&gt; 4:    cell_3  loglin           0          -0.0377         0.0377         0.3174</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true"></a><span class="co">#&gt;    Covariate Subterm Central Estimate Standard Error 2-tail p-value</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true"></a><span class="co">#&gt;       &lt;char&gt;  &lt;char&gt;            &lt;num&gt;          &lt;num&gt;          &lt;num&gt;</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true"></a><span class="co">#&gt; 1:    cell_0  loglin          -0.0377         0.0377         0.3174</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true"></a><span class="co">#&gt; 2:    cell_1  loglin          -0.1214         0.0607         0.0456</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true"></a><span class="co">#&gt; 3:    cell_2  loglin          -0.0645         0.0373         0.0833</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true"></a><span class="co">#&gt; 4:    cell_3  loglin          -0.0377         0.0377         0.3174</span></span>
 <span id="cb4-32"><a href="#cb4-32" aria-hidden="true"></a><span class="co">#&gt; </span></span>
 <span id="cb4-33"><a href="#cb4-33" aria-hidden="true"></a><span class="co">#&gt; Logisitic Model Used</span></span>
 <span id="cb4-34"><a href="#cb4-34" aria-hidden="true"></a><span class="co">#&gt; -2*Log-Likelihood: 64.429,  Deviation: 64.429,  AIC: 72.429,  BIC: 84.109</span></span>
 <span id="cb4-35"><a href="#cb4-35" aria-hidden="true"></a><span class="co">#&gt; Iterations run: 11</span></span>
 <span id="cb4-36"><a href="#cb4-36" aria-hidden="true"></a><span class="co">#&gt; maximum step size: 4.859e-05, maximum first derivative: 1.145e-02</span></span>
 <span id="cb4-37"><a href="#cb4-37" aria-hidden="true"></a><span class="co">#&gt; Analysis did not converge, check convergence criteria or run further</span></span>
-<span id="cb4-38"><a href="#cb4-38" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.071 seconds</span></span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.104 seconds</span></span>
 <span id="cb4-39"><a href="#cb4-39" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
 <span id="cb4-40"><a href="#cb4-40" aria-hidden="true"></a></span>
 <span id="cb4-41"><a href="#cb4-41" aria-hidden="true"></a>a_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>)</span>
@@ -493,19 +493,19 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb4-43"><a href="#cb4-43" aria-hidden="true"></a><span class="kw">print</span>(e)</span>
 <span id="cb4-44"><a href="#cb4-44" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
 <span id="cb4-45"><a href="#cb4-45" aria-hidden="true"></a><span class="co">#&gt; Final Results</span></span>
-<span id="cb4-46"><a href="#cb4-46" aria-hidden="true"></a><span class="co">#&gt;    Covariate Subterm Term Number Central Estimate Standard Error 2-tail p-value</span></span>
-<span id="cb4-47"><a href="#cb4-47" aria-hidden="true"></a><span class="co">#&gt;       &lt;char&gt;  &lt;char&gt;       &lt;int&gt;           &lt;char&gt;         &lt;char&gt;         &lt;char&gt;</span></span>
-<span id="cb4-48"><a href="#cb4-48" aria-hidden="true"></a><span class="co">#&gt; 1:    cell_0  loglin           0            -3.28          1.000       1.05e-03</span></span>
-<span id="cb4-49"><a href="#cb4-49" aria-hidden="true"></a><span class="co">#&gt; 2:    cell_1  loglin           0            -2.11          0.500       2.49e-05</span></span>
-<span id="cb4-50"><a href="#cb4-50" aria-hidden="true"></a><span class="co">#&gt; 3:    cell_2  loglin           0            -2.74          0.577       2.08e-06</span></span>
-<span id="cb4-51"><a href="#cb4-51" aria-hidden="true"></a><span class="co">#&gt; 4:    cell_3  loglin           0            -3.28          1.000       1.05e-03</span></span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true"></a><span class="co">#&gt;    Covariate Subterm Central Estimate Standard Error 2-tail p-value</span></span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true"></a><span class="co">#&gt;       &lt;char&gt;  &lt;char&gt;            &lt;num&gt;          &lt;num&gt;          &lt;num&gt;</span></span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true"></a><span class="co">#&gt; 1:    cell_0  loglin            -3.28          1.000       1.05e-03</span></span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true"></a><span class="co">#&gt; 2:    cell_1  loglin            -2.11          0.500       2.49e-05</span></span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true"></a><span class="co">#&gt; 3:    cell_2  loglin            -2.74          0.577       2.08e-06</span></span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true"></a><span class="co">#&gt; 4:    cell_3  loglin            -3.28          1.000       1.05e-03</span></span>
 <span id="cb4-52"><a href="#cb4-52" aria-hidden="true"></a><span class="co">#&gt; </span></span>
 <span id="cb4-53"><a href="#cb4-53" aria-hidden="true"></a><span class="co">#&gt; Logisitic Model Used</span></span>
 <span id="cb4-54"><a href="#cb4-54" aria-hidden="true"></a><span class="co">#&gt; -2*Log-Likelihood: 64.429,  Deviation: 64.429,  AIC: 72.429,  BIC: 84.109</span></span>
 <span id="cb4-55"><a href="#cb4-55" aria-hidden="true"></a><span class="co">#&gt; Iterations run: 12</span></span>
 <span id="cb4-56"><a href="#cb4-56" aria-hidden="true"></a><span class="co">#&gt; maximum step size: 1.263e-04, maximum first derivative: 4.514e-05</span></span>
 <span id="cb4-57"><a href="#cb4-57" aria-hidden="true"></a><span class="co">#&gt; Analysis converged</span></span>
-<span id="cb4-58"><a href="#cb4-58" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.051 seconds</span></span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.062 seconds</span></span>
 <span id="cb4-59"><a href="#cb4-59" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span></code></pre></div>
 </div>
 </div>

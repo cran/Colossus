@@ -12,7 +12,7 @@ get_form_joint <- function(formula_list, df) {
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
-        df <- setDT(df) # nocov
+        setDT(df) # nocov
       },
       error = function(e) { # nocov
         df <- data.table(df) # nocov
@@ -194,8 +194,15 @@ get_form_joint <- function(formula_list, df) {
 #' )
 #' formula <- Cox(Starting_Age, Ending_Age, Cancer_Status) ~
 #'   loglinear(a, b, c, 0) + plinear(d, 0) + multiplicative()
-#' model <- get_form(formula, df)
-get_form <- function(formula, df) {
+#' model <- get_form(formula, df, 1)
+get_form <- function(formula, df, nthreads = as.numeric(detectCores()) / 2) {
+  # ------------------------------------------------------------------------------ #
+  # Make data.table use the set number of threads too
+  if ((identical(Sys.getenv("TESTTHAT"), "true")) || (identical(Sys.getenv("TESTTHAT_IS_CHECKING"), "true"))) {
+    nthreads <- min(c(2, nthreads))
+  }
+  thread_0 <- setDTthreads(nthreads) # save the old number and set the new number
+  # ------------------------------------------------------------------------------ #
   if (length(lapply(strsplit(format(formula), ""), function(x) which(x == "~"))[[1]]) != 1) {
     stop("Error: The formula contained multiple '~', invalid formula")
   }
@@ -242,6 +249,9 @@ get_form <- function(formula, df) {
   } else {
     stop("Error: Bad survival model type passed")
   }
+  # Revert data.table core change
+  thread_1 <- setDTthreads(thread_0) # revert the old number
+  # ------------------------------------------------------------------------------ #
   list(
     "model" = model, "data" = df
   )
@@ -263,7 +273,7 @@ get_form_list <- function(surv_obj, model_obj, df) {
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
-        df <- setDT(df)
+        setDT(df)
       },
       error = function(e) {
         df <- data.table(df)
@@ -501,6 +511,7 @@ get_form_risk <- function(model_obj, df) {
     tform_acceptable <- c(
       "plin", "lin", "loglin", "loglin-dose", "lin-dose",
       "lin-quad-dose", "lin-exp-dose", "plinear", "product-linear", "linear",
+      "exponential", "exp",
       "loglinear", "log-linear", "loglinear-dose", "log-linear-dose", "linear-dose", "linear-piecewise",
       "quadratic", "quad", "quad-dose", "quadratic-dose",
       "step-dose", "step-piecewise",
@@ -874,7 +885,7 @@ get_form_risk <- function(model_obj, df) {
           model_terms <- c("plin")
         } else if (model_type %in% c("lin", "linear")) {
           model_terms <- c("lin")
-        } else if (model_type %in% c("loglin", "loglinear", "log-linear")) {
+        } else if (model_type %in% c("loglin", "loglinear", "log-linear", "exponential", "exp")) {
           model_terms <- c("loglin")
         } else if (model_type %in% c("loglin-dose", "loglinear-dose", "log-linear-dose")) {
           model_terms <- c("loglin_slope", "loglin_top")

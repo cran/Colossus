@@ -104,7 +104,7 @@ Replace_Missing <- function(df, name_list, msv, verbose = FALSE) {
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
-        df <- setDT(df) # nocov
+        setDT(df) # nocov
       },
       error = function(e) { # nocov
         df <- data.table(df) # nocov
@@ -665,7 +665,7 @@ factorize <- function(df, col_list, verbose = 0) {
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
-        df <- setDT(df) # nocov
+        setDT(df) # nocov
       },
       error = function(e) { # nocov
         df <- data.table(df) # nocov
@@ -738,7 +738,7 @@ Check_Dupe_Columns <- function(df, cols, term_n, verbose = 0, factor_check = FAL
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
-        df <- setDT(df) # nocov
+        setDT(df) # nocov
       },
       error = function(e) { # nocov
         df <- data.table(df) # nocov
@@ -834,7 +834,7 @@ Check_Trunc <- function(df, ce, verbose = 0) {
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
-        df <- setDT(df) # nocov
+        setDT(df) # nocov
       },
       error = function(e) { # nocov
         df <- data.table(df) # nocov
@@ -893,7 +893,7 @@ Check_Trunc <- function(df, ce, verbose = 0) {
 #' func_form <- c("lin")
 #' df_new <- gen_time_dep(
 #'   df, time1, time2, event, TRUE, 0.01, c("grt"), c(),
-#'   c(grt_f), paste("test", "_new.csv", sep = ""), func_form, 2
+#'   c(grt_f), paste("test", "_new.csv", sep = ""), func_form, 1
 #' )
 #' file.remove("test_new.csv")
 #'
@@ -901,13 +901,20 @@ gen_time_dep <- function(df, time1, time2, event0, iscox, dt, new_names, dep_col
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
-        df <- setDT(df) # nocov
+        setDT(df) # nocov
       },
       error = function(e) { # nocov
         df <- data.table(df) # nocov
       }
     )
   }
+  # ------------------------------------------------------------------------------ #
+  # Make data.table use the set number of threads too
+  if ((identical(Sys.getenv("TESTTHAT"), "true")) || (identical(Sys.getenv("TESTTHAT_IS_CHECKING"), "true"))) {
+    nthreads <- min(c(2, nthreads))
+  }
+  thread_0 <- setDTthreads(nthreads) # save the old number and set the new number
+  # ------------------------------------------------------------------------------ #
   dfn <- names(df)
   ce <- c(time1, time2, event0)
   t_check <- Check_Trunc(df, ce)
@@ -966,9 +973,6 @@ gen_time_dep <- function(df, time1, time2, event0, iscox, dt, new_names, dep_col
   } else {
     fname <- paste(fname, ".csv", sep = "_")
   }
-  if ((identical(Sys.getenv("TESTTHAT"), "true")) || (identical(Sys.getenv("TESTTHAT_IS_CHECKING"), "true"))) {
-    nthreads <- 2
-  }
   Write_Time_Dep(
     x_time, x_dep, x_same, x_event, dt, fname,
     tform, tu, iscox, nthreads
@@ -979,6 +983,9 @@ gen_time_dep <- function(df, time1, time2, event0, iscox, dt, new_names, dep_col
     col.names = c(time1, time2, new_names, dfn_same, event0)
   )
   data.table::setkeyv(df_new, c(event0, time2, time1))
+  # Revert data.table core change
+  thread_1 <- setDTthreads(thread_0) # revert the old number
+  # ------------------------------------------------------------------------------ #
   return(df_new)
 }
 
@@ -1007,7 +1014,7 @@ Date_Shift <- function(df, dcol0, dcol1, col_name, units = "days") {
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
-        df <- setDT(df) # nocov
+        setDT(df) # nocov
       },
       error = function(e) { # nocov
         df <- data.table(df) # nocov
@@ -1069,7 +1076,7 @@ Time_Since <- function(df, dcol0, tref, col_name, units = "days") {
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
-        df <- setDT(df) # nocov
+        setDT(df) # nocov
       },
       error = function(e) { # nocov
         df <- data.table(df) # nocov
@@ -1152,7 +1159,7 @@ Joint_Multiple_Events <- function(df, events, name_list, term_n_list = list(), t
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
-        df <- setDT(df) # nocov
+        setDT(df) # nocov
       },
       error = function(e) { # nocov
         df <- data.table(df) # nocov
@@ -1300,7 +1307,7 @@ interact_them <- function(df, interactions, new_names, verbose = 0) {
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
-        df <- setDT(df) # nocov
+        setDT(df) # nocov
       },
       error = function(e) { # nocov
         df <- data.table(df) # nocov
@@ -2453,7 +2460,7 @@ Interpret_Output <- function(out_list, digits = 3) {
       }
       message(paste("Solving for the boundary of element: ", para_number, "\nApplied to column: '", name, "'\nSubterm: ", tform, "\nTerm number: ", term_n, sep = ""))
       if (neg[1]) {
-        message("Lower limit was not found")
+        message(paste("Lower limit was not found, last step was at ", format(limits[1], digits = digits), " at a score of ", round(lik_bound[1], digits), " with of goal of ", round(lik_goal, digits), sep = ""))
       } else {
         if (conv[1]) {
           message(paste("Lower limit converged to at ", format(limits[1], digits = digits), " at a score of ", round(lik_bound[1], digits), " with of goal of ", round(lik_goal, digits), sep = ""))
@@ -2463,7 +2470,7 @@ Interpret_Output <- function(out_list, digits = 3) {
       }
       message(paste("Central estimate was ", format(beta_0, digits = digits), sep = ""))
       if (neg[2]) {
-        message("Upper limit was not found")
+        message(paste("Upper limit was not found, last step was at ", format(limits[2], digits = digits), " at a score of ", round(lik_bound[2], digits), " with of goal of ", round(lik_goal, digits), sep = ""))
       } else {
         if (conv[2]) {
           message(paste("Upper limit converged to at ", format(limits[2], digits = digits), " at a score of ", round(lik_bound[2], digits), " with of goal of ", round(lik_goal, digits), sep = ""))
@@ -2478,55 +2485,42 @@ Interpret_Output <- function(out_list, digits = 3) {
       } else if (out_list$Survival_Type == "CaseControl") {
         # case control output
         # get the model details
-        names <- out_list$Parameter_Lists$names
-        tforms <- out_list$Parameter_Lists$tforms
-        term_n <- out_list$Parameter_Lists$term_n
-        beta_0 <- out_list$beta_0
+        null_model <- out_list$modelcontrol$null
         strata_odds <- out_list$StrataOdds
-        keep_constant <- out_list$Parameter_Lists$keep_constant == 1
-        if ("Standard_Deviation" %in% names(out_list)) {
-          stdev <- out_list$Standard_Deviation
-          pval <- 2 * pnorm(-abs(beta_0 / stdev))
-          if (any(keep_constant)) {
+        if (!null_model) {
+          names <- out_list$Parameter_Lists$names
+          tforms <- out_list$Parameter_Lists$tforms
+          term_n <- out_list$Parameter_Lists$term_n
+          beta_0 <- out_list$beta_0
+          keep_constant <- out_list$Parameter_Lists$keep_constant == 1
+          if ("Standard_Deviation" %in% names(out_list)) {
+            stdev <- out_list$Standard_Deviation
+            pval <- 2 * pnorm(-abs(beta_0 / stdev))
             res_table <- data.table(
               "Covariate" = names,
               "Subterm" = tforms,
               "Term Number" = term_n,
               "Constant" = keep_constant,
-              "Central Estimate" = format(beta_0, digits = digits),
-              "Standard Error" = format(stdev, digits = digits),
-              "2-tail p-value" = format(pval, digits = digits)
+              "Central Estimate" = as.numeric(format(beta_0, digits = digits)),
+              "Standard Error" = as.numeric(format(stdev, digits = digits)),
+              "2-tail p-value" = as.numeric(format(pval, digits = digits))
             )
           } else {
             res_table <- data.table(
               "Covariate" = names,
               "Subterm" = tforms,
               "Term Number" = term_n,
-              "Central Estimate" = format(beta_0, digits = digits),
-              "Standard Error" = format(stdev, digits = digits),
-              "2-tail p-value" = format(pval, digits = digits)
+              "Constant" = keep_constant,
+              "Central Estimate" = as.numeric(format(beta_0, digits = digits))
             )
           }
-        } else {
-          if (any(keep_constant)) {
-            res_table <- data.table(
-              "Covariate" = names,
-              "Subterm" = tforms,
-              "Term Number" = term_n,
-              "Constant" = keep_constant,
-              "Central Estimate" = format(beta_0, digits = digits)
-            )
-          } else {
-            res_table <- data.table(
-              "Covariate" = names,
-              "Subterm" = tforms,
-              "Term Number" = term_n,
-              "Central Estimate" = format(beta_0, digits = digits)
-            )
+          if (!any(keep_constant)) {
+            res_table <- res_table[, names(res_table)[names(res_table) != "Constant"], with = FALSE]
+          }
+          if (min(term_n) == max(term_n)) {
+            res_table <- res_table[, names(res_table)[names(res_table) != "Term Number"], with = FALSE]
           }
         }
-        message("Final Results")
-        print(res_table)
         deviance <- out_list$Deviation
         iteration <- out_list$Control_List$Iteration
         step_max <- out_list$Control_List$`Maximum Step`
@@ -2536,10 +2530,25 @@ Interpret_Output <- function(out_list, digits = 3) {
         freepara <- out_list$FreeParameters
         freestrata <- out_list$FreeSets
         strata <- out_list$model$strata
+        time_model <- out_list$modelcontrol$time_risk
+        message("Final Results")
+        if (null_model) {
+          message("Null model used")
+        } else {
+          print(res_table)
+        }
         #
         message("\nMatched Case-Control Model Used")
         if (all(strata != "NONE")) {
-          message("Model stratified by ", paste(shQuote(strata), collapse = ", "))
+          if (time_model) {
+            message("Model stratified by ", paste(shQuote(strata), " and time at risk", collapse = ", "))
+          } else {
+            message("Model stratified by ", paste(shQuote(strata), collapse = ", "))
+          }
+        } else if (time_model) {
+          message("Model stratified by time at risk")
+        } else {
+          message("No risk grouping applied")
         }
         message(paste("Deviance: ", round(deviance, digits), sep = ""))
         message(paste(freestrata, " out of ", length(strata_odds), " matched sets used Unconditional Likelihood", sep = ""))
@@ -2557,54 +2566,48 @@ Interpret_Output <- function(out_list, digits = 3) {
         }
       } else {
         # get the model details
-        names <- out_list$Parameter_Lists$names
-        tforms <- out_list$Parameter_Lists$tforms
-        term_n <- out_list$Parameter_Lists$term_n
-        beta_0 <- out_list$beta_0
-        keep_constant <- out_list$Parameter_Lists$keep_constant == 1
-        if ("Standard_Deviation" %in% names(out_list)) {
-          stdev <- out_list$Standard_Deviation
-          pval <- 2 * pnorm(-abs(beta_0 / stdev))
-          if (any(keep_constant)) {
+        null_model <- out_list$modelcontrol$null
+        if (!null_model) {
+          ##
+          names <- out_list$Parameter_Lists$names
+          tforms <- out_list$Parameter_Lists$tforms
+          term_n <- out_list$Parameter_Lists$term_n
+          beta_0 <- out_list$beta_0
+          keep_constant <- out_list$Parameter_Lists$keep_constant == 1
+          if ("Standard_Deviation" %in% names(out_list)) {
+            stdev <- out_list$Standard_Deviation
+            pval <- 2 * pnorm(-abs(beta_0 / stdev))
             res_table <- data.table(
               "Covariate" = names,
               "Subterm" = tforms,
               "Term Number" = term_n,
               "Constant" = keep_constant,
-              "Central Estimate" = format(beta_0, digits = digits),
-              "Standard Error" = format(stdev, digits = digits),
-              "2-tail p-value" = format(pval, digits = digits)
+              "Central Estimate" = as.numeric(format(beta_0, digits = digits)),
+              "Standard Error" = as.numeric(format(stdev, digits = digits)),
+              "2-tail p-value" = as.numeric(format(pval, digits = digits))
             )
           } else {
             res_table <- data.table(
               "Covariate" = names,
               "Subterm" = tforms,
               "Term Number" = term_n,
-              "Central Estimate" = format(beta_0, digits = digits),
-              "Standard Error" = format(stdev, digits = digits),
-              "2-tail p-value" = format(pval, digits = digits)
+              "Constant" = keep_constant,
+              "Central Estimate" = as.numeric(format(beta_0, digits = digits))
             )
           }
-        } else {
-          if (any(keep_constant)) {
-            res_table <- data.table(
-              "Covariate" = names,
-              "Subterm" = tforms,
-              "Term Number" = term_n,
-              "Constant" = keep_constant,
-              "Central Estimate" = format(beta_0, digits = digits)
-            )
-          } else {
-            res_table <- data.table(
-              "Covariate" = names,
-              "Subterm" = tforms,
-              "Term Number" = term_n,
-              "Central Estimate" = format(beta_0, digits = digits)
-            )
+          if (!any(keep_constant)) {
+            res_table <- res_table[, names(res_table)[names(res_table) != "Constant"], with = FALSE]
+          }
+          if (min(term_n) == max(term_n)) {
+            res_table <- res_table[, names(res_table)[names(res_table) != "Term Number"], with = FALSE]
           }
         }
         message("Final Results")
-        print(res_table)
+        if (null_model) {
+          message("Null model used")
+        } else {
+          print(res_table)
+        }
         # get the model results
         LogLik <- out_list$LogLik
         AIC <- out_list$AIC

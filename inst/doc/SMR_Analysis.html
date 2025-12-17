@@ -392,16 +392,16 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true"></a><span class="kw">print</span>(e)</span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true"></a><span class="co">#&gt; Final Results</span></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true"></a><span class="co">#&gt;    Covariate Subterm Term Number Central Estimate Standard Error 2-tail p-value</span></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true"></a><span class="co">#&gt;       &lt;char&gt;  &lt;char&gt;       &lt;int&gt;           &lt;char&gt;         &lt;char&gt;         &lt;char&gt;</span></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true"></a><span class="co">#&gt; 1:     erate     lin           0            0.474         0.0369       9.15e-38</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true"></a><span class="co">#&gt;    Covariate Subterm Central Estimate Standard Error 2-tail p-value</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true"></a><span class="co">#&gt;       &lt;char&gt;  &lt;char&gt;            &lt;num&gt;          &lt;num&gt;          &lt;num&gt;</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true"></a><span class="co">#&gt; 1:     erate     lin            0.474         0.0369       9.15e-38</span></span>
 <span id="cb3-13"><a href="#cb3-13" aria-hidden="true"></a><span class="co">#&gt; </span></span>
 <span id="cb3-14"><a href="#cb3-14" aria-hidden="true"></a><span class="co">#&gt; Poisson Model Used</span></span>
 <span id="cb3-15"><a href="#cb3-15" aria-hidden="true"></a><span class="co">#&gt; -2*Log-Likelihood: 576.22,  Deviation: 246.22,  AIC: 248.22,  BIC: 581.649</span></span>
 <span id="cb3-16"><a href="#cb3-16" aria-hidden="true"></a><span class="co">#&gt; Iterations run: 13</span></span>
 <span id="cb3-17"><a href="#cb3-17" aria-hidden="true"></a><span class="co">#&gt; maximum step size: 1.741e-10, maximum first derivative: 1.235e-06</span></span>
 <span id="cb3-18"><a href="#cb3-18" aria-hidden="true"></a><span class="co">#&gt; Analysis did not converge, check convergence criteria or run further</span></span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.063 seconds</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.054 seconds</span></span>
 <span id="cb3-20"><a href="#cb3-20" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span></code></pre></div>
 <p>In this case, we found the SMR to be 0.474, analysis of the confidence interval (either Wald or Likelihood-based) could be performed to check if the results are statistically significant. Suppose we wanted to take the analysis a step further and investigate the effect of difference covariates. The SMR equation can be adjusted to either an additive or multiplicative effect, similar to any other Poisson regression model. Let us assume we are interested in the effects of biological sex. We can add another element to our model and rerun the regression.</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a>a_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>)</span>
@@ -411,7 +411,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true"></a><span class="co">#&gt; Final Results</span></span>
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true"></a><span class="co">#&gt;    Covariate Subterm Term Number Central Estimate Standard Error 2-tail p-value</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true"></a><span class="co">#&gt;       &lt;char&gt;  &lt;char&gt;       &lt;int&gt;           &lt;char&gt;         &lt;char&gt;         &lt;char&gt;</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true"></a><span class="co">#&gt;       &lt;char&gt;  &lt;char&gt;       &lt;int&gt;            &lt;num&gt;          &lt;num&gt;          &lt;num&gt;</span></span>
 <span id="cb4-9"><a href="#cb4-9" aria-hidden="true"></a><span class="co">#&gt; 1:     erate     lin           0             0.37          0.111       0.000882</span></span>
 <span id="cb4-10"><a href="#cb4-10" aria-hidden="true"></a><span class="co">#&gt; 2:       sex     lin           1             0.19          0.257       0.458904</span></span>
 <span id="cb4-11"><a href="#cb4-11" aria-hidden="true"></a><span class="co">#&gt; </span></span>
@@ -420,7 +420,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb4-14"><a href="#cb4-14" aria-hidden="true"></a><span class="co">#&gt; Iterations run: 7</span></span>
 <span id="cb4-15"><a href="#cb4-15" aria-hidden="true"></a><span class="co">#&gt; maximum step size: 9.313e-10, maximum first derivative: 1.416e+01</span></span>
 <span id="cb4-16"><a href="#cb4-16" aria-hidden="true"></a><span class="co">#&gt; Analysis did not converge, check convergence criteria or run further</span></span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.065 seconds</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true"></a><span class="co">#&gt; Run finished in 0.053 seconds</span></span>
 <span id="cb4-18"><a href="#cb4-18" aria-hidden="true"></a><span class="co">#&gt; |-------------------------------------------------------------------|</span></span></code></pre></div>
 <p>In this case, we found the SMR for sex=0 to be 0.37 and the SMR for sex=1 to be 0.56. Once again we could further investigate the confidence intervals to determine if these estimates are statistically significant. This demonstrates how one can use Poisson regressions and external event rates to estimate differences in event rates between external populations and studied populations.</p>
 </div>
