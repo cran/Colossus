@@ -5,6 +5,7 @@ knitr::opts_chunk$set(
 )
 
 ## ----setup--------------------------------------------------------------------
+Sys.setenv("OMP_THREAD_LIMIT" = 1) # Reducing core use, to avoid accidental use of too many cores
 library(Colossus)
 library(data.table)
 library(survival)
@@ -23,10 +24,15 @@ control <- list("Ncores" = 1, "maxiter" = 100, "verbose" = 2)
 
 a_n <- c(0.01, 0.01)
 
-e1 <- CoxRun(Cox(time, status) ~ loglinear(temperature, voltage, 0), df, a_n = a_n, control = control)
+e1 <- CoxRun(Cox(time, status) ~ loglinear(temperature, voltage, 0), df,
+  a_n = a_n, control = control
+)
 print(e1, 5)
 
-e2 <- CoxRun(Cox(time, status) ~ loglinear(temperature, 0) + plinear(voltage, 0), df, a_n = a_n, control = control)
+e2 <- CoxRun(Cox(time, status) ~ loglinear(temperature, 0) + plinear(voltage, 0),
+  df,
+  a_n = a_n, control = control
+)
 print(e2, 5)
 
 ## ----eval=TRUE----------------------------------------------------------------
@@ -102,7 +108,7 @@ print(e, 5)
 # model <- Cox(entry, exit, event) ~ loglinear(dose0, dose1, 0) + linear(dose0, 1)
 # #
 # control <- list(
-#   "ncores" = 2, "lr" = 0.75, "maxiters" = c(100, 100), "halfmax" = 5,
+#   "ncores" = 1, "lr" = 0.75, "maxiters" = c(100, 100), "halfmax" = 5,
 #   "epsilon" = 1e-6, "deriv_epsilon" = 1e-6, "step_max" = 1.0,
 #   "thres_step_max" = 100.0, "verbose" = 2,
 #   "ties" = "breslow"
@@ -138,7 +144,7 @@ g
 # a_n <- c(-1.493177, 5.020007, 1.438377)
 # #
 # control <- list(
-#   "ncores" = 2, "lr" = 0.75, "maxiter" = 100, "halfmax" = 5,
+#   "ncores" = 1, "lr" = 0.75, "maxiter" = 100, "halfmax" = 5,
 #   "verbose" = 2
 # )
 # coxres <- CoxRun(model, df, a_n = a_n, control = control)

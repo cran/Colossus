@@ -82,6 +82,74 @@ parse_literal_string <- function(string) {
   string
 }
 
+#' Calculates and applies the interaction between a list of factor columns
+#'
+#' \code{Make_Interaction_Strata} iterates through a list of factors and finds all of the valid interactions
+#'
+#' @noRd
+#' @param col_list vector of strata names
+#' @param keep_base boolean if the baseline factor values should be kept
+#' @param filter_df boolean if the dataframe should be filtered. If false, a new category is created for any 0 case strata
+#' @family Data Cleaning Functions
+#' @return returns a list with the data and new columns
+Make_Interaction_Strata <- function(df, event0, col_list, control = list(verbose = TRUE), keep_base = TRUE, filter_df = TRUE) {
+  vals <- col_list
+  og_name <- names(df)
+  combs <- c()
+  if (length(vals) == 1) {
+    # factor
+    df$comb_strata <- as.integer(factor(df[[vals]])) - 1
+    combs <- unique(df$comb_strata)
+  } else {
+    # there are multiple to combine
+    # get the levels for each element
+    if (filter_df) {
+      for (term_i in seq_along(vals)) {
+        factor_col <- vals[term_i]
+        df[[factor_col]] <- factor(df[[factor_col]])
+        i_levels <- levels(df[[factor_col]])
+        if (!keep_base) {
+          level_ref <- levels(df[[factor_col]])[1]
+          i_levels <- i_levels[i_levels != level_ref]
+        }
+        for (col in i_levels) {
+          temp <- sum(df[get(factor_col) == col, ][[event0]]) # get number of events
+          if (temp == 0) { # if none then we remove that data and the level column
+            if (control$verbose >= 2) {
+              warning(paste("Warning: no events for strata group:", col,
+                sep = " "
+              ))
+            }
+            df <- df[get(factor_col) != col, ] # remove data
+          }
+        }
+      }
+    }
+    # We want to combine the strata values together
+    df$comb_strata <- ""
+    for (term_i in seq_along(vals)) {
+      factor_col <- vals[term_i]
+      if (term_i == 1) {
+        df$comb_strata <- df[[factor_col]]
+      } else {
+        df$comb_strata <- paste(df$comb_strata, df[[factor_col]], sep = ":")
+      }
+    }
+    df$comb_strata <- as.integer(factor(df$comb_strata))
+    combs <- unique(df$comb_strata)
+    if (filter_df) {
+      df_end <- df[get(event0) == 1, ]
+      combs <- unique(df_end$comb_strata)
+      comb_tot <- unique(df$comb)
+      comb_remove <- comb_tot[!comb_tot %in% combs]
+      for (comb in comb_remove) {
+        df <- df["comb_strata" != comb, ] # remove data
+      }
+    }
+  }
+  return(list("data" = df, "combs" = "comb_strata", "levels" = combs))
+}
+
 #' Automatically assigns missing values in listed columns
 #'
 #' \code{Replace_Missing} checks each column and fills in NA values
@@ -104,10 +172,10 @@ Replace_Missing <- function(df, name_list, msv, verbose = FALSE) {
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
-        setDT(df) # nocov
+        setDT(df)
       },
-      error = function(e) { # nocov
-        df <- data.table(df) # nocov
+      error = function(e) {
+        df <- data.table(df)
       }
     )
   }
@@ -423,109 +491,6 @@ Check_Iters <- function(control, a_n) {
   list("control" = control, "a_n" = a_n)
 }
 
-#' Checks the default value for a given model, if every parameter were 0
-#'
-#' \code{Check_Strata_Model} checks if a model is valid for stratified poisson
-#'
-#' @noRd
-#' @param gmix_term binary vector to denote excess (1) and relative terms (0). Excess terms have 1 added before use in risk model
-#' @param gmix_theta double, used in gmix model. Multiplicative combination is taken to power of theta, additive combination is taken to 1-theta.
-#' @inheritParams R_template
-#' @family Data Cleaning Functions
-#' @return TRUE if passed
-Check_Strata_Model <- function(term_n, tform, modelform, gmix_term, gmix_theta) {
-  term_tot <- length(unique(term_n))
-  lin_count <- rep(0, term_tot) # tracking which terms will go to 0 for only being linear
-  dose_count <- rep(0, term_tot) # tracking which terms will be a sum of 1s, for being dose non-piecewise
-  dose_lin_count <- rep(0, term_tot) # tracking which terms will go to 0 for being dose-piecewise
-  for (ij in 1:length(term_n)) {
-    tn <- term_n[ij] + 1
-    if (tform[ij] == "loglin") { #  setting parameters to zero makes the subterm 1
-    } else if (tform[ij] == "lin") { #  setting parameters to zero makes the subterm 0
-      lin_count[tn] <- lin_count[tn] + 1.0
-    } else if (tform[ij] == "plin") { #  setting parameters to zero makes the subterm 1
-    } else if (tform[ij] == "loglin_slope") { #  the slope paremeter sets the element to 0
-    } else if (tform[ij] == "loglin_top") { #  the top parameter sets the element to 1
-      if (ij == 1) {
-        dose_count[tn] <- dose_count[tn] + 1.0
-      } else if (tform[ij - 1] != "loglin_slope") {
-        dose_count[tn] <- dose_count[tn] + 1.0
-      } else {}
-    } else if (tform[ij] == "lin_slope") { #  every other dose term sets the elements to 0
-      dose_lin_count[tn] <- dose_lin_count[tn] + 1
-    } else if (tform[ij] == "lin_int") {} else if (tform[ij] == "quad_slope") {
-      dose_lin_count[tn] <- dose_lin_count[tn] + 1
-    } else if (tform[ij] == "step_slope") {
-      dose_lin_count[tn] <- dose_lin_count[tn] + 1
-    } else if (tform[ij] == "step_int") {} else if (tform[ij] == "lin_quad_slope") {
-      dose_lin_count[tn] <- dose_lin_count[tn] + 1
-    } else if (tform[ij] == "lin_quad_int") {} else if (tform[ij] == "lin_exp_slope") {
-      dose_lin_count[tn] <- dose_lin_count[tn] + 1
-    } else if (tform[ij] == "lin_exp_int") {} else if (tform[ij] == "lin_exp_exp_slope") {} else {
-      stop("Error: incorrect subterm type")
-    }
-  }
-  term_val <- rep(0, term_tot)
-  for (ijk in 1:term_tot) {
-    if (dose_count[ijk] == 0) { #  If the dose term isn't used
-      if (dose_lin_count[ijk] == 0) { # If no dose terms that default to 0 are used
-        dose_count[ijk] <- 1.0 #  the default term value becomes 1
-      }
-      #  otherwise the default term value is 0
-    }
-    if (lin_count[ijk] == 0) { #  if the linear term isn't used, the entire term is 1 times the dose term value, accounting for the piecewise dose values
-      term_val[ijk] <- dose_count[ijk]
-    } else { #  if the linear term is used, the entire term is 0
-      term_val[ijk] <- 0
-    }
-  }
-
-  default_val <- 0
-  if (modelform == "A") {
-    for (i in 1:term_tot) {
-      default_val <- default_val + term_val[i]
-    }
-  } else if (modelform == "PA") {
-    for (i in seq_len(term_tot - 1) + 1) {
-      default_val <- default_val + term_val[i]
-    }
-    default_val <- default_val * term_val[1]
-  } else if (modelform == "PAE") {
-    for (i in seq_len(term_tot - 1) + 1) {
-      default_val <- default_val + term_val[i]
-    }
-    default_val <- (1 + default_val) * term_val[1]
-  } else if (modelform == "M") {
-    default_val <- 1
-    for (i in seq_len(term_tot - 1) + 1) {
-      default_val <- default_val * term_val[i]
-    }
-    default_val <- default_val * term_val[1]
-  } else if (modelform == "ME") {
-    default_val <- 1
-    for (i in seq_len(term_tot - 1) + 1) {
-      default_val <- default_val * (1 + term_val[i])
-    }
-    default_val <- default_val * term_val[1]
-  } else if (modelform == "GMIX") {
-    T0 <- term_val[1]
-    Ta <- 1
-    Tm <- 1
-    for (i in seq_len(term_tot - 1) + 1) {
-      Ta <- Ta + (term_val[i] + gmix_term[i] - 1)
-      Tm <- Tm * (term_val[i] + gmix_term[i])
-    }
-    default_val <- T0 * Tm^gmix_theta * Ta^(1 - gmix_theta)
-    #    stop("GM isn't implemented")
-  } else {
-    stop("Error: Model isn't implemented")
-  }
-  if (default_val == 0) {
-    stop("Error: Provided model predicts 0 rate for parameters set to 0. Invalid for use with stratified poisson.")
-  }
-  return(TRUE)
-}
-
 #' Calculates Full Parameter list for Special Dose Formula
 #'
 #' \code{Linked_Dose_Formula} Calculates all parameters for linear-quadratic and linear-exponential linked formulas
@@ -665,10 +630,10 @@ factorize <- function(df, col_list, verbose = 0) {
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
-        setDT(df) # nocov
+        setDT(df)
       },
-      error = function(e) { # nocov
-        df <- data.table(df) # nocov
+      error = function(e) {
+        df <- data.table(df)
       }
     )
   }
@@ -710,14 +675,43 @@ factorize <- function(df, col_list, verbose = 0) {
 #' library(data.table)
 #' # In an actual example, one would run two seperate RunCoxRegression regressions,
 #' #    assigning the results to e0 and e1
-#' e0 <- list("name" = "First Model", "LogLik" = -120)
-#' e1 <- list("name" = "New Model", "LogLik" = -100)
-#' score <- Likelihood_Ratio_Test(e1, e0)
+#' a <- c(0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6)
+#' b <- c(1, 2, 3, 4, 5, 6, 7, 1, 2, 3, 4, 5, 6, 7)
+#' c <- c(1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+#' d <- c(3, 4, 5, 6, 7, 8, 9, 1, 2, 1, 1, 2, 1, 2)
+#' e <- c(1, 2, 0, 0, 1, 2, 0, 0, 1, 2, 0, 0, 1, 2)
+#' df <- data.table("a" = a, "b" = b, "c" = c, "d" = d, "e" = e)
+#' keep_constant <- c(0)
+#' a_n <- c(-0.1, 0.1, 0.1, 0.2)
+#' control <- list("ncores" = 1, "maxiter" = 10, "verbose" = 0)
+#' model <- Cox(a, b, c) ~ plinear(d * d, 0) + loglinear(factor(e))
+#' alternative_model <- CoxRun(model, df,
+#'   control = control,
+#'   a_n = a_n, keep_constant = c(0, 1, 0)
+#' )
+#' null_model <- CoxRun(Cox(a, b, c) ~ null(), df, control = control)
+#' score <- Likelihood_Ratio_Test(alternative_model, null_model)
 #'
 Likelihood_Ratio_Test <- function(alternative_model, null_model) {
+  alt_is_null <- alternative_model$modelcontrol$null
+  null_is_null <- null_model$modelcontrol$null
   if (("LogLik" %in% names(alternative_model)) && ("LogLik" %in% names(null_model))) {
-    freedom <- length(alternative_model$beta_0) - length(null_model$beta_0)
-    val <- 2 * (unlist(alternative_model["LogLik"], use.names = FALSE) - unlist(null_model["LogLik"], use.names = FALSE))
+    #
+    alt_is_null <- alternative_model$modelcontrol$null
+    null_is_null <- null_model$modelcontrol$null
+    if (alt_is_null) {
+      stop("Error: Alternative model shouldn't be null.")
+    } else {
+      alt_count <- length(alternative_model$beta_0) - sum(alternative_model$model$keep_constant)
+    }
+    if (alt_is_null) {
+      null_count <- 0
+    } else {
+      null_count <- length(null_model$beta_0) - sum(null_model$model$keep_constant)
+    }
+    #
+    freedom <- alt_count - null_count
+    val <- 2 * (alternative_model$LogLik - null_model$LogLik)
     pval <- pchisq(val, freedom)
     return(list("value" = val, "p value" = pval))
   } else {
@@ -738,10 +732,10 @@ Check_Dupe_Columns <- function(df, cols, term_n, verbose = 0, factor_check = FAL
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
-        setDT(df) # nocov
+        setDT(df)
       },
-      error = function(e) { # nocov
-        df <- data.table(df) # nocov
+      error = function(e) {
+        df <- data.table(df)
       }
     )
   }
@@ -834,10 +828,10 @@ Check_Trunc <- function(df, ce, verbose = 0) {
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
-        setDT(df) # nocov
+        setDT(df)
       },
-      error = function(e) { # nocov
-        df <- data.table(df) # nocov
+      error = function(e) {
+        df <- data.table(df)
       }
     )
   }
@@ -847,6 +841,9 @@ Check_Trunc <- function(df, ce, verbose = 0) {
       stop("Error: Both endpoints are truncated, not acceptable")
     }
     tname <- ce[2]
+    if (!is.numeric(df[[tname]])) {
+      stop(paste("Error: Age column was not numeric: ", tname, sep = ""))
+    }
     tmin <- min(df[, get(tname)]) - 1
     if (!("right_trunc" %in% names(df))) {
       df[, ":="(right_trunc = tmin)]
@@ -854,6 +851,9 @@ Check_Trunc <- function(df, ce, verbose = 0) {
     ce[1] <- "right_trunc"
   } else if (ce[2] %in% c("%trunc%", "left_trunc")) {
     tname <- ce[1]
+    if (!is.numeric(df[[tname]])) {
+      stop(paste("Error: Age column was not numeric: ", tname, sep = ""))
+    }
     tmax <- max(df[, get(tname)]) + 1
     if (!("left_trunc" %in% names(df))) {
       df[, ":="(left_trunc = tmax)]
@@ -901,10 +901,10 @@ gen_time_dep <- function(df, time1, time2, event0, iscox, dt, new_names, dep_col
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
-        setDT(df) # nocov
+        setDT(df)
       },
-      error = function(e) { # nocov
-        df <- data.table(df) # nocov
+      error = function(e) {
+        df <- data.table(df)
       }
     )
   }
@@ -1014,10 +1014,10 @@ Date_Shift <- function(df, dcol0, dcol1, col_name, units = "days") {
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
-        setDT(df) # nocov
+        setDT(df)
       },
-      error = function(e) { # nocov
-        df <- data.table(df) # nocov
+      error = function(e) {
+        df <- data.table(df)
       }
     )
   }
@@ -1076,10 +1076,10 @@ Time_Since <- function(df, dcol0, tref, col_name, units = "days") {
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
-        setDT(df) # nocov
+        setDT(df)
       },
-      error = function(e) { # nocov
-        df <- data.table(df) # nocov
+      error = function(e) {
+        df <- data.table(df)
       }
     )
   }
@@ -1159,10 +1159,10 @@ Joint_Multiple_Events <- function(df, events, name_list, term_n_list = list(), t
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
-        setDT(df) # nocov
+        setDT(df)
       },
-      error = function(e) { # nocov
-        df <- data.table(df) # nocov
+      error = function(e) {
+        df <- data.table(df)
       }
     )
   }
@@ -1307,10 +1307,10 @@ interact_them <- function(df, interactions, new_names, verbose = 0) {
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
-        setDT(df) # nocov
+        setDT(df)
       },
-      error = function(e) { # nocov
-        df <- data.table(df) # nocov
+      error = function(e) {
+        df <- data.table(df)
       }
     )
   }
@@ -1847,29 +1847,18 @@ Event_Count_Gen <- function(table, categ, events, verbose = FALSE) {
 #'   "g" = g, "h" = h, "i" = i
 #' )
 #' categ <- list(
-#'   "a" = "-1/3/5]7",
-#'   "b" = list(
-#'     lower = c(-1, 3, 6), upper = c(3, 6, 10),
-#'     name = c("low", "medium", "high")
-#'   ),
-#'   "time AS time" = list(
-#'     "day" = c(1, 1, 1, 1, 1),
-#'     "month" = c(1, 1, 1, 1, 1),
-#'     "year" = c(1899, 1903, 1910)
-#'   )
+#'   "a" = "-1/3/5]7"
 #' )
 #' summary <- list(
-#'   "c" = "count AS cases",
-#'   "a" = "mean",
-#'   "b" = "weighted_mean"
+#'   "c" = "count AS cases"
 #' )
 #' events <- list("c")
 #' pyr <- list(
-#'   entry = list(year = "f", month = "e", day = "d"),
-#'   exit = list(year = "i", month = "h", day = "g"),
+#'   entry = list(year = "f"),
+#'   exit = list(year = "i"),
 #'   unit = "years"
 #' )
-#' e <- Event_Time_Gen(table, pyr, categ, summary, events, T)
+#' e <- Event_Time_Gen(table, pyr, categ, summary, events)
 #'
 Event_Time_Gen <- function(table, pyr, categ, summaries, events, verbose = FALSE) {
   df <- as_tibble(table)
@@ -2435,7 +2424,7 @@ print.poisresbound <- function(x, ...) {
 Interpret_Output <- function(out_list, digits = 3) {
   # make sure the output isn't an error
   passed <- out_list$Status
-  message("|-------------------------------------------------------------------|")
+  message("|", paste(rep("-", options()$width), collapse = ""), "|")
   if (!is.na(passed)) {
     if ("Likelihood_Goal" %in% names(out_list)) {
       # likelihood boundary output
@@ -2455,6 +2444,11 @@ Interpret_Output <- function(out_list, digits = 3) {
       lik_bound <- out_list$Likelihood_Boundary
       lik_goal <- out_list$Likelihood_Goal
       message("Likelihood Boundary Results")
+      if (is(out_list, "coxresbound")) {
+        message("Proportional Hazards Model")
+      } else if (is(out_list, "poisresbound")) {
+        message("Poisson Model")
+      }
       if (all(strata != "NONE")) {
         message("Model stratified by ", paste(shQuote(strata), collapse = ", "))
       }
@@ -2482,11 +2476,13 @@ Interpret_Output <- function(out_list, digits = 3) {
       # Check if its a multidose problem
       if (out_list$Survival_Type == "Cox_Multidose") {
         message("Currently the multiple realization code is not setup for printing results, due to the potentially large number of realizations")
-      } else if (out_list$Survival_Type == "CaseControl") {
+      } else if (is(out_list, "caseconres")) {
         # case control output
         # get the model details
         null_model <- out_list$modelcontrol$null
         strata_odds <- out_list$StrataOdds
+        KeptRecords <- out_list$UsedRecords
+        RemovedRecords <- out_list$RejectedRecords
         if (!null_model) {
           names <- out_list$Parameter_Lists$names
           tforms <- out_list$Parameter_Lists$tforms
@@ -2531,6 +2527,18 @@ Interpret_Output <- function(out_list, digits = 3) {
         freestrata <- out_list$FreeSets
         strata <- out_list$model$strata
         time_model <- out_list$modelcontrol$time_risk
+        #
+        modelform <- out_list$model$modelform
+        form_type <- case_when(
+          modelform == "M" ~ "Multiplicative Model Used: T0*T1*T2*...",
+          modelform == "ME" ~ "Multiplicative-Excess Model Used: T0*(1+T1)*(1+T2)*...",
+          modelform == "A" ~ "Additive Model Used: T0+T1+T2+...",
+          modelform == "PA" ~ "Product-Additive Model Used: T0*(T1+T2+...)",
+          modelform == "PAE" ~ "Product-Additive-Excess Model Used: T0*(1+T1+T2+...)",
+          modelform == "GMIX" ~ "Geometric-Mixture Model Used: T0 *((1+T1)*(1+T2)*...)^(t)*(1+T1+T2+...)^(1-t)",
+          .default = "Unknown"
+        )
+        #
         message("Final Results")
         if (null_model) {
           message("Null model used")
@@ -2538,7 +2546,11 @@ Interpret_Output <- function(out_list, digits = 3) {
           print(res_table)
         }
         #
+        message("|", paste(rep("-", as.integer(options()$width / 2)), collapse = " "), "|")
         message("\nMatched Case-Control Model Used")
+        if (!null_model) {
+          message(form_type)
+        }
         if (all(strata != "NONE")) {
           if (time_model) {
             message("Model stratified by ", paste(shQuote(strata), " and time at risk", collapse = ", "))
@@ -2550,6 +2562,7 @@ Interpret_Output <- function(out_list, digits = 3) {
         } else {
           message("No risk grouping applied")
         }
+        message("|", paste(rep("-", as.integer(options()$width / 2)), collapse = " "), "|")
         message(paste("Deviance: ", round(deviance, digits), sep = ""))
         message(paste(freestrata, " out of ", length(strata_odds), " matched sets used Unconditional Likelihood", sep = ""))
         if (!is.null(converged)) {
@@ -2563,9 +2576,16 @@ Interpret_Output <- function(out_list, digits = 3) {
           } else {
             message("Analysis did not converge, check convergence criteria or run further")
           }
+          neg_lim <- out_list$Control_List$"Ended on Negative Limit"
+          if (neg_lim) {
+            message("Warning: The regression ended after hitting a negative risk.")
+          }
         }
+        message("Records Used: ", KeptRecords, ", Records Removed: ", RemovedRecords)
       } else {
         # get the model details
+        KeptRecords <- out_list$UsedRecords
+        RemovedRecords <- out_list$RejectedRecords
         null_model <- out_list$modelcontrol$null
         if (!null_model) {
           ##
@@ -2601,6 +2621,18 @@ Interpret_Output <- function(out_list, digits = 3) {
           if (min(term_n) == max(term_n)) {
             res_table <- res_table[, names(res_table)[names(res_table) != "Term Number"], with = FALSE]
           }
+          #
+          modelform <- out_list$model$modelform
+          form_type <- case_when(
+            modelform == "M" ~ "Multiplicative Model Used: T0*T1*T2*...",
+            modelform == "ME" ~ "Multiplicative-Excess Model Used: T0*(1+T1)*(1+T2)*...",
+            modelform == "A" ~ "Additive Model Used: T0+T1+T2+...",
+            modelform == "PA" ~ "Product-Additive Model Used: T0*(T1+T2+...)",
+            modelform == "PAE" ~ "Product-Additive-Excess Model Used: T0*(1+T1+T2+...)",
+            modelform == "GMIX" ~ "Geometric-Mixture Model Used: T0 *((1+T1)*(1+T2)*...)^(t)*(1+T1+T2+...)^(1-t)",
+            .default = "Unknown"
+          )
+          #
         }
         message("Final Results")
         if (null_model) {
@@ -2617,8 +2649,10 @@ Interpret_Output <- function(out_list, digits = 3) {
         step_max <- out_list$Control_List$`Maximum Step`
         deriv_max <- out_list$Control_List$`Derivative Limiting`
         strata <- out_list$model$strata
+        strata_level <- out_list$strata_levels
         cens_weight <- out_list$model$weight
         converged <- out_list$Converged
+        message("|", paste(rep("-", as.integer(options()$width / 2)), collapse = " "), "|")
         if (is(out_list, "coxres")) {
           if (cens_weight == "NONE") {
             # cox model
@@ -2627,29 +2661,67 @@ Interpret_Output <- function(out_list, digits = 3) {
             # fine-gray model
             message(paste("\nFine-Gray Model Used, weighted by ", cens_weight, sep = ""))
           }
+          #
+          tstart <- out_list$model$start_age
+          tend <- out_list$model$end_age
+          event <- out_list$model$event
+          if (tstart == "right_trunc") {
+            message("Survival Age Column was: '", tend, "', Outcome Column was: '", event, "'")
+          } else if (tend == "left_trunc") {
+            message("Entry Age Column was: '", tstart, "', Outcome Column was: '", event, "'")
+          } else {
+            message("Entry Age Column was: '", tstart, "', Survival Age Column was: '", tend, "', Outcome Column was: '", event, "'")
+          }
+          if (cens_weight != "NONE") {
+            message("Survival Weighting Column was :'", cens_weight, "'")
+          }
+          #
+          if (!null_model) {
+            message(form_type)
+          }
           if (all(strata != "NONE")) {
             message("Model stratified by ", paste(shQuote(strata), collapse = ", "))
           }
+          risk_groups <- out_list$RiskGroups
+          message("Risk Groups Used: ", risk_groups)
+          message("|", paste(rep("-", as.integer(options()$width / 2)), collapse = " "), "|")
           message(paste("-2*Log-Likelihood: ", round(-2 * LogLik, digits), ",  AIC: ", round(AIC, digits), sep = ""))
         } else if (is(out_list, "poisres")) {
           # poisson model
           message("\nPoisson Model Used")
+          pyr_col <- out_list$model$person_year
+          evt_col <- out_list$model$event
+          message("Person-year Column: '", pyr_col, "'")
+          message("Event Column: '", evt_col, "'")
+          if (!null_model) {
+            message(form_type)
+          }
           if (all(strata != "NONE")) {
             message("Model stratified by ", paste(shQuote(strata), collapse = ", "))
+            message("Strata split into ", strata_level, " distinct levels", sep = "")
           }
+          message("|", paste(rep("-", as.integer(options()$width / 2)), collapse = " "), "|")
           message(paste("-2*Log-Likelihood: ", round(-2 * LogLik, digits), ",  Deviation: ", round(deviation, digits), ",  AIC: ", round(AIC, digits), ",  BIC: ", round(BIC, digits), sep = ""))
         } else if (is(out_list, "logitres")) {
           # logistic model
           message("\nLogisitic Model Used")
+          if (!null_model) {
+            message(form_type)
+          }
           if (all(strata != "NONE")) {
             message("Model stratified by ", paste(shQuote(strata), collapse = ", "))
           }
+          message("|", paste(rep("-", as.integer(options()$width / 2)), collapse = " "), "|")
           message(paste("-2*Log-Likelihood: ", round(-2 * LogLik, digits), ",  Deviation: ", round(deviation, digits), ",  AIC: ", round(AIC, digits), ",  BIC: ", round(BIC, digits), sep = ""))
         } else {
           message("\nUnknown Model Used")
+          if (!null_model) {
+            message(form_type)
+          }
           if (all(strata != "NONE")) {
             message("Model stratified by ", paste(shQuote(strata), collapse = ", "))
           }
+          message("|", paste(rep("-", as.integer(options()$width / 2)), collapse = " "), "|")
           message(paste("-2*Log-Likelihood: ", round(-2 * LogLik, digits), ",  AIC: ", round(AIC, digits), sep = ""))
         }
         if (!is.null(converged)) {
@@ -2663,7 +2735,12 @@ Interpret_Output <- function(out_list, digits = 3) {
           } else {
             message("Analysis did not converge, check convergence criteria or run further")
           }
+          neg_lim <- out_list$Control_List$"Ended on Negative Limit"
+          if (neg_lim) {
+            message("Warning: The last iteration encountered a negative risk.")
+          }
         }
+        message("Records Used: ", KeptRecords, ", Records Removed: ", RemovedRecords)
       }
     }
   } else {
@@ -2682,5 +2759,5 @@ Interpret_Output <- function(out_list, digits = 3) {
     }
     #    message(paste("Run finished in ", out_list$RunTime))
   }
-  message("|-------------------------------------------------------------------|")
+  message("|", paste(rep("-", options()$width), collapse = ""), "|")
 }

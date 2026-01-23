@@ -14,13 +14,14 @@
 #' @importFrom rlang .data
 RunCoxRegression_Omnibus <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 = "event", names = c("CONST"), term_n = c(0), tform = "loglin", keep_constant = c(0), a_n = c(0), modelform = "M", control = list(), strat_col = "null", cens_weight = "null", model_control = list(), cons_mat = as.matrix(c(0)), cons_vec = c(0)) {
   func_t_start <- Sys.time()
+  initial_size <- nrow(df)
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
-        setDT(df) # nocov
+        setDT(df)
       },
-      error = function(e) { # nocov
-        df <- data.table(df) # nocov
+      error = function(e) {
+        df <- data.table(df)
       }
     )
   }
@@ -83,7 +84,7 @@ RunCoxRegression_Omnibus <- function(df, time1 = "%trunc%", time2 = "%trunc%", e
       }
       term_n <- rep(0, length(term_n))
     }
-    if (modelform != "M") {
+    if (!(modelform %in% c("ME", "M"))) {
       if (control$verbose >= 2) {
         warning("Warning: Basic loglinear model used, but multiplicative model not used. Modelform corrected")
       }
@@ -103,7 +104,7 @@ RunCoxRegression_Omnibus <- function(df, time1 = "%trunc%", time2 = "%trunc%", e
       }
       term_n <- rep(0, length(term_n))
     }
-    if (modelform != "M") {
+    if (!(modelform %in% c("ME", "M"))) {
       if (control$verbose >= 2) {
         warning("Warning: Linear ERR model used, but multiplicative model not used. Modelform corrected")
       }
@@ -183,6 +184,7 @@ RunCoxRegression_Omnibus <- function(df, time1 = "%trunc%", time2 = "%trunc%", e
   for (i in a_n) {
     a_ns <- c(a_ns, i)
   }
+  run_size <- nrow(df)
   if (model_control$log_bound) {
     if ("maxiters" %in% names(control)) {
       # good
@@ -234,6 +236,8 @@ RunCoxRegression_Omnibus <- function(df, time1 = "%trunc%", time2 = "%trunc%", e
   e$modelcontrol <- model_control
   func_t_end <- Sys.time()
   e$RunTime <- func_t_end - func_t_start
+  e$UsedRecords <- run_size
+  e$RejectedRecords <- initial_size - run_size
   return(e)
 }
 
@@ -250,10 +254,10 @@ Cox_Relative_Risk <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 =
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
-        setDT(df) # nocov
+        setDT(df)
       },
-      error = function(e) { # nocov
-        df <- data.table(df) # nocov
+      error = function(e) {
+        df <- data.table(df)
       }
     )
   }
@@ -298,10 +302,10 @@ RunCoxPlots <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 = "even
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
-        setDT(df) # nocov
+        setDT(df)
       },
-      error = function(e) { # nocov
-        df <- data.table(df) # nocov
+      error = function(e) {
+        df <- data.table(df)
       }
     )
   }
@@ -381,7 +385,7 @@ RunCoxPlots <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 = "even
         for (cov_i in seq_along(plot_options$cov_cols)) {
           dose_col <- unlist(plot_options$cov_cols,
             use.names = FALSE
-          )[cov_i]
+          )[[cov_i]]
           if (dose_col %in% names(df)) {
             # fine
           } else {
@@ -424,6 +428,23 @@ RunCoxPlots <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 = "even
       # fine
     } else {
       plot_options$time_lims <- c(min(tu), max(tu))
+    }
+  }
+  if (tolower(plot_type[1]) == "risk") {
+    if ("cov_cols" %in% names(plot_options)) {
+      for (cov_i in seq_along(plot_options$cov_cols)) {
+        dose_col <- unlist(plot_options$cov_cols,
+          use.names = FALSE
+        )[[cov_i]]
+        if (dose_col %in% names(df)) {
+          # fine
+        } else {
+          stop("Error: Covariate column " +
+            dose_col + " is not in the dataframe")
+        }
+      }
+    } else {
+      plot_options$cov_cols <- names
     }
   }
   for (iden_col in c("verbose", "martingale", "surv_curv", "strat_haz", "km")) {
@@ -546,7 +567,8 @@ RunCoxPlots <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 = "even
       verbose, df, event0, time1, time2,
       names, term_n, tform,
       a_n, modelform, control, keep_constant,
-      plot_type, b, er
+      plot_type, plot_options$cov_cols, b, er,
+      plot_options$boundary
     )
   } else if (tolower(plot_type[1]) == "schoenfeld") {
     age_unit <- plot_options$age_unit
@@ -578,13 +600,14 @@ RunCoxPlots <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 = "even
 #' @importFrom rlang .data
 RunCoxRegression_Omnibus_Multidose <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 = "event", names = c("CONST"), term_n = c(0), tform = "loglin", keep_constant = c(0), a_n = c(0), modelform = "M", realization_columns = matrix(c("temp00", "temp01", "temp10", "temp11"), nrow = 2), realization_index = c("temp0", "temp1"), control = list(), strat_col = "null", cens_weight = "null", model_control = list(), cons_mat = as.matrix(c(0)), cons_vec = c(0)) {
   func_t_start <- Sys.time()
+  initial_size <- nrow(df)
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
-        setDT(df) # nocov
+        setDT(df)
       },
-      error = function(e) { # nocov
-        df <- data.table(df) # nocov
+      error = function(e) {
+        df <- data.table(df)
       }
     )
   }
@@ -716,6 +739,7 @@ RunCoxRegression_Omnibus_Multidose <- function(df, time1 = "%trunc%", time2 = "%
   term_tot <- max(term_n) + 1
   x_all <- as.matrix(df[, all_names, with = FALSE])
   dose_all <- as.matrix(df[, dose_names, with = FALSE])
+  run_size <- nrow(df)
   e <- cox_ph_multidose_Omnibus_transition(
     term_n, tform, a_n,
     as.matrix(dose_cols, with = FALSE), dose_index, dfc, x_all, dose_all,
@@ -732,13 +756,11 @@ RunCoxRegression_Omnibus_Multidose <- function(df, time1 = "%trunc%", time2 = "%
   e$Parameter_Lists$names <- names
   e$Parameter_Lists$modelformula <- modelform
   e$Parameter_Lists$keep_constant <- keep_constant
-  if (model_control$MCML) {
-    e$Survival_Type <- "Cox_Multidose"
-  } else {
-    e$Survival_Type <- "Cox_Multidose"
-  }
+  e$Survival_Type <- "Cox_Multidose"
   func_t_end <- Sys.time()
   e$RunTime <- func_t_end - func_t_start
+  e$UsedRecords <- run_size
+  e$RejectedRecords <- initial_size - run_size
   return(e)
 }
 
@@ -758,10 +780,10 @@ CoxCurveSolver <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 = "e
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
-        setDT(df) # nocov
+        setDT(df)
       },
-      error = function(e) { # nocov
-        df <- data.table(df) # nocov
+      error = function(e) {
+        df <- data.table(df)
       }
     )
   }
@@ -822,7 +844,7 @@ CoxCurveSolver <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 = "e
       }
       term_n <- rep(0, length(term_n))
     }
-    if (modelform != "M") {
+    if (!(modelform %in% c("ME", "M"))) {
       if (control$verbose >= 2) {
         warning("Warning: Linear ERR model used, but multiplicative model not used. Modelform corrected")
       }

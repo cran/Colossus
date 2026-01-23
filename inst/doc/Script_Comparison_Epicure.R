@@ -5,6 +5,7 @@ knitr::opts_chunk$set(
 )
 
 ## ----setup--------------------------------------------------------------------
+Sys.setenv("OMP_THREAD_LIMIT" = 1) # Reducing core use, to avoid accidental use of too many cores
 library(Colossus)
 library(data.table)
 library(parallel)
@@ -13,10 +14,14 @@ library(parallel)
 # df_Dose <- fread("EX_DOSE.csv")
 
 ## ----eval=FALSE---------------------------------------------------------------
-# model_ERR <- Cox(age_entry, age_exit, nonCLL) ~ plinear(cumulative_dose, 0) + loglinear(factor(SES_CAT), factor(YOB_CAT), sexm)
+# model_ERR <- Cox(age_entry, age_exit, nonCLL) ~ plinear(cumulative_dose, 0) +
+#   loglinear(factor(SES_CAT), factor(YOB_CAT), sexm)
 
 ## ----eval=FALSE---------------------------------------------------------------
-# control <- list("Ncores" = 2, "maxiter" = 100, "verbose" = 2, "epsilon" = 1e-9, "der_epsilon" = 1e-9)
+# control <- list(
+#   "Ncores" = 1, "maxiter" = 100, "verbose" = 2,
+#   "epsilon" = 1e-9, "der_epsilon" = 1e-9
+# )
 
 ## ----eval=FALSE---------------------------------------------------------------
 # e <- CoxRun(model_ERR, df_dose, control = control)

@@ -8,14 +8,21 @@
 #' @return returns a class fully describing the model and the updated data
 #' @family Formula Interpretation
 #' @export
-get_form_joint <- function(formula_list, df) {
+get_form_joint <- function(formula_list, df, nthreads = as.numeric(detectCores()) / 2) {
+  # ------------------------------------------------------------------------------ #
+  # Make data.table use the set number of threads too
+  if ((identical(Sys.getenv("TESTTHAT"), "true")) || (identical(Sys.getenv("TESTTHAT_IS_CHECKING"), "true"))) {
+    nthreads <- min(c(2, nthreads))
+  }
+  thread_0 <- setDTthreads(nthreads) # save the old number and set the new number
+  # ------------------------------------------------------------------------------ #
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
-        setDT(df) # nocov
+        setDT(df)
       },
-      error = function(e) { # nocov
-        df <- data.table(df) # nocov
+      error = function(e) {
+        df <- data.table(df)
       }
     )
   }
@@ -36,8 +43,8 @@ get_form_joint <- function(formula_list, df) {
   for (formula_i in seq_along(formula_list)) {
     #
     formula <- formula_list[[formula_i]]
-    surv_obj <- format(formula[[2]])
-    model_obj <- paste(format(formula[[3]]), collapse = " ")
+    surv_obj <- Reduce(paste, deparse(formula[[2]]))
+    model_obj <- paste(Reduce(paste, deparse(formula[[3]])), collapse = " ")
     surv_obj <- gsub(" ", "", surv_obj)
     model_obj <- gsub(" ", "", model_obj)
     res <- get_form_list(surv_obj, model_obj, df)
@@ -50,7 +57,7 @@ get_form_joint <- function(formula_list, df) {
     model_list <- c(model_list, model_temp)
   }
   #
-  model_obj <- paste(format(formula_shared[[3]]), collapse = " ")
+  model_obj <- paste(Reduce(paste, deparse(formula_shared[[3]])), collapse = " ")
   if (model_obj != ".") {
     res <- get_form_risk(model_obj, df)
     model_share <- res$model
@@ -68,7 +75,7 @@ get_form_joint <- function(formula_list, df) {
       stop(paste("Error: The joint models need to use the same person-year column. Instead they use ", model_1$pyr, " and ", model_2$pyr, ".", sep = ""))
     }
     # The strata should match
-    if (model_1$strata != model_2$strata) {
+    if (any(model_1$strata != model_2$strata)) {
       stop(paste("Error: The joint models need to use the same stratification.", sep = ""))
     }
     # The modelform should match
@@ -150,10 +157,10 @@ get_form_joint <- function(formula_list, df) {
     if (len_1 < len_2) {
       if (len_s < len_1) {
         # 2 is longest
-        if (gmix_term_s != gmix_term_2[1:len_s]) {
+        if (any(gmix_term_s != gmix_term_2[1:len_s])) {
           stop("Error: Second model and shared model have different geometric mixture term values.")
         }
-        if (gmix_term_1 != gmix_term_2[1:len_1]) {
+        if (any(gmix_term_1 != gmix_term_2[1:len_1])) {
           stop("Error: Second model and first model have different geometric mixture term values.")
         }
         gmix_term <- gmix_term_2
@@ -161,7 +168,11 @@ get_form_joint <- function(formula_list, df) {
     }
   }
   #
-  model <- poismodel(pyr, "events", strata, term_n, tform, names, modelform, gmix_term, gmix_theta, a_n, keep_constant, df)
+  null <- FALSE
+  model <- poismodel(pyr, "events", strata, null, term_n, tform, names, modelform, gmix_term, gmix_theta, a_n, keep_constant, df)
+  # Revert data.table core change
+  thread_1 <- setDTthreads(thread_0) # revert the old number
+  # ------------------------------------------------------------------------------ #
   list(
     "model" = model, "data" = df
   )
@@ -203,11 +214,11 @@ get_form <- function(formula, df, nthreads = as.numeric(detectCores()) / 2) {
   }
   thread_0 <- setDTthreads(nthreads) # save the old number and set the new number
   # ------------------------------------------------------------------------------ #
-  if (length(lapply(strsplit(format(formula), ""), function(x) which(x == "~"))[[1]]) != 1) {
+  if (length(lapply(strsplit(Reduce(paste, deparse(formula)), ""), function(x) which(x == "~"))[[1]]) != 1) {
     stop("Error: The formula contained multiple '~', invalid formula")
   }
-  surv_obj <- format(formula[[2]])
-  model_obj <- paste(format(formula[[3]]), collapse = " ")
+  surv_obj <- Reduce(paste, deparse(formula[[2]]))
+  model_obj <- paste(Reduce(paste, deparse(formula[[3]])), collapse = " ")
   surv_obj <- gsub(" ", "", surv_obj)
   model_obj <- gsub(" ", "", model_obj)
   res <- get_form_list(surv_obj, model_obj, df)
@@ -233,14 +244,24 @@ get_form <- function(formula, df, nthreads = as.numeric(detectCores()) / 2) {
   #
   expres_calls <- model$expres_calls
   #
+  if (null) {
+    names <- c("CONST")
+    term_n <- c(0)
+    tform <- c("loglin")
+    modelform <- "M"
+  }
+  #
   if (grepl("cox", surv_model_type)) {
     model <- coxmodel(tstart, tend, event, strata, weight, null, term_n, tform, names, modelform, gmix_term, gmix_theta, c(), c(), df, expres_calls)
   } else if (grepl("finegray", surv_model_type)) {
     model <- coxmodel(tstart, tend, event, strata, weight, null, term_n, tform, names, modelform, gmix_term, gmix_theta, c(), c(), df, expres_calls)
   } else if (grepl("pois", surv_model_type)) {
-    model <- poismodel(pyr, event, strata, term_n, tform, names, modelform, gmix_term, gmix_theta, c(), c(), df, expres_calls)
+    model <- poismodel(pyr, event, strata, null, term_n, tform, names, modelform, gmix_term, gmix_theta, c(), c(), df, expres_calls)
     if (all(strata != "NONE")) {
-      Check_Strata_Model(term_n, tform, modelform, gmix_term, gmix_theta)
+      if (!all(strata %in% names(df))) {
+        stop("Error: One of the strata was not in the original data.")
+      }
+      #   Check_Strata_Model(term_n, tform, modelform, gmix_term, gmix_theta)
     } # verifies that a stratified model can be used
   } else if ((grepl("casecon", surv_model_type)) || (grepl("case_con", surv_model_type))) {
     model <- caseconmodel(tstart, tend, event, strata, null, term_n, tform, names, modelform, gmix_term, gmix_theta, c(), c(), df, expres_calls)
@@ -401,7 +422,7 @@ get_form_surv <- function(surv_obj, df) {
     res <- do.call(ColossusPoisSurv, surv_para_list)
     pyr <- res$pyr
     event <- res$event
-    if (res$strata != "NULL") {
+    if (any(res$strata != "NULL")) {
       stop("Error: Too many columns passed to non-stratified Poisson model")
     }
   } else if (surv_type %in% c("poisson_strata", "pois_strata")) {
@@ -451,13 +472,13 @@ get_form_surv <- function(surv_obj, df) {
     if (tend == "%trunc%") {
       stop("Error: Both endpoints are truncated, not acceptable")
     }
-    tmin <- min(df[, get(tend)]) - 1
+    tmin <- min(df[[tend]]) - 1
     if (!("right_trunc" %in% names(df))) {
       df[, ":="(right_trunc = tmin)]
     }
     tstart <- "right_trunc"
   } else if (tend == "%trunc%") {
-    tmax <- max(df[, get(tstart)]) + 1
+    tmax <- max(df[[tstart]]) + 1
     if (!("left_trunc" %in% names(df))) {
       df[, ":="(left_trunc = tmax)]
     }
@@ -789,18 +810,6 @@ get_form_risk <- function(model_obj, df) {
               stop(paste("Error: Interaction column missing: ", col, sep = ""))
             }
           }
-
-          recur_interact <- function(x, y) {
-            if (length(y) == 1) {
-              return(paste(x, y[[1]], sep = ":"))
-            } else {
-              for (i in y[[1]]) {
-                y0 <- paste(x, i, sep = ":")
-                return(recur_interact(y0, y[2:length(y)]))
-              }
-            }
-          }
-
           interact_tables <- do.call(c, lapply(seq_along(cols), combn, x = cols, simplify = FALSE))
           col_name <- c()
           for (i_table in interact_tables) {
@@ -824,6 +833,8 @@ get_form_risk <- function(model_obj, df) {
               for (term_i in seq_along(vals)) {
                 factor_col <- vals[term_i]
                 if (is.factor(df[[factor_col]])) {
+                  val <- factorize(df, factor_col)
+                  df <- val$df
                   i_levels <- paste(factor_col, levels(df[[factor_col]]), sep = "_")
                   level_ref <- paste(factor_col, levels(df[[factor_col]])[1], sep = "_")
                   i_levels <- i_levels[i_levels != level_ref]
@@ -834,15 +845,23 @@ get_form_risk <- function(model_obj, df) {
               }
               combs <- c()
               for (i in element_levels[[1]]) {
-                y0 <- i
-                combs <- recur_interact(y0, element_levels[2:length(element_levels)])
-                for (comb in combs) {
-                  #
-                  entries <- strsplit(comb, ":")[[1]]
-                  df[[comb]] <- 1
-                  for (j in entries) {
-                    df[[comb]] <- df[[comb]] * df[[j]]
-                  }
+                combs <- c(combs, paste(i))
+              }
+              for (i in 2:length(element_levels)) {
+                comb_temp <- copy(combs)
+                combs <- c()
+                for (k in element_levels[[i]]) {
+                  combs <- c(combs, paste(comb_temp, k, sep = ":"))
+                }
+              }
+              for (comb in combs) {
+                #
+                entries <- strsplit(comb, ":")[[1]]
+                df[[comb]] <- 1
+                for (j in entries) {
+                  df[[comb]] <- df[[comb]] * df[[j]]
+                }
+                if (max(df[[comb]]) != min(df[[comb]])) {
                   col_name <- c(col_name, comb)
                 }
               }
@@ -852,15 +871,18 @@ get_form_risk <- function(model_obj, df) {
         } else {
           # check if the column is actually a factor
           element_col <- model_paras[subterm_i]
+          if ("CONST" == element_col) {
+            if ("CONST" %in% names(df)) {
+              # fine
+            } else {
+              df$CONST <- 1
+            }
+          }
+          if (!element_col %in% names(df)) {
+            stop(paste("Error: Subterm column missing: ", col, sep = ""))
+          }
           if (is.null(levels(df[[element_col]]))) {
             col_name <- c(element_col)
-            if ("CONST" == model_paras[subterm_i]) {
-              if ("CONST" %in% names(df)) {
-                # fine
-              } else {
-                df$CONST <- 1
-              }
-            }
           } else {
             # it is a factor
             factor_arg_list <- list()
@@ -1035,6 +1057,18 @@ get_form_risk <- function(model_obj, df) {
       stop("Error: The gmix option was used with more values than terms")
     }
   }
+  # We want to check that it is in the data and not a character
+  all_name <- unique(names)
+  for (col in all_name) {
+    # Make sure it exists
+    if (!(col %in% names(df))) {
+      stop(paste("Error: Column missing from data: ", col, sep = ""))
+    }
+    # Make sure it can be a number
+    if (!is.numeric(df[[col]])) {
+      stop(paste("Error: Column was not numeric: ", col, sep = ""))
+    }
+  }
   #
   if (length(tform) > 1) {
     og_index <- seq_along(tform)
@@ -1161,16 +1195,16 @@ ColossusExpressionCall <- function(calls, df) {
     } else if (call["_exp_type"] == "interaction") {
       # split into the columns
       cols <- strsplit(call[[2]], "\\*")[[1]]
-      recur_interact <- function(x, y) {
-        if (length(y) == 1) {
-          return(paste(x, y[[1]], sep = ":"))
-        } else {
-          for (i in y[[1]]) {
-            y0 <- paste(x, i, sep = ":")
-            return(recur_interact(y0, y[2:length(y)]))
-          }
-        }
-      }
+      #      recur_interact <- function(x, y) {
+      #        if (length(y) == 1) {
+      #          return(paste(x, y[[1]], sep = ":"))
+      #        } else {
+      #          for (i in y[[1]]) {
+      #            y0 <- paste(x, i, sep = ":")
+      #            return(recur_interact(y0, y[2:length(y)]))
+      #          }
+      #        }
+      #      }
       interact_tables <- do.call(c, lapply(seq_along(cols), combn, x = cols, simplify = FALSE))
       for (i_table in interact_tables) {
         vals <- unlist(i_table, use.names = FALSE)
@@ -1197,15 +1231,21 @@ ColossusExpressionCall <- function(calls, df) {
           }
           combs <- c()
           for (i in element_levels[[1]]) {
-            y0 <- i
-            combs <- recur_interact(y0, element_levels[2:length(element_levels)])
-            for (comb in combs) {
-              #
-              entries <- strsplit(comb, ":")[[1]]
-              df[[comb]] <- 1
-              for (j in entries) {
-                df[[comb]] <- df[[comb]] * df[[j]]
-              }
+            combs <- c(combs, paste(i))
+          }
+          for (i in 2:length(element_levels)) {
+            comb_temp <- copy(combs)
+            combs <- c()
+            for (k in element_levels[[i]]) {
+              combs <- c(combs, paste(comb_temp, k, sep = ":"))
+            }
+          }
+          for (comb in combs) {
+            #
+            entries <- strsplit(comb, ":")[[1]]
+            df[[comb]] <- 1
+            for (j in entries) {
+              df[[comb]] <- df[[comb]] * df[[j]]
             }
           }
         }

@@ -356,8 +356,9 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">library</span>(Colossus)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="kw">library</span>(data.table)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">Sys.setenv</span>(<span class="st">&quot;OMP_THREAD_LIMIT&quot;</span> =<span class="st"> </span><span class="dv">1</span>) <span class="co"># Reducing core use, to avoid accidental use of too many cores</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="kw">library</span>(Colossus)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a><span class="kw">library</span>(data.table)</span></code></pre></div>
 <p>The underlying functions in Colossus specify a survival model using a series of vectors, which can be overly complicated at times. Colossus includes functions to interpret formulas, and then call the underlying functions.</p>
 <div id="equation-expression" class="section level2">
 <h2>Equation Expression</h2>
@@ -365,33 +366,33 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
-    \text{Surv(interval, event) ~ name + ... + factor(name)} \\
-    \text{&#39;Survival(interval, event) ~ subterm(name, factor(name), term_number) + ... + term_model()&#39;}
+    \text{Surv(interval, event) } \sim \text{name + ... + factor(name)} \\
+    \text{&#39;Survival(interval, event) } \sim \text{ subterm(name, factor(name), term_number) + ... + term_model()&#39;}
 \end{aligned}
 \]</span>
 </p>
-<p>Based on the number of entries, the format of the time interval is assumed. Cox models used an entry, exit, and event time. These can be either named ‘start’, ‘tend’, and ‘event’ or included in order. If none are named, a left truncated interval is assumed. A stratified cox model includes the named entry ‘strata’ or the right-most entry is assumed to be the stratification column. A Fine-Gray model adds a weighting column to the standard Cox interval representation, assumed to be an entry named ‘weight’ or the right-most entry. In total, the assumed order is: entry time, exit time, strata column, and weighting column.</p>
+<p>Based on the number of entries, the format of the time interval is assumed. Cox models use an entry time, an exit time, and an event status. These can be either named ‘start’, ‘tend’, and ‘event’ or included in order. If none are named, a left truncated interval is assumed. A stratified cox model includes the named entry ‘strata’ or the right-most entry is assumed to be the stratification column. A Fine-Gray model adds a weighting column to the standard Cox interval representation, assumed to be an entry named ‘weight’ or the right-most entry. In total, the assumed order is: entry time, exit time, event status, strata column, and weighting column.</p>
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
-    \text{&#39;Cox(tstart, tend, event) ~ ...&#39;} \\
-    \text{&#39;Cox_Strata(tstart, tend, event, strata) ~ ...&#39;} \\
-    \text{&#39;FineGray(tstart, tend, event, weight) ~ ...&#39;} \\
-    \text{&#39;FineGray_Strata(tstart, tend, event, strata, weight) ~ ...&#39;}
+    \text{&#39;Cox(tstart, tend, event) } \sim \text{ ...&#39;} \\
+    \text{&#39;Cox_Strata(tstart, tend, event, strata) } \sim \text{ ...&#39;} \\
+    \text{&#39;FineGray(tstart, tend, event, weight) } \sim \text{ ...&#39;} \\
+    \text{&#39;FineGray_Strata(tstart, tend, event, strata, weight) } \sim \text{ ...&#39;}
 \end{aligned}
 \]</span>
 </p>
-<p>Poisson models use a measure of duration (named ‘pyr’), the event column (named ‘event’), and any strata columns. The assumed order is ‘pyr’, ‘event’, and the strata columns listed sequentially. The duration and event columns can be named, but the naming of the strata columns is currently not supported.</p>
+<p>Poisson models use a measure of duration (named ‘pyr’), the number of events (named ‘event’), and any strata columns. The assumed order is ‘pyr’, ‘event’, and the strata columns listed sequentially. The duration and event columns can be named, but the naming of the strata columns is currently not supported.</p>
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
-    \text{&#39;Pois(pyr, event) ~ ...&#39;} \\
-    \text{&#39;Pois_Strata(pyr, event, strata_0) ~ ...&#39;} \\
-    \text{&#39;Pois_Strata(pyr, event, strata_0, strata_1, ...) ~ ...&#39;}
+    \text{&#39;Pois(pyr, event) } \sim \text{ ...&#39;} \\
+    \text{&#39;Pois_Strata(pyr, event, strata_0) } \sim \text{ ...&#39;} \\
+    \text{&#39;Pois_Strata(pyr, event, strata_0, strata_1, ...) } \sim \text{ ...&#39;}
 \end{aligned}
 \]</span>
 </p>
-<p>The right hand side adds elements to subterms. Each subterm should have the included columns, and optionally the term number. Subterms are assumed to be in term 0 is not provided, and the model is assumed to be multiplicative. The factor option automatically removes the first level as a reference.</p>
+<p>The right hand side adds elements to subterms. Each subterm should have the included columns, and optionally the term number. Subterms are assumed to be in term 0 if a term number is not provided, and the model is assumed to be multiplicative excess. The factor option automatically removes the first level as a reference. Note that unused levels can be listed first to use all levels.</p>
 <p>The following expressions are equivalent.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>term_n &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>tform &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;loglin&quot;</span>, <span class="st">&quot;loglin&quot;</span>, <span class="st">&quot;lin&quot;</span>)</span>
@@ -401,70 +402,18 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a>tend &lt;-<span class="st"> &quot;t1&quot;</span></span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a>event &lt;-<span class="st"> &quot;lung&quot;</span></span>
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true"></a></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true"></a>Model_Eq &lt;-<span class="st"> </span><span class="kw">Cox</span>(t0, t1, lung) <span class="op">~</span><span class="st"> </span><span class="kw">loglinear</span>(dose0, dose1, <span class="dv">0</span>) <span class="op">+</span><span class="st"> </span><span class="kw">linear</span>(dose2, <span class="dv">1</span>) <span class="op">+</span><span class="st"> </span>multiplicative <span class="op">-</span><span class="st"> </span><span class="kw">excess</span>()</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true"></a>Model_Eq &lt;-<span class="st"> </span><span class="kw">Cox</span>(t0, t1, lung) <span class="op">~</span><span class="st"> </span><span class="kw">loglinear</span>(dose0, dose1) <span class="op">+</span><span class="st"> </span><span class="kw">linear</span>(dose2, <span class="dv">1</span>)</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true"></a></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true"></a>df &lt;-<span class="st"> </span><span class="kw">data.table</span>(</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true"></a>  <span class="st">&quot;dose0&quot;</span> =<span class="st"> </span><span class="dv">1</span><span class="op">:</span><span class="dv">4</span>, <span class="st">&quot;dose1&quot;</span> =<span class="st"> </span><span class="dv">2</span><span class="op">:</span><span class="dv">5</span>, <span class="st">&quot;dose2&quot;</span> =<span class="st"> </span><span class="dv">3</span><span class="op">:</span><span class="dv">6</span>,</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true"></a>  <span class="st">&quot;t0&quot;</span> =<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>), <span class="st">&quot;t1&quot;</span> =<span class="st"> </span><span class="dv">5</span><span class="op">:</span><span class="dv">8</span>, <span class="st">&quot;lung&quot;</span> =<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>)</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true"></a>)</span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true"></a><span class="kw">get_form</span>(Model_Eq, df)</span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true"></a><span class="co">#&gt; $model</span></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true"></a><span class="co">#&gt; $start_age</span></span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;t0&quot;</span></span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true"></a><span class="co">#&gt; $end_age</span></span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;t1&quot;</span></span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true"></a><span class="co">#&gt; $event</span></span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;lung&quot;</span></span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true"></a><span class="co">#&gt; $strata</span></span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;NONE&quot;</span></span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true"></a><span class="co">#&gt; $weight</span></span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;NONE&quot;</span></span>
-<span id="cb2-32"><a href="#cb2-32" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true"></a><span class="co">#&gt; $null</span></span>
-<span id="cb2-34"><a href="#cb2-34" aria-hidden="true"></a><span class="co">#&gt; [1] FALSE</span></span>
-<span id="cb2-35"><a href="#cb2-35" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb2-36"><a href="#cb2-36" aria-hidden="true"></a><span class="co">#&gt; $term_n</span></span>
-<span id="cb2-37"><a href="#cb2-37" aria-hidden="true"></a><span class="co">#&gt; [1] 0 0 1</span></span>
-<span id="cb2-38"><a href="#cb2-38" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb2-39"><a href="#cb2-39" aria-hidden="true"></a><span class="co">#&gt; $tform</span></span>
-<span id="cb2-40"><a href="#cb2-40" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;loglin&quot; &quot;loglin&quot; &quot;lin&quot;   </span></span>
-<span id="cb2-41"><a href="#cb2-41" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb2-42"><a href="#cb2-42" aria-hidden="true"></a><span class="co">#&gt; $names</span></span>
-<span id="cb2-43"><a href="#cb2-43" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;dose0&quot; &quot;dose1&quot; &quot;dose2&quot;</span></span>
-<span id="cb2-44"><a href="#cb2-44" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb2-45"><a href="#cb2-45" aria-hidden="true"></a><span class="co">#&gt; $a_n</span></span>
-<span id="cb2-46"><a href="#cb2-46" aria-hidden="true"></a><span class="co">#&gt; [1] 0.01 0.01 0.01</span></span>
-<span id="cb2-47"><a href="#cb2-47" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb2-48"><a href="#cb2-48" aria-hidden="true"></a><span class="co">#&gt; $keep_constant</span></span>
-<span id="cb2-49"><a href="#cb2-49" aria-hidden="true"></a><span class="co">#&gt; [1] 0 0 0</span></span>
-<span id="cb2-50"><a href="#cb2-50" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb2-51"><a href="#cb2-51" aria-hidden="true"></a><span class="co">#&gt; $modelform</span></span>
-<span id="cb2-52"><a href="#cb2-52" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;ME&quot;</span></span>
-<span id="cb2-53"><a href="#cb2-53" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb2-54"><a href="#cb2-54" aria-hidden="true"></a><span class="co">#&gt; $gmix_term</span></span>
-<span id="cb2-55"><a href="#cb2-55" aria-hidden="true"></a><span class="co">#&gt; [1] 1 1</span></span>
-<span id="cb2-56"><a href="#cb2-56" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb2-57"><a href="#cb2-57" aria-hidden="true"></a><span class="co">#&gt; $gmix_theta</span></span>
-<span id="cb2-58"><a href="#cb2-58" aria-hidden="true"></a><span class="co">#&gt; [1] 0</span></span>
-<span id="cb2-59"><a href="#cb2-59" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb2-60"><a href="#cb2-60" aria-hidden="true"></a><span class="co">#&gt; $expres_calls</span></span>
-<span id="cb2-61"><a href="#cb2-61" aria-hidden="true"></a><span class="co">#&gt; list()</span></span>
-<span id="cb2-62"><a href="#cb2-62" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb2-63"><a href="#cb2-63" aria-hidden="true"></a><span class="co">#&gt; attr(,&quot;class&quot;)</span></span>
-<span id="cb2-64"><a href="#cb2-64" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;coxmodel&quot;</span></span>
-<span id="cb2-65"><a href="#cb2-65" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb2-66"><a href="#cb2-66" aria-hidden="true"></a><span class="co">#&gt; $data</span></span>
-<span id="cb2-67"><a href="#cb2-67" aria-hidden="true"></a><span class="co">#&gt;    dose0 dose1 dose2    t0    t1  lung</span></span>
-<span id="cb2-68"><a href="#cb2-68" aria-hidden="true"></a><span class="co">#&gt;    &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;num&gt; &lt;int&gt; &lt;num&gt;</span></span>
-<span id="cb2-69"><a href="#cb2-69" aria-hidden="true"></a><span class="co">#&gt; 1:     1     2     3     0     5     1</span></span>
-<span id="cb2-70"><a href="#cb2-70" aria-hidden="true"></a><span class="co">#&gt; 2:     2     3     4     0     6     0</span></span>
-<span id="cb2-71"><a href="#cb2-71" aria-hidden="true"></a><span class="co">#&gt; 3:     3     4     5     1     7     0</span></span>
-<span id="cb2-72"><a href="#cb2-72" aria-hidden="true"></a><span class="co">#&gt; 4:     4     5     6     0     8     1</span></span></code></pre></div>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true"></a>Model_Eq &lt;-<span class="st"> </span><span class="kw">Cox</span>(t0, t1, lung) <span class="op">~</span><span class="st"> </span><span class="kw">loglinear</span>(dose0, dose1, <span class="dv">0</span>) <span class="op">+</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true"></a><span class="st">  </span><span class="kw">linear</span>(dose2, <span class="dv">1</span>) <span class="op">+</span><span class="st"> </span><span class="kw">ME</span>()</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true"></a>Model_Eq &lt;-<span class="st"> </span><span class="kw">Cox</span>(t0, t1, lung) <span class="op">~</span><span class="st"> </span><span class="kw">loglinear</span>(dose0, dose1) <span class="op">+</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true"></a><span class="st">  </span><span class="kw">linear</span>(dose2, <span class="dv">1</span>)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true"></a>df &lt;-<span class="st"> </span><span class="kw">data.table</span>(</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true"></a>  <span class="st">&quot;dose0&quot;</span> =<span class="st"> </span><span class="dv">1</span><span class="op">:</span><span class="dv">4</span>, <span class="st">&quot;dose1&quot;</span> =<span class="st"> </span><span class="dv">2</span><span class="op">:</span><span class="dv">5</span>, <span class="st">&quot;dose2&quot;</span> =<span class="st"> </span><span class="dv">3</span><span class="op">:</span><span class="dv">6</span>,</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true"></a>  <span class="st">&quot;t0&quot;</span> =<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>), <span class="st">&quot;t1&quot;</span> =<span class="st"> </span><span class="dv">5</span><span class="op">:</span><span class="dv">8</span>, <span class="st">&quot;lung&quot;</span> =<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true"></a>)</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true"></a>res &lt;-<span class="st"> </span><span class="kw">get_form</span>(Model_Eq, df, <span class="dt">nthreads =</span> <span class="dv">1</span>)</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true"></a>formula &lt;-<span class="st"> </span>res<span class="op">$</span>model</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true"></a>new_data &lt;-<span class="st"> </span>res<span class="op">$</span>data</span></code></pre></div>
 <p>The following tables cover the subterms and term models that are currently implemented. Every option listed has multiple equivalent aliases that all refer to the same subterm or model formula.</p>
 <table>
 <colgroup>
@@ -546,7 +495,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </tr>
 <tr class="odd">
 <td align="center">loglin</td>
-<td align="center">“loglin”, “loglinear”, “log-linear”</td>
+<td align="center">“loglin”, “loglinear”, “log-linear” , “exponential”, “exp”</td>
 </tr>
 <tr class="even">
 <td align="center">loglin_slope/loglin_top</td>
@@ -575,6 +524,10 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </tbody>
 </table>
 <table>
+<colgroup>
+<col width="47%"></col>
+<col width="52%"></col>
+</colgroup>
 <thead>
 <tr class="header">
 <th align="center">Term Type</th>
@@ -583,31 +536,35 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </thead>
 <tbody>
 <tr class="odd">
-<td align="center">M</td>
-<td align="center">“m”, “me”, “multiplicative”, “multiplicative-excess”</td>
+<td align="center">Multiplicative</td>
+<td align="center">“m”, “multiplicative”</td>
 </tr>
 <tr class="even">
-<td align="center">A</td>
+<td align="center">Multiplicative Excess</td>
+<td align="center">“me”, “multiplicative-excess”</td>
+</tr>
+<tr class="odd">
+<td align="center">Additive</td>
 <td align="center">“a”, “additive”</td>
 </tr>
-<tr class="odd">
-<td align="center">PA</td>
+<tr class="even">
+<td align="center">Product Additive</td>
 <td align="center">“pa”, “product-additive”</td>
 </tr>
-<tr class="even">
-<td align="center">PAE</td>
+<tr class="odd">
+<td align="center">Product Additive Excess</td>
 <td align="center">“pae”, “product-additive-excess”</td>
 </tr>
-<tr class="odd">
-<td align="center">GMIX</td>
+<tr class="even">
+<td align="center">Geometric Mixture Model</td>
 <td align="center">“gmix”,“geometric-mixture”</td>
 </tr>
-<tr class="even">
-<td align="center">GMIX-R</td>
+<tr class="odd">
+<td align="center">Geometric Mixture Model, relative error terms</td>
 <td align="center">“gmix-r”,“relative-geometric-mixture”</td>
 </tr>
-<tr class="odd">
-<td align="center">GMIX-E</td>
+<tr class="even">
+<td align="center">Geometric Mixture Model, excess error terms</td>
 <td align="center">“gmix-e”,“excess-geometric-mixture”</td>
 </tr>
 </tbody>

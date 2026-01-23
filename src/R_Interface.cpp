@@ -140,7 +140,7 @@ List cox_ph_Omnibus_transition(IntegerVector term_n, StringVector tform, Numeric
 //' @noRd
 //'
 //  [[Rcpp::export]]
-List pois_Omnibus_transition(MatrixXd PyrC, IntegerVector term_n, StringVector tform, NumericMatrix& a_ns, IntegerVector dfc, MatrixXd df0, int fir, string modelform, List Control, IntegerVector KeepConstant, int term_tot, MatrixXd dfs, List model_control, MatrixXd Lin_Sys, VectorXd Lin_Res) {
+List pois_Omnibus_transition(MatrixXd PyrC, IntegerVector term_n, StringVector tform, NumericMatrix& a_ns, IntegerVector dfc, MatrixXd df0, int fir, string modelform, List Control, IntegerVector KeepConstant, int term_tot, NumericVector Strata_vals, MatrixXd dfs, List model_control, MatrixXd Lin_Sys, VectorXd Lin_Res) {
     //
     int verbose = Control["verbose"];
     //
@@ -162,7 +162,7 @@ List pois_Omnibus_transition(MatrixXd PyrC, IntegerVector term_n, StringVector t
             _["strata"] = model_control["strata"],
             _["basic"] = false,
             _["linear_err"] = false,
-            _["null"] = false,
+            _["null"] = model_control["null"],
             _["cr"] = false,
             _["single"] = model_control["single"],
             _["gradient"] = model_control["gradient"],
@@ -188,7 +188,7 @@ List pois_Omnibus_transition(MatrixXd PyrC, IntegerVector term_n, StringVector t
     //
     //  Performs regression
     //----------------------------------------------------------------------------------------------------------------//
-    List res = LogLik_Pois_Omnibus(PyrC, term_n, tform, a_ns, df0, dfc, fir, modelform, lr, optim_para, maxiters, guesses, halfmax, epsilon, step_max, thres_step_max, deriv_epsilon, verbose, KeepConstant, term_tot, nthreads, dfs, model_bool, gmix_theta, gmix_term, Lin_Sys, Lin_Res);
+    List res = LogLik_Pois_Omnibus(PyrC, term_n, tform, a_ns, df0, dfc, fir, modelform, lr, optim_para, maxiters, guesses, halfmax, epsilon, step_max, thres_step_max, deriv_epsilon, verbose, KeepConstant, term_tot, nthreads, Strata_vals, dfs, model_bool, gmix_theta, gmix_term, Lin_Sys, Lin_Res);
     //----------------------------------------------------------------------------------------------------------------//
     return res;
 }
@@ -202,7 +202,7 @@ List pois_Omnibus_transition(MatrixXd PyrC, IntegerVector term_n, StringVector t
 //' @noRd
 //'
 //  [[Rcpp::export]]
-List Assigned_Event_Poisson_transition(MatrixXd PyrC, MatrixXd dfs, IntegerVector term_n, StringVector tform, NumericVector a_n, IntegerVector dfc, MatrixXd df0, int fir, string modelform, List Control, IntegerVector KeepConstant, int term_tot, List model_control) {
+List Assigned_Event_Poisson_transition(MatrixXd PyrC, NumericVector Strata_vals, MatrixXd dfs, IntegerVector term_n, StringVector tform, NumericVector a_n, IntegerVector dfc, MatrixXd df0, int fir, string modelform, List Control, IntegerVector KeepConstant, int term_tot, List model_control) {
     int verbose = Control["verbose"];
     //
     string ties_method = Control["ties"];
@@ -228,7 +228,7 @@ List Assigned_Event_Poisson_transition(MatrixXd PyrC, MatrixXd dfs, IntegerVecto
     //  Performs regression
     List res;
     //----------------------------------------------------------------------------------------------------------------//
-    res = Assign_Events_Pois(term_n, tform, beta_0, df0, dfc, PyrC, dfs, fir, modelform, verbose, KeepConstant, term_tot, nthreads, gmix_theta, gmix_term, model_bool);
+    res = Assign_Events_Pois(term_n, tform, beta_0, df0, dfc, PyrC, Strata_vals, dfs, fir, modelform, verbose, KeepConstant, term_tot, nthreads, gmix_theta, gmix_term, model_bool);
     //----------------------------------------------------------------------------------------------------------------//
     return res;
 }
@@ -446,7 +446,7 @@ List cox_ph_Omnibus_CurveSearch_transition(IntegerVector term_n, StringVector tf
 //' @noRd
 //'
 //  [[Rcpp::export]]
-List pois_Omnibus_CurveSearch_transition(MatrixXd PyrC, IntegerVector term_n, StringVector tform, NumericVector a_n, IntegerVector dfc, MatrixXd df0, int fir, string modelform, List Control, IntegerVector KeepConstant, int term_tot, MatrixXd dfs, List model_control, MatrixXd Lin_Sys, VectorXd Lin_Res) {
+List pois_Omnibus_CurveSearch_transition(MatrixXd PyrC, IntegerVector term_n, StringVector tform, NumericVector a_n, IntegerVector dfc, MatrixXd df0, int fir, string modelform, List Control, IntegerVector KeepConstant, int term_tot, NumericVector Strata_vals, MatrixXd dfs, List model_control, MatrixXd Lin_Sys, VectorXd Lin_Res) {
     // const Map<MatrixXd> PyrC(as<Map<MatrixXd> >(dfe));
     // const Map<MatrixXd> dfs(as<Map<MatrixXd> >(df_strata));
     //
@@ -494,7 +494,7 @@ List pois_Omnibus_CurveSearch_transition(MatrixXd PyrC, IntegerVector term_n, St
     //  Performs regression
     //----------------------------------------------------------------------------------------------------------------//
     List res;
-    res = LogLik_Poisson_Omnibus_Log_Bound_CurveSearch(PyrC, dfs, term_n, tform, beta_0, df0, dfc, fir, modelform, lr, optim_para, maxiter, halfmax, epsilon, step_max, thres_step_max, deriv_epsilon, verbose, KeepConstant, term_tot, nthreads, model_bool, gmix_theta, gmix_term, Lin_Sys, Lin_Res, qchi, para_number, maxstep, step_size);
+    res = LogLik_Poisson_Omnibus_Log_Bound_CurveSearch(PyrC, Strata_vals, dfs, term_n, tform, beta_0, df0, dfc, fir, modelform, lr, optim_para, maxiter, halfmax, epsilon, step_max, thres_step_max, deriv_epsilon, verbose, KeepConstant, term_tot, nthreads, model_bool, gmix_theta, gmix_term, Lin_Sys, Lin_Res, qchi, para_number, maxstep, step_size);
     //----------------------------------------------------------------------------------------------------------------//
     return res;
 }
@@ -508,7 +508,7 @@ List pois_Omnibus_CurveSearch_transition(MatrixXd PyrC, IntegerVector term_n, St
 //' @noRd
 //'
 //  [[Rcpp::export]]
-List pois_Omnibus_Bounds_transition(MatrixXd PyrC, IntegerVector term_n, StringVector tform, NumericVector a_n, IntegerVector dfc, MatrixXd df0, int fir, string modelform, List Control, IntegerVector KeepConstant, int term_tot, MatrixXd dfs, List model_control, MatrixXd Lin_Sys, VectorXd Lin_Res) {
+List pois_Omnibus_Bounds_transition(MatrixXd PyrC, IntegerVector term_n, StringVector tform, NumericVector a_n, IntegerVector dfc, MatrixXd df0, int fir, string modelform, List Control, IntegerVector KeepConstant, int term_tot, NumericVector Strata_vals, MatrixXd dfs, List model_control, MatrixXd Lin_Sys, VectorXd Lin_Res) {
     //
     int verbose = Control["verbose"];
     //
@@ -557,9 +557,9 @@ List pois_Omnibus_Bounds_transition(MatrixXd PyrC, IntegerVector term_n, StringV
     //----------------------------------------------------------------------------------------------------------------//
     List res;
     if (manual) {
-        res = LogLik_Poisson_Omnibus_Log_Bound_Search(PyrC, dfs, term_n, tform, beta_0, df0, dfc, fir, modelform, lr, maxiters, guesses, halfmax, epsilon, step_max, thres_step_max, deriv_epsilon, verbose, KeepConstant, term_tot, nthreads, model_bool, gmix_theta, gmix_term, Lin_Sys, Lin_Res, qchi, para_number, maxstep, mult);
+        res = LogLik_Poisson_Omnibus_Log_Bound_Search(PyrC, Strata_vals, dfs, term_n, tform, beta_0, df0, dfc, fir, modelform, lr, maxiters, guesses, halfmax, epsilon, step_max, thres_step_max, deriv_epsilon, verbose, KeepConstant, term_tot, nthreads, model_bool, gmix_theta, gmix_term, Lin_Sys, Lin_Res, qchi, para_number, maxstep, mult);
     } else {
-        res = LogLik_Poisson_Omnibus_Log_Bound(PyrC, dfs, term_n, tform, beta_0, df0, dfc, fir, modelform, lr, maxiters, guesses, halfmax, epsilon, step_max, thres_step_max, deriv_epsilon, verbose, KeepConstant, term_tot, nthreads, model_bool, gmix_theta, gmix_term, Lin_Sys, Lin_Res, qchi, para_number, maxstep, mult);
+        res = LogLik_Poisson_Omnibus_Log_Bound(PyrC, Strata_vals, dfs, term_n, tform, beta_0, df0, dfc, fir, modelform, lr, maxiters, guesses, halfmax, epsilon, step_max, thres_step_max, deriv_epsilon, verbose, KeepConstant, term_tot, nthreads, model_bool, gmix_theta, gmix_term, Lin_Sys, Lin_Res, qchi, para_number, maxstep, mult);
     }
     //----------------------------------------------------------------------------------------------------------------//
     return res;
@@ -574,7 +574,7 @@ List pois_Omnibus_Bounds_transition(MatrixXd PyrC, IntegerVector term_n, StringV
 //' @noRd
 //'
 //  [[Rcpp::export]]
-List pois_Residual_transition(MatrixXd PyrC, IntegerVector term_n, StringVector tform, NumericVector a_n, IntegerVector dfc, MatrixXd df0, int fir, string modelform, List Control, IntegerVector KeepConstant, int term_tot, MatrixXd dfs, List model_control) {
+List pois_Residual_transition(MatrixXd PyrC, IntegerVector term_n, StringVector tform, NumericVector a_n, IntegerVector dfc, MatrixXd df0, int fir, string modelform, List Control, IntegerVector KeepConstant, int term_tot, NumericVector Strata_vals, MatrixXd dfs, List model_control) {
     //
     Map<VectorXd> beta_0(as<Map<VectorXd> >(a_n));
     //
@@ -605,7 +605,7 @@ List pois_Residual_transition(MatrixXd PyrC, IntegerVector term_n, StringVector 
             _["cox"] = false);
     //  Performs regression
     //----------------------------------------------------------------------------------------------------------------//
-    List res = Poisson_Residuals(PyrC, term_n, tform, beta_0, df0, dfc, fir, modelform, step_max, thres_step_max, verbose, KeepConstant, term_tot, nthreads, dfs, model_bool, gmix_theta, gmix_term, Pearson_bool, Deviance_bool);
+    List res = Poisson_Residuals(PyrC, term_n, tform, beta_0, df0, dfc, fir, modelform, step_max, thres_step_max, verbose, KeepConstant, term_tot, nthreads, Strata_vals, dfs, model_bool, gmix_theta, gmix_term, Pearson_bool, Deviance_bool);
     //----------------------------------------------------------------------------------------------------------------//
     return res;
 }
@@ -688,7 +688,7 @@ List cox_ph_multidose_Omnibus_transition(IntegerVector term_n, StringVector tfor
 //' @noRd
 //'
 //  [[Rcpp::export]]
-List pois_multidose_Omnibus_transition(MatrixXd PyrC, IntegerVector term_n, StringVector tform, NumericVector a_n, IntegerMatrix dose_cols, IntegerVector dose_index, IntegerVector dfc, MatrixXd df0, MatrixXd df1, int fir, string modelform, List Control, IntegerVector KeepConstant, int term_tot, MatrixXd dfs, List model_control, MatrixXd Lin_Sys, VectorXd Lin_Res) {
+List pois_multidose_Omnibus_transition(MatrixXd PyrC, IntegerVector term_n, StringVector tform, NumericVector a_n, IntegerMatrix dose_cols, IntegerVector dose_index, IntegerVector dfc, MatrixXd df0, MatrixXd df1, int fir, string modelform, List Control, IntegerVector KeepConstant, int term_tot, NumericVector Strata_vals, MatrixXd dfs, List model_control, MatrixXd Lin_Sys, VectorXd Lin_Res) {
     int verbose = Control["verbose"];
     //
     double lr = Control["lr"];
@@ -738,9 +738,9 @@ List pois_multidose_Omnibus_transition(MatrixXd PyrC, IntegerVector term_n, Stri
     List res;
     bool IntegratedSerial = model_control["mcml"];
     if (IntegratedSerial) {
-        res = LogLik_Pois_PH_Multidose_Omnibus_Integrated(PyrC, term_n, tform, beta_0, df0, df1, dose_cols, dose_index, dfc, fir, modelform, lr, optim_para, maxiter, halfmax, epsilon, step_max, thres_step_max, deriv_epsilon, dfs, verbose, KeepConstant, term_tot, nthreads, model_bool, gmix_theta, gmix_term, Lin_Sys, Lin_Res);
+        res = LogLik_Pois_PH_Multidose_Omnibus_Integrated(PyrC, term_n, tform, beta_0, df0, df1, dose_cols, dose_index, dfc, fir, modelform, lr, optim_para, maxiter, halfmax, epsilon, step_max, thres_step_max, deriv_epsilon, Strata_vals, dfs, verbose, KeepConstant, term_tot, nthreads, model_bool, gmix_theta, gmix_term, Lin_Sys, Lin_Res);
     } else {
-        res = LogLik_Pois_PH_Multidose_Omnibus_Serial(PyrC, term_n, tform, beta_0, df0, df1, dose_cols, dose_index, dfc, fir, modelform, lr, optim_para, maxiter, halfmax, epsilon, step_max, thres_step_max, deriv_epsilon, dfs, verbose, KeepConstant, term_tot, nthreads, model_bool, gmix_theta, gmix_term, Lin_Sys, Lin_Res);
+        res = LogLik_Pois_PH_Multidose_Omnibus_Serial(PyrC, term_n, tform, beta_0, df0, df1, dose_cols, dose_index, dfc, fir, modelform, lr, optim_para, maxiter, halfmax, epsilon, step_max, thres_step_max, deriv_epsilon, Strata_vals, dfs, verbose, KeepConstant, term_tot, nthreads, model_bool, gmix_theta, gmix_term, Lin_Sys, Lin_Res);
     }
     //----------------------------------------------------------------------------------------------------------------//
     return res;
@@ -1076,114 +1076,6 @@ void Write_Time_Dep(const NumericMatrix df0_Times, const NumericMatrix df0_dep, 
     if (file.is_open()) {
         file.close();
     }
-}
-
-//' Generates weightings for stratified poisson regression
-//'
-//' \code{Gen_Strat_Weight} Called from within c++, assigns vector of weights
-//' @inheritParams CPP_template
-//'
-//' @return assigns weight in place and returns nothing
-//' @noRd
-//'
-void Gen_Strat_Weight(string modelform, const Ref<const MatrixXd>& dfs, const Ref<const MatrixXd>& PyrC, VectorXd& s_weights, const int nthreads, const StringVector& tform, const IntegerVector& term_n, const int& term_tot, const double gmix_theta, const IntegerVector& gmix_term) {
-    ArrayXd Pyrs  = dfs.transpose() * PyrC.col(0);
-    ArrayXd Events = dfs.transpose() * PyrC.col(1);
-    ArrayXd weight = Events.array() * Pyrs.array().pow(- 1).array();
-    //
-    //
-    s_weights = dfs * weight.matrix();
-    //
-    vector<int> lin_count(term_tot, 0);  //  tracking which terms will go to 0 for only being linear
-    vector<int> dose_count(term_tot, 0);  // tracking which terms will be a sum of 1s, for being dose non-piecewise
-    vector<int> dose_lin_count(term_tot, 0);  // tracking which terms will go to 0 for being dose-piecewise
-    for (int ij = 0; ij < (term_n.size()); ij++) {
-        int tn = term_n[ij];
-        if (as<string>(tform[ij]) == "loglin") {  //  setting parameters to zero makes the subterm 1
-        } else if (as<string>(tform[ij]) == "lin") {  //  setting parameters to zero makes the subterm 0
-            lin_count[tn] = lin_count[tn] + 1.0;
-        } else if (as<string>(tform[ij]) == "plin") {  //  setting parameters to zero makes the subterm 1
-        } else if (as<string>(tform[ij]) == "loglin_slope") {  //  the slope paremeter sets the element to 0
-        } else if (as<string>(tform[ij]) == "loglin_top") {  //  the top parameter sets the element to 1
-            if (ij == 0) {
-                dose_count[tn] = dose_count[tn] + 1.0;
-            } else if (tform[ij - 1] != "loglin_slope") {
-                dose_count[tn] = dose_count[tn] + 1.0;
-            } else {}
-        } else if (as<string>(tform[ij]) == "lin_slope") {  //  every other dose term sets the elements to 0
-            dose_lin_count[tn] = dose_lin_count[tn] + 1;
-        } else if (as<string>(tform[ij]) == "lin_int") {
-        } else if (as<string>(tform[ij]) == "quad_slope") {
-            dose_lin_count[tn] = dose_lin_count[tn] + 1;
-        } else if (as<string>(tform[ij]) == "step_slope") {
-            dose_lin_count[tn] = dose_lin_count[tn] + 1;
-        } else if (as<string>(tform[ij]) == "step_int") {
-        } else if (as<string>(tform[ij]) == "lin_quad_slope") {
-            dose_lin_count[tn] = dose_lin_count[tn] + 1;
-        } else if (as<string>(tform[ij]) == "lin_quad_int") {
-        } else if (as<string>(tform[ij]) == "lin_exp_slope") {
-            dose_lin_count[tn] = dose_lin_count[tn] + 1;
-        } else if (as<string>(tform[ij]) == "lin_exp_int") {
-        } else if (as<string>(tform[ij]) == "lin_exp_exp_slope") {
-        } else {
-            throw invalid_argument("incorrect subterm type");
-        }
-    }
-    //
-    vector<double> term_val(term_tot, 0);
-    for (int ijk = 0;  ijk < term_tot; ijk++) {
-        if (dose_count[ijk] == 0) {  //  If the dose term isn't used
-            if (dose_lin_count[ijk] == 0) {  // If no dose terms that default to 0 are used
-                dose_count[ijk] = 1.0;  //  the default term value becomes 1
-            }
-            //  otherwise the default term value is 0
-        }
-        if (lin_count[ijk] == 0) {  //  if the linear term isn't used, the entire term is 1 times the dose term value, accounting for the piecewise dose values
-            term_val[ijk] = dose_count[ijk];
-        } else {  //  if the linear term is used, the entire term is 0
-            term_val[ijk] = 0;
-        }
-    }
-    double default_val = 0;
-    if (modelform == "A") {
-        for (int i = 0;  i < term_tot; i++) {
-            default_val += term_val[i];
-        }
-    } else if (modelform == "PA") {
-        for (int i=1; i < term_tot; i++) {
-            default_val += term_val[i];
-        }
-        default_val *= term_val[0];
-    } else if (modelform == "PAE") {
-        for (int i=1; i < term_tot; i++) {
-            default_val += term_val[i];
-        }
-        default_val = (1 + default_val) * term_val[0];
-    } else if (modelform == "M") {
-        default_val = 1;
-        for (int i = 1; i < term_tot; i++) {
-            default_val *= term_val[i];
-        }
-        default_val *= term_val[0];
-    } else if (modelform == "ME") {
-        default_val = 1;
-        for (int i = 1; i < term_tot; i++) {
-            default_val *= (1 + term_val[i]);
-        }
-        default_val *= term_val[0];
-    } else if (modelform == "GMIX") {
-        double Ta = 1;
-        double Tm = 1;
-        for (int i = 1; i < term_tot; i++) {
-            Ta += (term_val[i] + gmix_term[i] - 1);
-            Tm *= (term_val[i] + gmix_term[i]);
-        }
-        default_val = term_val[0] * pow(Tm, gmix_theta) * pow(Ta, 1-gmix_theta);
-    } else {
-        throw invalid_argument("Model isn't implemented");
-    }
-    s_weights = s_weights / default_val;
-    return;
 }
 
 //' Checks the OMP flag

@@ -5,6 +5,7 @@ knitr::opts_chunk$set(
 )
 
 ## ----setup--------------------------------------------------------------------
+Sys.setenv("OMP_THREAD_LIMIT" = 1) # Reducing core use, to avoid accidental use of too many cores
 library(Colossus)
 library(data.table)
 library(survival)
@@ -30,7 +31,7 @@ df$karno50 <- df$karno - 50
 model <- CaseControl_Strata(status, cell) ~ loglinear(karno50, trt)
 
 
-control <- list(verbose = 2, maxiters = c(25, 25), ncores = 2)
+control <- list(verbose = 2, maxiters = c(25, 25), ncores = 1)
 e0 <- CaseControlRun(model, df, control = control, conditional_threshold = 100)
 e1 <- CaseControlRun(model, df, control = control, conditional_threshold = 40)
 e2 <- CaseControlRun(model, df, control = control, conditional_threshold = 0)

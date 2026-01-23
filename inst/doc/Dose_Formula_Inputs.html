@@ -356,11 +356,12 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">library</span>(Colossus)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="kw">library</span>(data.table)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">Sys.setenv</span>(<span class="st">&quot;OMP_THREAD_LIMIT&quot;</span> =<span class="st"> </span><span class="dv">1</span>) <span class="co"># Reducing core use, to avoid accidental use of too many cores</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="kw">library</span>(Colossus)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a><span class="kw">library</span>(data.table)</span></code></pre></div>
 <div id="dose-response-formula" class="section level2">
 <h2>Dose Response Formula</h2>
-<p>As previously discussed, Colossus features a term composed of the sum of multiple linear and non-linear elements which can be used to define many dose-response curves used in radiation epidemiology. These terms are referred to as dose-response terms, but there is nothing prohibiting them from being used for non-dose covariates. The following formulae are available, reproduced from the starting description vignette.</p>
+<p>Colossus features a term composed of the sum of multiple linear and non-linear elements which can be used to define many dose-response curves used in radiation epidemiology. These terms are referred to as dose-response terms, but there is nothing prohibiting them from being used for non-dose covariates. The following formulae are available, reproduced from the starting description vignette.</p>
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
@@ -387,6 +388,46 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </div>
 <div id="using-the-different-subterms" class="section level2">
 <h2>Using The Different subterms</h2>
+<p>These subterms are used like any other subterm in the model, except that multiple parameters are defined. The following table lists the model subterms used:</p>
+<table>
+<colgroup>
+<col width="47%"></col>
+<col width="52%"></col>
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">Subterm Type</th>
+<th align="center">Equivalent Aliases</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">Exponential</td>
+<td align="center">“loglin-dose”, “loglinear-dose”, “log-linear-dose”</td>
+</tr>
+<tr class="even">
+<td align="center">Linear Threshold</td>
+<td align="center">“lin-dose”, “linear-dose”, “linear-piecewise”</td>
+</tr>
+<tr class="odd">
+<td align="center">Quadratic</td>
+<td align="center">“quadratic”, “quad”, “quad-dose”, “quadratic-dose”</td>
+</tr>
+<tr class="even">
+<td align="center">Step Function</td>
+<td align="center">“step-dose”, “step-piecewise”</td>
+</tr>
+<tr class="odd">
+<td align="center">Linear-Quadratic</td>
+<td align="center">“lin-quad-dose”, “linear-quadratic-dose”, “linear-quadratic-piecewise”</td>
+</tr>
+<tr class="even">
+<td align="center">Linear-Exponential</td>
+<td align="center">“lin-exp-dose”, “linear-exponential-dose”, “linear-exponential-piecewise”</td>
+</tr>
+</tbody>
+</table>
+<p>When applied to a model and used for a regression, each parameter will be listed in the result table. The following table covers what subterm type is listed for each special parameter:</p>
 <table>
 <colgroup>
 <col width="31%"></col>
@@ -396,7 +437,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <thead>
 <tr class="header">
 <th align="center">Subterm</th>
-<th align="center">tform Entry</th>
+<th align="center">Table Result Entry</th>
 <th align="center">Description</th>
 </tr>
 </thead>
@@ -463,7 +504,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </tr>
 </tbody>
 </table>
-<p>The linear-exponential and linear-quadratic curves must be either completely fixed or completely free. In contrast, the exponential, linear threshold, and step-function curves can be partially fixed. The exponential term can be provided with only the covariate in the exponent and assume the magnitude to be 1. The linear threshold and step functions can be provided a fixed threshold covariate, which can be used to define a linear-no-threshold model or a combination of linear and step functions with a known threshold.</p>
+<p>The linear-exponential and linear-quadratic curves must be either completely fixed or completely free. In contrast, the exponential, linear threshold, and step-function curves can be partially fixed. The exponential term can be provided with only the covariate in the exponent and assume the magnitude to be 1. The linear threshold and step functions can be provided a fixed threshold covariate, which can be used to define a linear-no-threshold model or a combination of linear and step functions with known thresholds.</p>
 </div>
 
 

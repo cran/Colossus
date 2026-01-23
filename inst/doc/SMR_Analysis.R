@@ -5,6 +5,7 @@ knitr::opts_chunk$set(
 )
 
 ## ----setup--------------------------------------------------------------------
+Sys.setenv("OMP_THREAD_LIMIT" = 1) # Reducing core use, to avoid accidental use of too many cores
 library(Colossus)
 library(data.table)
 library(survival)
@@ -26,12 +27,17 @@ control <- list(
   "ncores" = 1, "maxiter" = 20, "halfmax" = 5, "epsilon" = 1e-9,
   "deriv_epsilon" = 1e-9, "verbose" = 2
 )
-e <- PoisRun(Poisson(time, status) ~ linear(erate), cancer, a_n = a_n, control = control)
+e <- PoisRun(Poisson(time, status) ~ linear(erate), cancer,
+  a_n = a_n, control = control
+)
 print(e)
 
 ## ----eval=TRUE----------------------------------------------------------------
 a_n <- c(1, 1)
 
-e <- PoisRun(Poisson(time, status) ~ linear(erate, 0) + linear(sex, 1), cancer, a_n = a_n, control = control)
+e <- PoisRun(Poisson(time, status) ~ linear(erate, 0) + linear(sex, 1),
+  cancer,
+  a_n = a_n, control = control
+)
 print(e)
 

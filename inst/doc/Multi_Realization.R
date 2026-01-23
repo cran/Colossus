@@ -5,6 +5,7 @@ knitr::opts_chunk$set(
 )
 
 ## ----setup--------------------------------------------------------------------
+Sys.setenv("OMP_THREAD_LIMIT" = 1) # Reducing core use, to avoid accidental use of too many cores
 library(Colossus)
 library(data.table)
 
@@ -15,7 +16,7 @@ a_n <- c(0.1, 0.1, 0.1)
 
 ## ----eval=FALSE---------------------------------------------------------------
 # dose_index <- c("r0", "s0")
-# # The two columns in the model to replace are the radiation and sleeping covariates
+# # The two columns in the model to replace are the radiation/sleeping covariates
 # dose_realizations <- matrix(
 #   c("r0", "r1", "r2", "r3", "r4", "s0", "s1", "s2", "s3", "s4"),
 #   nrow = 2
@@ -23,8 +24,18 @@ a_n <- c(0.1, 0.1, 0.1)
 # # columns to be used for realizations 0-4, rows for each column being replaced
 
 ## ----eval=FALSE---------------------------------------------------------------
-# e_fma <- CoxRunMulti(model, df, a_n = a_n, realization_columns = realization_columns, realization_index = realization_index, fma = TRUE)
+# e_fma <- CoxRunMulti(model, df,
+#   a_n = a_n,
+#   realization_columns = realization_columns,
+#   realization_index = realization_index,
+#   fma = TRUE
+# )
 
 ## ----eval=FALSE---------------------------------------------------------------
-# e_mcml <- CoxRunMulti(model, df, a_n = a_n, realization_columns = realization_columns, realization_index = realization_index, mcml = TRUE)
+# e_mcml <- CoxRunMulti(model, df,
+#   a_n = a_n,
+#   realization_columns = realization_columns,
+#   realization_index = realization_index,
+#   mcml = TRUE
+# )
 

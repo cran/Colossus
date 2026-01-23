@@ -356,10 +356,11 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">library</span>(Colossus)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="kw">library</span>(data.table)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a><span class="kw">library</span>(survival)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a><span class="kw">library</span>(dplyr)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">Sys.setenv</span>(<span class="st">&quot;OMP_THREAD_LIMIT&quot;</span> =<span class="st"> </span><span class="dv">1</span>) <span class="co"># Reducing core use, to avoid accidental use of too many cores</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="kw">library</span>(Colossus)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a><span class="kw">library</span>(data.table)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a><span class="kw">library</span>(survival)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a><span class="kw">library</span>(dplyr)</span></code></pre></div>
 <div id="general-usage" class="section level2">
 <h2>General Usage</h2>
 <p>For Cox Proportional Hazards regression, the model is generally assumed to be independent of event time. However, for more complex models, Colossus can perform regressions using covariates that change over time. These can be split into two general types of covariates, step functions changing with time and multiplicative interactions with time. Colossus generates the new dataset by splitting each row of the original dataset into smaller intervals. This assumes that over each interval the values of every covariate are approximately constant. For Cox Proportional Hazards, rows that do not contain an event time are not used for regression, so Colossus has an option to only use small intervals around each event time. With this option, the time-dependent covariate is evaluated only at event times. For data-sets with a small number of discrete event times, this can save time and memory.</p>
@@ -417,7 +418,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
-    Y(x)=\begin{cases} 0 &amp;(x &lt; 0) \\ 1 &amp; (x \ge 0) \\ 2 &amp;(x \ge 6) \\ 3 &amp;(x \ge 12) \end{cases}\\
+    Y(x)=\begin{cases} 0 &amp;(x &lt; 0) \\ 1 &amp; ( 6 &gt; x \ge 0) \\ 2 &amp;(12 &gt; x \ge 6) \\ 3 &amp;(x \ge 12) \end{cases}\\
 \end{aligned}
 \]</span>
 </p>
@@ -436,7 +437,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <p class="text-center" style="background-color: aliceblue">
 <span class="math display">\[
 \begin{aligned}
-    Y(x)=\begin{cases} 1 &amp;(x &lt; 0) \\ 2 &amp; (x \ge 0) \\ 3 &amp;(x \ge 6) \\ 2 &amp;(x \ge 12) \end{cases}\\
+    Y(x)=\begin{cases} 1 &amp;(x &lt; 0) \\ 2 &amp; (6 &gt; x \ge 0) \\ 3 &amp;(12 &gt; x \ge 6) \\ 2 &amp;(x \ge 12) \end{cases}\\
 \end{aligned}
 \]</span>
 </p>

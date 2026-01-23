@@ -5,6 +5,7 @@ knitr::opts_chunk$set(
 )
 
 ## ----setup--------------------------------------------------------------------
+Sys.setenv("OMP_THREAD_LIMIT" = 1) # Reducing core use, to avoid accidental use of too many cores
 library(Colossus)
 library(data.table)
 
@@ -17,12 +18,16 @@ tstart <- "t0"
 tend <- "t1"
 event <- "lung"
 
-Model_Eq <- Cox(t0, t1, lung) ~ loglinear(dose0, dose1, 0) + linear(dose2, 1) + multiplicative - excess()
-Model_Eq <- Cox(t0, t1, lung) ~ loglinear(dose0, dose1) + linear(dose2, 1)
+Model_Eq <- Cox(t0, t1, lung) ~ loglinear(dose0, dose1, 0) +
+  linear(dose2, 1) + ME()
+Model_Eq <- Cox(t0, t1, lung) ~ loglinear(dose0, dose1) +
+  linear(dose2, 1)
 
 df <- data.table(
   "dose0" = 1:4, "dose1" = 2:5, "dose2" = 3:6,
   "t0" = c(0, 0, 1, 0), "t1" = 5:8, "lung" = c(1, 0, 0, 1)
 )
-get_form(Model_Eq, df)
+res <- get_form(Model_Eq, df, nthreads = 1)
+formula <- res$model
+new_data <- res$data
 
