@@ -712,8 +712,8 @@ Likelihood_Ratio_Test <- function(alternative_model, null_model) {
     #
     freedom <- alt_count - null_count
     val <- 2 * (alternative_model$LogLik - null_model$LogLik)
-    pval <- pchisq(val, freedom)
-    return(list("value" = val, "p value" = pval))
+    pval <- pchisq(val, freedom, lower.tail = FALSE)
+    return(list("Difference" = val, "p value" = pval))
   } else {
     stop("Error: models input did not contain LogLik values")
   }
