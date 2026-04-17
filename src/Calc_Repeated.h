@@ -1,4 +1,4 @@
-//  Copyright 2022 - 2025, Eric Giunta and the project collaborators, Please see main R package for license and usage details
+//  Copyright 2022 - 2026, Eric King-Giunta and the project collaborators, Please see main R package for license and usage details
 
 #ifndef SRC_CALC_REPEATED_H_
 #define SRC_CALC_REPEATED_H_
@@ -22,8 +22,6 @@ using Rcpp::NumericVector;
 using Rcpp::NumericMatrix;
 using Rcpp::StringVector;
 using Rcpp::List;
-
-template <typename T> int sign(T val);
 
 void Calculate_Sides(List& model_bool, const IntegerMatrix& RiskFail, const vector<vector<int> >& RiskPairs, const int& totalnum, const int& ntime, const MatrixXd& R, const MatrixXd& Rd, const MatrixXd& Rdd, MatrixXd& Rls1, MatrixXd& Rls2, MatrixXd& Rls3, MatrixXd& Lls1, MatrixXd& Lls2, MatrixXd& Lls3, const int& nthreads, const IntegerVector& KeepConstant);
 

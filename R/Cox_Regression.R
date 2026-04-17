@@ -15,6 +15,7 @@
 RunCoxRegression_Omnibus <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 = "event", names = c("CONST"), term_n = c(0), tform = "loglin", keep_constant = c(0), a_n = c(0), modelform = "M", control = list(), strat_col = "null", cens_weight = "null", model_control = list(), cons_mat = as.matrix(c(0)), cons_vec = c(0)) {
   func_t_start <- Sys.time()
   initial_size <- nrow(df)
+  # nocov start
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
@@ -25,6 +26,7 @@ RunCoxRegression_Omnibus <- function(df, time1 = "%trunc%", time2 = "%trunc%", e
       }
     )
   }
+  # nocov end
   control <- Def_Control(control)
   model_control <- Def_model_control(model_control)
   if (typeof(a_n) != "list") {
@@ -52,6 +54,12 @@ RunCoxRegression_Omnibus <- function(df, time1 = "%trunc%", time2 = "%trunc%", e
   time1 <- ce[1]
   time2 <- ce[2]
   ## Cox regression only uses intervals which contain an event time
+  if (min(df[, event0, with = FALSE]) < 0) {
+    stop("Error: event status is negative in atleast one interval")
+  }
+  if (max(df[, event0, with = FALSE]) > 2) {
+    stop("Error: event status is greater than 2 in atleast one interval")
+  }
   dfend <- df[get(event0) == 1, ]
   tu <- sort(unlist(unique(dfend[, time2, with = FALSE]), use.names = FALSE))
   if (length(tu) == 0) {
@@ -69,6 +77,7 @@ RunCoxRegression_Omnibus <- function(df, time1 = "%trunc%", time2 = "%trunc%", e
       df$CONST <- 1
     }
   }
+  # nocov start
   if (model_control$basic == TRUE) {
     if (all(unique(tform) == c("loglin"))) {
       # good
@@ -111,6 +120,7 @@ RunCoxRegression_Omnibus <- function(df, time1 = "%trunc%", time2 = "%trunc%", e
       modelform <- "M"
     }
   }
+  # nocov end
   if (model_control$cr == TRUE) {
     if (cens_weight %in% names(df)) {
       # good
@@ -151,7 +161,7 @@ RunCoxRegression_Omnibus <- function(df, time1 = "%trunc%", time2 = "%trunc%", e
   dfend <- df[get(event0) == 1, ]
   tu <- sort(unlist(unique(dfend[, time2, with = FALSE]), use.names = FALSE))
   if (control$verbose >= 3) {
-    message(paste("Note: ", length(tu), " risk groups", sep = "")) # nocov
+    message(paste0("Note: ", length(tu), " risk groups")) # nocov
   }
   all_names <- unique(names)
   if (!model_control$null) {
@@ -163,11 +173,13 @@ RunCoxRegression_Omnibus <- function(df, time1 = "%trunc%", time2 = "%trunc%", e
           if (min(df[[names[i]]]) == max(df[[names[i]]])) {
             keep_constant[i] <- 1
             if (control$verbose >= 2) {
-              warning(paste("Warning: element ", i,
+              # nocov start
+              warning(paste0(
+                "Warning: element ", i,
                 " with column name ", names[i],
-                " was set constant",
-                sep = ""
+                " was set constant"
               ))
+              # nocov end
             }
           }
         }
@@ -238,7 +250,7 @@ RunCoxRegression_Omnibus <- function(df, time1 = "%trunc%", time2 = "%trunc%", e
   e$RunTime <- func_t_end - func_t_start
   e$UsedRecords <- run_size
   e$RejectedRecords <- initial_size - run_size
-  return(e)
+  e
 }
 
 #' Calculates hazard ratios for a reference vector
@@ -251,6 +263,7 @@ RunCoxRegression_Omnibus <- function(df, time1 = "%trunc%", time2 = "%trunc%", e
 #' @family Plotting Wrapper Functions
 #' @return returns a list of the final results
 Cox_Relative_Risk <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 = "event", names = c("CONST"), term_n = c(0), tform = "loglin", keep_constant = c(0), a_n = c(0), modelform = "M", control = list(), model_control = list()) {
+  # nocov start
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
@@ -261,6 +274,7 @@ Cox_Relative_Risk <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 =
       }
     )
   }
+  # nocov end
   control <- Def_Control(control)
   model_control <- Def_model_control(model_control)
   if (min(keep_constant) > 0) {
@@ -284,7 +298,7 @@ Cox_Relative_Risk <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 =
     c(1), keep_constant, term_tot, c(0),
     c(0), model_control
   )
-  return(e)
+  e
 }
 
 #' Performs Cox Proportional Hazard model plots
@@ -299,6 +313,7 @@ Cox_Relative_Risk <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 =
 #' @family Plotting Wrapper Functions
 RunCoxPlots <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 = "event", names = c("CONST"), term_n = c(0), tform = "loglin", keep_constant = c(0), a_n = c(0), modelform = "M", control = list(), plot_options = list(), model_control = list()) {
   names(plot_options) <- tolower(names(plot_options))
+  # nocov start
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
@@ -309,6 +324,7 @@ RunCoxPlots <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 = "even
       }
     )
   }
+  # nocov end
   control <- Def_Control(control)
   plot_options$verbose <- Check_Verbose(plot_options$verbose)
   if (min(keep_constant) > 0) {
@@ -336,13 +352,19 @@ RunCoxPlots <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 = "even
   if (plot_options$verbose >= 3) {
     message("Note: Getting Plot Info") # nocov
   }
+  if (min(df[, event0, with = FALSE]) < 0) {
+    stop("Error: event status is negative in atleast one interval")
+  }
+  if (max(df[, event0, with = FALSE]) > 2) {
+    stop("Error: event status is greater than 2 in atleast one interval")
+  }
   dfend <- df[get(event0) == 1, ]
   tu <- sort(unlist(unique(dfend[, time2, with = FALSE]), use.names = FALSE))
   if (length(tu) == 0) {
     stop("Error: no events")
   }
   if (plot_options$verbose >= 3) {
-    message(paste("Note: ", length(tu), " risk groups", sep = "")) # nocov
+    message(paste0("Note: ", length(tu), " risk groups")) # nocov
   }
   if ("type" %in% names(plot_options)) {
     # fine
@@ -382,6 +404,7 @@ RunCoxPlots <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 = "even
   if ("martingale" %in% names(plot_options)) {
     if (plot_options$martingale) {
       if ("cov_cols" %in% names(plot_options)) {
+        plot_options$cov_cols <- sapply(plot_options$cov_cols, function(x) tryCatch(match.arg(x, choices = names(df)), error = function(e) x))
         for (cov_i in seq_along(plot_options$cov_cols)) {
           dose_col <- unlist(plot_options$cov_cols,
             use.names = FALSE
@@ -432,6 +455,7 @@ RunCoxPlots <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 = "even
   }
   if (tolower(plot_type[1]) == "risk") {
     if ("cov_cols" %in% names(plot_options)) {
+      plot_options$cov_cols <- sapply(plot_options$cov_cols, function(x) tryCatch(match.arg(x, choices = names(df)), error = function(e) x))
       for (cov_i in seq_along(plot_options$cov_cols)) {
         dose_col <- unlist(plot_options$cov_cols,
           use.names = FALSE
@@ -511,15 +535,14 @@ RunCoxPlots <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 = "even
         message("Note: writing survival data") # nocov
       }
       dft <- data.table::data.table(
-        "time" = tu, "base" = e$baseline,
-        "greener" = e$Green_Error
+        time = tu, base = e$baseline,
+        greener = e$Green_Error
       )
       total_beta_error <- e$Beta_Error
       beta_cols <- ncol(total_beta_error)
       for (i in 1:beta_cols) {
-        dft[[paste("betaer_", i, sep = "")]] <- total_beta_error[, i]
+        dft[[paste0("betaer_", i)]] <- total_beta_error[, i]
       }
-      # "betaer" = e$Beta_Error
       beta_vec <- rep(0, beta_cols)
       for (i in tu) {
         t <- c(t, i)
@@ -534,7 +557,7 @@ RunCoxPlots <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 = "even
         surv <- c(surv, exp(-1 * ch_temp))
         green_temp <- sum(df_temp$greener)
         for (i in 1:beta_cols) {
-          beta_vec[i] <- sum(df_temp[[paste("betaer_", i, sep = "")]])
+          beta_vec[i] <- sum(df_temp[[paste0("betaer_", i)]])
         }
         if (beta_cols == 1) {
           beta_temp <- beta_vec * cov_mat * beta_vec
@@ -601,7 +624,7 @@ RunCoxPlots <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 = "even
       control, age_unit, plot_type[2]
     )
   }
-  return(plot_table)
+  plot_table
 }
 
 #' Performs Cox Proportional Hazards regression using the omnibus function with multiple column realizations
@@ -623,6 +646,7 @@ RunCoxPlots <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 = "even
 RunCoxRegression_Omnibus_Multidose <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 = "event", names = c("CONST"), term_n = c(0), tform = "loglin", keep_constant = c(0), a_n = c(0), modelform = "M", realization_columns = matrix(c("temp00", "temp01", "temp10", "temp11"), nrow = 2), realization_index = c("temp0", "temp1"), control = list(), strat_col = "null", cens_weight = "null", model_control = list(), cons_mat = as.matrix(c(0)), cons_vec = c(0)) {
   func_t_start <- Sys.time()
   initial_size <- nrow(df)
+  # nocov start
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
@@ -633,6 +657,7 @@ RunCoxRegression_Omnibus_Multidose <- function(df, time1 = "%trunc%", time2 = "%
       }
     )
   }
+  # nocov end
   #
   control <- Def_Control(control)
   model_control <- Def_model_control(model_control)
@@ -660,6 +685,12 @@ RunCoxRegression_Omnibus_Multidose <- function(df, time1 = "%trunc%", time2 = "%
   time1 <- ce[1]
   time2 <- ce[2]
   ## Cox regression only uses intervals which contain an event time
+  if (min(df[, event0, with = FALSE]) < 0) {
+    stop("Error: event status is negative in atleast one interval")
+  }
+  if (max(df[, event0, with = FALSE]) > 2) {
+    stop("Error: event status is greater than 2 in atleast one interval")
+  }
   dfend <- df[get(event0) == 1, ]
   tu <- sort(unlist(unique(dfend[, time2, with = FALSE]), use.names = FALSE))
   if (length(tu) == 0) {
@@ -714,9 +745,11 @@ RunCoxRegression_Omnibus_Multidose <- function(df, time1 = "%trunc%", time2 = "%
       use.names = FALSE
     ))
     if (control$verbose >= 3) {
+      # nocov start
       message(paste("Note:", length(uniq), " strata used",
         sep = " "
-      )) # nocov
+      ))
+      # nocov end
     }
     data.table::setkeyv(df, c(strat_col, event0, time2, time1))
     ce <- c(time1, time2, event0, strat_col)
@@ -727,7 +760,7 @@ RunCoxRegression_Omnibus_Multidose <- function(df, time1 = "%trunc%", time2 = "%
     stop("Error: no events")
   }
   if (control$verbose >= 3) {
-    message(paste("Note: ", length(tu), " risk groups", sep = "")) # nocov
+    message(paste0("Note: ", length(tu), " risk groups")) # nocov
   }
   all_names <- unique(names)
   df <- Replace_Missing(df, all_names, 0.0, control$verbose)
@@ -736,24 +769,24 @@ RunCoxRegression_Omnibus_Multidose <- function(df, time1 = "%trunc%", time2 = "%
     # pass
   } else {
     # the number of columns per realization does not match the number of indexes provided
-    stop(paste("Error:", length(realization_index),
+    stop(
+      "Error: ", length(realization_index),
       " column indexes provided, but ",
       length(realization_columns[, 1]),
-      " rows of realizations columns provided",
-      sep = " "
-    ))
+      " rows of realizations columns provided"
+    )
   }
   if (all(realization_index %in% all_names)) {
     # pass
   } else {
-    stop(paste("Error: Atleast one realization column provided was not used in the model", sep = " "))
+    stop("Error: Atleast one realization column provided was not used in the model")
   }
   #  all_names <- unique(c(all_names, as.vector(realization_columns)))
   dose_names <- unique(as.vector(realization_columns))
   if (all(dose_names %in% names(df))) {
     # pass
   } else {
-    stop(paste("Error: Atleast one realization column provided was not in the data.table", sep = " "))
+    stop("Error: Atleast one realization column provided was not in the data.table")
   }
   dfc <- match(names, all_names)
   dose_cols <- matrix(match(realization_columns, dose_names), nrow = nrow(realization_columns))
@@ -783,7 +816,7 @@ RunCoxRegression_Omnibus_Multidose <- function(df, time1 = "%trunc%", time2 = "%
   e$RunTime <- func_t_end - func_t_start
   e$UsedRecords <- run_size
   e$RejectedRecords <- initial_size - run_size
-  return(e)
+  e
 }
 
 #' Calculates the likelihood curve for a cox model directly
@@ -799,6 +832,7 @@ RunCoxRegression_Omnibus_Multidose <- function(df, time1 = "%trunc%", time2 = "%
 #' @importFrom rlang .data
 CoxCurveSolver <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 = "event", names = c("CONST"), term_n = c(0), tform = "loglin", keep_constant = c(0), a_n = c(0), modelform = "M", control = list(), strat_col = "null", cens_weight = "null", model_control = list(), cons_mat = as.matrix(c(0)), cons_vec = c(0)) {
   func_t_start <- Sys.time()
+  # nocov start
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
@@ -809,6 +843,7 @@ CoxCurveSolver <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 = "e
       }
     )
   }
+  # nocov end
   control <- Def_Control(control)
   model_control$log_bound <- TRUE
   model_control <- Def_model_control(model_control)
@@ -836,6 +871,12 @@ CoxCurveSolver <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 = "e
   ## Cox regression only uses intervals which contain an event time
   time1 <- ce[1]
   time2 <- ce[2]
+  if (min(df[, event0, with = FALSE]) < 0) {
+    stop("Error: event status is negative in atleast one interval")
+  }
+  if (max(df[, event0, with = FALSE]) > 2) {
+    stop("Error: event status is greater than 2 in atleast one interval")
+  }
   dfend <- df[get(event0) == 1, ]
   tu <- sort(unlist(unique(dfend[, time2, with = FALSE]), use.names = FALSE))
   if (length(tu) == 0) {
@@ -853,6 +894,7 @@ CoxCurveSolver <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 = "e
       df$CONST <- 1
     }
   }
+  # nocov start
   if (model_control$linear_err == TRUE) {
     if (all(sort(unique(tform)) != c("loglin", "plin"))) {
       stop("Error: Linear ERR model used, but term formula wasn't only loglin and plin")
@@ -873,6 +915,7 @@ CoxCurveSolver <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 = "e
       modelform <- "M"
     }
   }
+  # nocov end
   if (model_control$cr == TRUE) {
     if (cens_weight %in% names(df)) {
       # good
@@ -913,7 +956,7 @@ CoxCurveSolver <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 = "e
   dfend <- df[get(event0) == 1, ]
   tu <- sort(unlist(unique(dfend[, time2, with = FALSE]), use.names = FALSE))
   if (control$verbose >= 3) {
-    message(paste("Note: ", length(tu), " risk groups", sep = "")) # nocov
+    message(paste0("Note: ", length(tu), " risk groups")) # nocov
   }
   all_names <- unique(names)
   df <- Replace_Missing(df, all_names, 0.0, control$verbose)
@@ -924,11 +967,13 @@ CoxCurveSolver <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 = "e
         if (min(df[[names[i]]]) == max(df[[names[i]]])) {
           keep_constant[i] <- 1
           if (control$verbose >= 2) {
-            warning(paste("Warning: element ", i,
+            # nocov start
+            warning(paste0(
+              "Warning: element ", i,
               " with column name ", names[i],
-              " was set constant",
-              sep = ""
+              " was set constant"
             ))
+            # nocov end
           }
         }
       }
@@ -973,5 +1018,5 @@ CoxCurveSolver <- function(df, time1 = "%trunc%", time2 = "%trunc%", event0 = "e
   e$modelcontrol <- model_control
   func_t_end <- Sys.time()
   e$RunTime <- func_t_end - func_t_start
-  return(e)
+  e
 }

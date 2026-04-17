@@ -1,4 +1,4 @@
-//  Copyright 2022 - 2025, Eric Giunta and the project collaborators, Please see main R package for license and usage details
+//  Copyright 2022 - 2026, Eric King-Giunta and the project collaborators, Please see main R package for license and usage details
 
 #ifndef SRC_SUBTERMS_RISK_H_
 #define SRC_SUBTERMS_RISK_H_
@@ -17,8 +17,6 @@ using Eigen::VectorXd;
 using Rcpp::as;
 using Rcpp::IntegerVector;
 using Rcpp::StringVector;
-
-template <typename T> int sign(T val);
 
 void Make_subterms(const int& totalnum, const IntegerVector& term_n, const StringVector&  tform, const IntegerVector& dfc, const int& fir, MatrixXd& T0, MatrixXd& Td0, MatrixXd& Tdd0, MatrixXd& Dose, MatrixXd& nonDose, MatrixXd& TTerm, MatrixXd& nonDose_LIN, MatrixXd& nonDose_PLIN, MatrixXd& nonDose_LOGLIN, const  VectorXd& beta_0, const Ref<const MatrixXd>& df0, const double& dint, const double& dslp, const int& nthreads, const IntegerVector& KeepConstant);
 

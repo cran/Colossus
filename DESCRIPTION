@@ -2,9 +2,9 @@ Package: Colossus
 Type: Package
 Title: "Risk Model Regression and Analysis with Complex Non-Linear
         Models"
-Version: 1.4.10
+Version: 1.5
 Authors@R: c(
-    person("Eric", "Giunta", email="egiunta@ksu.edu", role=c("aut", "cre"), comment = c(ORCID = "0000-0002-1577-766X")),
+    person("Eric", "King-Giunta", email="egiunta@ksu.edu", role=c("aut", "cre"), comment = c(ORCID = "0000-0002-1577-766X")),
     person("Amir", "Bahadori", role=c("ctb"), comment = c(ORCID = "0000-0002-4589-105X")),
     person("Dan", "Andresen", role=c("ctb"), comment = c(ORCID = "0000-0003-2345-6695")),
     person("Linda", "Walsh", role=c("ctb"), comment = c(ORCID = "0000-0001-7399-9191")),
@@ -34,8 +34,9 @@ VignetteBuilder: knitr
 Language: en-US
 Biarch: TRUE
 NeedsCompilation: yes
-Packaged: 2026-02-19 19:44:42 UTC; user
-Author: Eric Giunta [aut, cre] (ORCID: <https://orcid.org/0000-0002-1577-766X>),
+Packaged: 2026-04-16 14:01:40 UTC; user
+Author: Eric King-Giunta [aut, cre] (ORCID:
+    <https://orcid.org/0000-0002-1577-766X>),
   Amir Bahadori [ctb] (ORCID: <https://orcid.org/0000-0002-4589-105X>),
   Dan Andresen [ctb] (ORCID: <https://orcid.org/0000-0003-2345-6695>),
   Linda Walsh [ctb] (ORCID: <https://orcid.org/0000-0001-7399-9191>),
@@ -46,6 +47,6 @@ Author: Eric Giunta [aut, cre] (ORCID: <https://orcid.org/0000-0002-1577-766X>),
   NASA [fnd],
   NCRP [fnd],
   NRC [fnd]
-Maintainer: Eric Giunta <egiunta@ksu.edu>
+Maintainer: Eric King-Giunta <egiunta@ksu.edu>
 Repository: CRAN
-Date/Publication: 2026-02-20 15:30:02 UTC
+Date/Publication: 2026-04-17 07:30:12 UTC

@@ -13,6 +13,7 @@
 RunLogisticRegression_Omnibus <- function(df, trial0 = "CONST", event0 = "event", names = c("CONST"), term_n = c(0), tform = "loglin", keep_constant = c(0), a_n = c(0), modelform = "M", control = list(), model_control = list(), cons_mat = as.matrix(c(0)), cons_vec = c(0)) {
   func_t_start <- Sys.time()
   initial_size <- nrow(df)
+  # nocov start
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
@@ -23,6 +24,7 @@ RunLogisticRegression_Omnibus <- function(df, trial0 = "CONST", event0 = "event"
       }
     )
   }
+  # nocov end
   #
   if ("CONST" %in% c(trial0, names)) {
     if ("CONST" %in% names(df)) {
@@ -38,13 +40,16 @@ RunLogisticRegression_Omnibus <- function(df, trial0 = "CONST", event0 = "event"
     a_n <- list(a_n)
   }
   df <- df[get(trial0) > 0, ]
+  if (min(df[, event0, with = FALSE]) < 0) {
+    stop("Error: negative events in atleast one row")
+  }
   if (min(keep_constant) > 0) {
     stop("Error: Atleast one parameter must be free")
   }
   if (sum(df[, event0, with = FALSE]) == 0) {
     stop("Error: no events")
   }
-  df0 <- data.table::data.table("a" = c(0, 0))
+  df0 <- data.table::data.table(a = c(0, 0))
   val <- list(cols = c("a"))
   val_cols <- c("a")
   data.table::setkeyv(df, c(event0, trial0))
@@ -84,5 +89,5 @@ RunLogisticRegression_Omnibus <- function(df, trial0 = "CONST", event0 = "event"
   e$RunTime <- func_t_end - func_t_start
   e$UsedRecords <- run_size
   e$RejectedRecords <- initial_size - run_size
-  return(e)
+  e
 }

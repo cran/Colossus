@@ -35,9 +35,9 @@ PoisRunMulti(
 
 \item{realization_index}{used for multi-realization regressions. Vector of column names, one for each column with realizations. Each name should be used in the "names" variable in the equation definition}
 
-\item{control}{list of parameters controlling the convergence, see the Control_Options vignette for details}
+\item{control}{list of parameters controlling the convergence, see the \code{vignette("Control_Options")} vignette for details}
 
-\item{gradient_control}{a list of control options for the gradient descent algorithm. If any value is given, a gradient descent algorithm is used instead of Newton-Raphson. See the Control_Options vignette for details}
+\item{gradient_control}{a list of control options for the gradient descent algorithm. If any value is given, a gradient descent algorithm is used instead of Newton-Raphson. See the \code{vignette("Control_Options")} vignette for details}
 
 \item{single}{a boolean to denote that only the log-likelihood should be calculated and returned, no derivatives or iterations}
 
@@ -63,11 +63,11 @@ run a Colossus poisson regression function
 \examples{
 library(data.table)
 df <- data.table::data.table(
-  "UserID" = c(112, 114, 213, 214, 115, 116, 117),
-  "t0" = c(18, 20, 18, 19, 21, 20, 18),
-  "t1" = c(30, 45, 57, 47, 36, 60, 55),
-  "lung" = c(0, 0, 1, 0, 1, 0, 0),
-  "dose" = c(0, 1, 1, 0, 1, 0, 1)
+  UserID = c(112, 114, 213, 214, 115, 116, 117),
+  t0 = c(18, 20, 18, 19, 21, 20, 18),
+  t1 = c(30, 45, 57, 47, 36, 60, 55),
+  lung = c(0, 0, 1, 0, 1, 0, 0),
+  dose = c(0, 1, 1, 0, 1, 0, 1)
 )
 set.seed(3742)
 df$rand <- floor(runif(nrow(df), min = 0, max = 5))
@@ -78,11 +78,11 @@ names <- c("dose", "rand")
 realization_columns <- matrix(c("rand0", "rand1", "rand2"), nrow = 1)
 realization_index <- c("rand")
 control <- list(
-  "ncores" = 1, "lr" = 0.75, "maxiter" = 1,
-  "halfmax" = 2, "epsilon" = 1e-6,
-  "deriv_epsilon" = 1e-6, "step_max" = 1.0,
-  "thres_step_max" = 100.0,
-  "verbose" = 0, "ties" = "breslow", "double_step" = 1
+  ncores = 1, lr = 0.75, maxiter = 1,
+  halfmax = 2, epsilon = 1e-6,
+  deriv_epsilon = 1e-6, step_max = 1.0,
+  thres_step_max = 100.0,
+  verbose = 0, ties = "breslow", double_step = 1
 )
 formula <- Pois(t1, lung) ~ loglinear(CONST, dose, rand, 0) + multiplicative()
 res <- PoisRun(formula, df, control = control)

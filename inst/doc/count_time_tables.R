@@ -5,7 +5,7 @@ knitr::opts_chunk$set(
 )
 
 ## ----setup--------------------------------------------------------------------
-Sys.setenv("OMP_THREAD_LIMIT" = 1) # Reducing core use, to avoid accidental use of too many cores
+Sys.setenv(OMP_THREAD_LIMIT = 1) # Reducing core use, to avoid accidental use of too many cores
 library(Colossus)
 library(data.table)
 library(parallel)
@@ -16,10 +16,10 @@ oranges <- c(1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1, 3, 2, 2, 1)
 rip <- c(0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1)
 hands <- c(1, 1, 2, 3, 2, 1, 2, 2, 2, 2, 1, 1, 1, 1, 1, 2, 2)
 table <- data.table::data.table(
-  "apples" = apples,
-  "oranges" = oranges,
-  "rip" = rip,
-  "hands" = hands
+  apples = apples,
+  oranges = oranges,
+  rip = rip,
+  hands = hands
 )
 
 ## ----eval=TRUE----------------------------------------------------------------
@@ -30,12 +30,12 @@ orange_category <- list(
   name = c("few", "good", "excessive")
 )
 categ <- list(
-  "apples" = apple_category,
-  "oranges" = orange_category
+  apples = apple_category,
+  oranges = orange_category
 )
 
 ## ----eval=TRUE----------------------------------------------------------------
-event <- list("rip" = "count AS dropped", "hands" = "mean")
+event <- list(rip = "count AS dropped", hands = "mean")
 
 ## ----eval=TRUE----------------------------------------------------------------
 Event_Count_Gen(table, categ, event)
@@ -58,9 +58,9 @@ i <- c(
   1903, 1904, 1910, 1903, 1904, 1903, 1904, 1910
 )
 table <- data.table::data.table(
-  "a" = a, "b" = b, "c" = c,
-  "d" = d, "e" = e, "f" = f,
-  "g" = g, "h" = h, "i" = i
+  a = a, b = b, c = c,
+  d = d, e = e, f = f,
+  g = g, h = h, i = i
 )
 
 pyr <- list(
@@ -71,20 +71,20 @@ pyr <- list(
 
 ## ----eval=TRUE----------------------------------------------------------------
 categ <- list(
-  "a" = "-1/3/5]7",
-  "b" = list(
+  a = "-1/3/5]7",
+  b = list(
     lower = c(-1, 3, 6), upper = c(3, 6, 10),
     name = c("low", "medium", "high")
   ),
-  "time AS time_bin" = list(
-    "day" = c(1, 1, 1),
-    "month" = c(1, 1, 1),
-    "year" = c(1899, 1903, 1910)
+  `time AS time_bin` = list(
+    day = c(1, 1, 1),
+    month = c(1, 1, 1),
+    year = c(1899, 1903, 1910)
   )
 )
 
 ## ----eval=TRUE----------------------------------------------------------------
-summary <- list("c" = "count AS cases", "b" = "weighted_mean AS b_weighted")
+summary <- list(c = "count AS cases", b = "weighted_mean AS b_weighted")
 events <- list("c")
 
 ## ----eval=TRUE----------------------------------------------------------------

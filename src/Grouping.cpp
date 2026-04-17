@@ -1,4 +1,4 @@
-//  Copyright 2022 - 2025, Eric Giunta and the project collaborators, Please see main R package for license and usage details
+//  Copyright 2022 - 2026, Eric King-Giunta and the project collaborators, Please see main R package for license and usage details
 
 #include <RcppEigen.h>
 
@@ -52,13 +52,9 @@ using Rcpp::List;
 using Rcpp::_;
 using Rcpp::Rcout;
 
-template <typename T> int sign(T val) {
-    return (T(0) < val) - (val < T(0));
-}
-
 template<typename Func>
 struct lambda_as_visitor_wrapper : Func {
-    lambda_as_visitor_wrapper(const Func& f) : Func(f) {}
+    explicit lambda_as_visitor_wrapper(const Func& f) : Func(f) {}
     template<typename S, typename I>
     void init(const S& v, I i, I j) { return Func::operator()(v, i, j); }
 };

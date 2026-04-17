@@ -1,4 +1,4 @@
-//  Copyright 2022 - 2025, Eric Giunta and the project collaborators, Please see main R package for license and usage details
+//  Copyright 2022 - 2026, Eric King-Giunta and the project collaborators, Please see main R package for license and usage details
 
 #include <RcppEigen.h>
 
@@ -19,7 +19,7 @@
 #include "Calc_Repeated.h"
 #include "Grouping.h"
 #include "Subterms_Risk.h"
-#include "Step_Calc.h"
+#include "Step_Bound.h"
 #include "Step_Grad.h"
 #include "Step_Newton.h"
 #include "Colossus_types.h"
@@ -35,6 +35,7 @@ using std::reduce;
 using std::accumulate;
 using std::isinf;
 using std::isnan;
+using std::abs;
 
 using Eigen::Map;
 using Eigen::Ref;
@@ -54,22 +55,6 @@ using Rcpp::_;
 using Rcpp::Rcout;
 using Rcpp::Dimension;
 
-template <typename T> int sign(T val) {
-    return (T(0) < val) - (val < T(0));
-}
-
-template<typename Func>
-struct lambda_as_visitor_wrapper : Func {
-    lambda_as_visitor_wrapper(const Func& f) : Func(f) {}
-    template<typename S, typename I>
-    void init(const S& v, I i, I j) { return Func::operator()(v, i, j); }
-};
-
-template<typename Mat, typename Func>
-void visit_lambda(const Mat& m, const Func& f) {
-    lambda_as_visitor_wrapper<Func> visitor(f);
-    m.visit(visitor);
-}
 
 // //' checks if the model is viable
 // //'
@@ -84,7 +69,9 @@ void visit_lambda(const Mat& m, const Func& f) {
 // bool Check_Risk(IntegerVector term_n, StringVector tform, Ref<VectorXd> beta_0, Ref<MatrixXd> df0, IntegerVector dfc, int fir, string modelform, int verbose, IntegerVector KeepConstant, int term_tot, int nthreads, const double gmix_theta, const IntegerVector gmix_term) {
 //     //
 //     List temp_list = List::create(_["Status"] = "FAILED");  //  used as a dummy return value for code checking
-//     if (verbose >= 3) { Rcout << "C++ Note: START_RISK_CHECK" << endl; }
+//     if (verbose >= 3) {
+//         Rcout << "C++ Note: START_RISK_CHECK" << endl;
+//     }
 //     //
 //     //
 //     int totalnum = term_n.size();
@@ -133,7 +120,7 @@ void visit_lambda(const Mat& m, const Func& f) {
 //' @return List of final results: Log-likelihood of optimum, first derivative of log-likelihood, second derivative matrix, parameter list, standard deviation estimate, AIC, model information
 //' @noRd
 //'
-List LogLik_Cox_PH_Omnibus(IntegerVector term_n, StringVector tform, NumericMatrix& a_ns, Ref<MatrixXd> df0, IntegerVector dfc, int fir, string modelform, double lr, List optim_para, NumericVector maxiters, int guesses, int halfmax, double epsilon, double step_max, double thres_step_max, double deriv_epsilon, const Ref<const MatrixXd>& df_m, NumericVector tu, int verbose, IntegerVector KeepConstant, int term_tot, string ties_method, int nthreads, NumericVector& Strata_vals, const VectorXd& cens_weight, List model_bool, const double gmix_theta, const IntegerVector gmix_term, const Ref<const MatrixXd>& Lin_Sys, const Ref<const VectorXd>& Lin_Res) {
+List LogLik_Cox_PH_Omnibus(IntegerVector term_n, StringVector tform, NumericMatrix& a_ns, Ref<MatrixXd> df0, IntegerVector dfc, int fir, string modelform, List optim_para, const Ref<const MatrixXd>& df_m, NumericVector tu, int verbose, IntegerVector KeepConstant, int term_tot, string ties_method, int nthreads, NumericVector& Strata_vals, const VectorXd& cens_weight, List model_bool, const double gmix_theta, const IntegerVector gmix_term, const Ref<const MatrixXd>& Lin_Sys, const Ref<const VectorXd>& Lin_Res) {
     //
     List temp_list = List::create(_["Status"] = "TEMP");  //  used as a dummy return value for code checking
     //
@@ -146,6 +133,16 @@ List LogLik_Cox_PH_Omnibus(IntegerVector term_n, StringVector tform, NumericMatr
     int ntime = tu.size();
     int totalnum;
     int reqrdnum;
+    //
+    double lr = optim_para["lr"];
+    NumericVector maxiters = optim_para["maxiters"];
+    int halfmax = optim_para["halfmax"];
+    double epsilon = optim_para["epsilon"];
+    double step_max = optim_para["step_max"];
+    double thres_step_max = optim_para["thres_step_max"];
+    double deriv_epsilon = optim_para["deriv_epsilon"];
+    double ll_epsilon = optim_para["ll_epsilon"];
+    int guesses = optim_para["guesses"];
     //  ------------------------------------------------------------------------- //  initialize
     if (!model_bool["null"]) {
         totalnum = term_n.size();
@@ -259,6 +256,7 @@ List LogLik_Cox_PH_Omnibus(IntegerVector term_n, StringVector tform, NumericMatr
     Cox_Refresh_R_SIDES(reqrdnum, ntime, Rls1, Rls2, Rls3, Lls1, Lls2, Lls3, Strata_vals, model_bool);
     //  the log-likelihood is calculated in parallel over the risk groups
     vector <double> Ll_comp(2, Ll[0]);  //  vector to compare values
+    double Ll_improve = -1*Ll[0];
     double step_max0 = step_max;
     double thres_step_max0 = thres_step_max;
     //
@@ -336,16 +334,22 @@ List LogLik_Cox_PH_Omnibus(IntegerVector term_n, StringVector tform, NumericMatr
         for (int i = 0; i < beta_0.size(); i++) {
             beta_0[i] = a_n[i];
         }
-        if (verbose >= 4) { Rcout << "C++ Note: starting guess " << guess << endl; }
+        if (verbose >= 4) {
+            // # nocov start
+            Rcout << "C++ Note: starting guess " << guess << endl;
+            // # nocov end
+        }
         Cox_Term_Risk_Calc(modelform, tform, term_n, totalnum, fir, dfc, term_tot, T0, Td0, Tdd0, Te, R, Rd, Rdd, Dose, nonDose, beta_0, df0, thres_step_max, step_max, TTerm, nonDose_LIN, nonDose_PLIN, nonDose_LOGLIN, RdR, RddR, nthreads, KeepConstant, verbose, model_bool, gmix_theta, gmix_term);
         if ((R.minCoeff() <= 0) || (R.hasNaN())) {
             if (verbose >= 1) {
+                // # nocov start
                 Rcout << "C++ Error: A non-positive risk was detected: " << R.minCoeff() << endl;
                 Rcout << "C++ Warning: final failing values ";
                 for (int ijk = 0; ijk < totalnum; ijk++) {
                     Rcout << beta_0[ijk] << " ";
                 }
                 Rcout << " " << endl;
+                // # nocov end
             }
             //
             temp_list = List::create(_["beta_0"] = wrap(beta_0), _["Deviation"] = R_NaN, _["Status"] = "FAILED_WITH_NEGATIVE_RISK", _["LogLik"] = R_NaN, _["RiskGroups"] = total_risk_groups);
@@ -360,6 +364,7 @@ List LogLik_Cox_PH_Omnibus(IntegerVector term_n, StringVector tform, NumericMatr
             beta_c[i] = beta_0[i];
         }
         while ((iteration < maxiter) && (iter_stop == 0)) {
+            Ll_improve = Ll[ind0];
             iteration++;
             beta_p = beta_c;  //
             beta_a = beta_c;  //
@@ -402,6 +407,7 @@ List LogLik_Cox_PH_Omnibus(IntegerVector term_n, StringVector tform, NumericMatr
                 //
                 Cox_Pois_Check_Continue(model_bool, beta_0, beta_best, beta_c, cens_weight, dbeta, dev, dev_temp, fir, halfmax, halves, ind0, iter_stop, neg_limit, KeepConstant, Ll, Ll_iter_best, Lld, Lldd, Lls1, Lls2, Lls3, Lstar, nthreads, ntime, RiskPairs_Strata_Pois, dfs, PyrC, s_weights, R, Rd, Rdd, RddR, RdR, reqrdnum, tform, RiskFail,  RiskPairs, RiskPairs_Strata, Rls1, Rls2, Rls3, Strata_vals, term_n, ties_method, totalnum, TTerm, verbose);
                 Print_LL(reqrdnum, totalnum, beta_0, Ll, Lld, Lldd, verbose, model_bool);
+                Ll_improve = Ll[ind0] - Ll_improve;
             } else {
                 halves = 0;
                 while ((Ll[ind0] <= Ll_iter_best) && (halves < halfmax)) {  //  repeats until half-steps maxed or an improvement
@@ -431,6 +437,12 @@ List LogLik_Cox_PH_Omnibus(IntegerVector term_n, StringVector tform, NumericMatr
                         beta_0[ij] = beta_best[ij];
                     }
                     Cox_Term_Risk_Calc(modelform, tform, term_n, totalnum, fir, dfc, term_tot, T0, Td0, Tdd0, Te, R, Rd, Rdd, Dose, nonDose, beta_0, df0, thres_step_max, step_max, TTerm, nonDose_LIN, nonDose_PLIN, nonDose_LOGLIN, RdR, RddR, nthreads, KeepConstant, verbose, model_bool, gmix_theta, gmix_term);
+                    Ll_improve = Ll[ind0] - Ll_improve;
+                } else {
+                    Ll_improve = Ll[ind0] - Ll_improve;
+                    if (abs(Ll_improve) < ll_epsilon) {   // ends if the score improvement is too low
+                        iter_stop = 1;
+                    }
                 }
             }
             dbeta_max = abs(dbeta[0]);
@@ -492,6 +504,7 @@ List LogLik_Cox_PH_Omnibus(IntegerVector term_n, StringVector tform, NumericMatr
     //
     int guess_max = guess_abs_best;
     if (verbose >= 3) {
+        // # nocov start
         Rcout << "C++ Note: Guess Results" << endl;
         Rcout << "Guess number, parameter values, Log-Likelihood" << endl;
         NumericVector beta_temp;
@@ -503,6 +516,7 @@ List LogLik_Cox_PH_Omnibus(IntegerVector term_n, StringVector tform, NumericMatr
                 Rcout << i << ", " << beta_temp << ", " << LL_fin[i] << endl;
             }
         }
+        // # nocov end
     }
     //
     maxiter = maxiters[guesses];
@@ -532,6 +546,7 @@ List LogLik_Cox_PH_Omnibus(IntegerVector term_n, StringVector tform, NumericMatr
         beta_c[i] = beta_0[i];
     }
     while ((iteration < maxiter) && (iter_stop == 0)) {
+        Ll_improve = Ll[ind0];
         iteration++;
         beta_p = beta_c;  //
         beta_a = beta_c;  //
@@ -575,6 +590,7 @@ List LogLik_Cox_PH_Omnibus(IntegerVector term_n, StringVector tform, NumericMatr
             Cox_Term_Risk_Calc(modelform, tform, term_n, totalnum, fir, dfc, term_tot, T0, Td0, Tdd0, Te, R, Rd, Rdd, Dose, nonDose, beta_0, df0, thres_step_max, step_max, TTerm, nonDose_LIN, nonDose_PLIN, nonDose_LOGLIN, RdR, RddR, nthreads, KeepConstant, verbose, model_bool, gmix_theta, gmix_term);
             //
             Cox_Pois_Check_Continue(model_bool, beta_0, beta_best, beta_c, cens_weight, dbeta, dev, dev_temp, fir, halfmax, halves, ind0, iter_stop, neg_limit, KeepConstant, Ll, Ll_abs_best, Lld, Lldd, Lls1, Lls2, Lls3, Lstar, nthreads, ntime, RiskPairs_Strata_Pois, dfs, PyrC, s_weights, R, Rd, Rdd, RddR, RdR, reqrdnum, tform, RiskFail,  RiskPairs, RiskPairs_Strata, Rls1, Rls2, Rls3, Strata_vals, term_n, ties_method, totalnum, TTerm, verbose);
+            Ll_improve = Ll[ind0] - Ll_improve;
         } else {
             halves = 0;
             while ((Ll[ind0] <= Ll_abs_best) && (halves < halfmax)) {  //  repeats until half-steps maxed or an improvement
@@ -603,6 +619,13 @@ List LogLik_Cox_PH_Omnibus(IntegerVector term_n, StringVector tform, NumericMatr
                 }
                 Cox_Term_Risk_Calc(modelform, tform, term_n, totalnum, fir, dfc, term_tot, T0, Td0, Tdd0, Te, R, Rd, Rdd, Dose, nonDose, beta_0, df0, thres_step_max, step_max, TTerm, nonDose_LIN, nonDose_PLIN, nonDose_LOGLIN, RdR, RddR, nthreads, KeepConstant, verbose, model_bool, gmix_theta, gmix_term);
                 //
+                Ll_improve = Ll[ind0] - Ll_improve;
+            } else {
+                Ll_improve = Ll[ind0] - Ll_improve;
+                if (abs(Ll_improve) < ll_epsilon) {   // ends if the score improvement is too low
+                    iter_stop = 1;
+                    convgd = TRUE;
+                }
             }
         }
         Cox_Side_LL_Calc(reqrdnum, ntime, tform, RiskFail,  RiskPairs, RiskPairs_Strata, totalnum, fir, R, Rd, Rdd, Rls1, Rls2, Rls3, Lls1, Lls2, Lls3, cens_weight, Strata_vals, beta_0, RdR, RddR, Ll, Lld, Lldd, nthreads, KeepConstant, ties_method, verbose, model_bool, iter_stop);
@@ -623,13 +646,14 @@ List LogLik_Cox_PH_Omnibus(IntegerVector term_n, StringVector tform, NumericMatr
             iter_stop = 1;
             convgd = TRUE;
         }
-        Ll_comp[1] = Ll[0];
+//        Ll_comp[1] = Ll[0];
         if (step_max < epsilon) {  //  if the maximum change is too low, then it ends
             iter_stop = 1;
         }
         if (dbeta_max < epsilon) {  //  if the maximum change is too low, then it ends
             iter_stop = 1;
         }
+//        Ll_improve = Ll[ind0] - Ll_improve;
     }
     if (Lld_worst < deriv_epsilon) {  //  ends if the derivatives are low enough
         iter_stop = 1;
@@ -673,7 +697,7 @@ List LogLik_Cox_PH_Omnibus(IntegerVector term_n, StringVector tform, NumericMatr
             Lld_worst = abs(Lld[ij]);
         }
     }
-    List control_list = List::create(_["Iteration"] = iteration, _["Maximum Step"] = dbeta_max, _["Derivative Limiting"] = Lld_worst, _["Ended on Negative Limit"] = neg_limit);  //  stores the total number of iterations used
+    List control_list = List::create(_["Iteration"] = iteration, _["Maximum Step"] = dbeta_max, _["Derivative Limiting"] = Lld_worst, _["Ended on Negative Limit"] = neg_limit, _["Delta_LogLik"] = wrap(Ll_improve));  //  stores the total number of iterations used
     //
     NumericVector Lldd_vec(reqrdnum * reqrdnum);  //  simplfied information matrix
     #ifdef _OPENMP
@@ -756,7 +780,7 @@ List LogLik_Cox_PH_Omnibus(IntegerVector term_n, StringVector tform, NumericMatr
 //' @return List of final results: Log-likelihood of optimum, first derivative of log-likelihood, second derivative matrix, parameter list, standard deviation estimate, AIC, model information
 //' @noRd
 //'
-List LogLik_Pois_Omnibus(const Ref<const MatrixXd>& PyrC, IntegerVector term_n, StringVector tform, NumericMatrix& a_ns, Ref<MatrixXd> df0, IntegerVector dfc, int fir, string modelform, double lr, List optim_para, NumericVector maxiters, int guesses, int halfmax, double epsilon, double step_max, double thres_step_max, double deriv_epsilon, int verbose, IntegerVector KeepConstant, int term_tot, int nthreads, NumericVector& Strata_vals, const Ref<const MatrixXd>& dfs, List model_bool, const double gmix_theta, const IntegerVector gmix_term, const Ref<const MatrixXd>& Lin_Sys, const Ref<const VectorXd>& Lin_Res) {
+List LogLik_Pois_Omnibus(const Ref<const MatrixXd>& PyrC, IntegerVector term_n, StringVector tform, NumericMatrix& a_ns, Ref<MatrixXd> df0, IntegerVector dfc, int fir, string modelform, List optim_para, int verbose, IntegerVector KeepConstant, int term_tot, int nthreads, NumericVector& Strata_vals, const Ref<const MatrixXd>& dfs, List model_bool, const double gmix_theta, const IntegerVector gmix_term, const Ref<const MatrixXd>& Lin_Sys, const Ref<const VectorXd>& Lin_Res) {
     //
     List temp_list = List::create(_["Status"] = "FAILED");  //  used as a dummy return value for code checking
     //
@@ -771,6 +795,16 @@ List LogLik_Pois_Omnibus(const Ref<const MatrixXd>& PyrC, IntegerVector term_n, 
     //
     int totalnum;
     int reqrdnum;
+    //
+    double lr = optim_para["lr"];
+    NumericVector maxiters = optim_para["maxiters"];
+    int halfmax = optim_para["halfmax"];
+    double epsilon = optim_para["epsilon"];
+    double step_max = optim_para["step_max"];
+    double thres_step_max = optim_para["thres_step_max"];
+    double deriv_epsilon = optim_para["deriv_epsilon"];
+    double ll_epsilon = optim_para["ll_epsilon"];
+    int guesses = optim_para["guesses"];
     //  ------------------------------------------------------------------------- //  initialize
     if (!model_bool["null"]) {
         totalnum = term_n.size();
@@ -920,6 +954,7 @@ List LogLik_Pois_Omnibus(const Ref<const MatrixXd>& PyrC, IntegerVector term_n, 
         //  returns a list of results
         return res_list;
     }
+    double Ll_improve = -1*Ll[0];
     ///
     for (int guess = 0; guess <guesses; guess++) {
         fill(Ll.begin(), Ll.end(), 0.0);
@@ -956,6 +991,7 @@ List LogLik_Pois_Omnibus(const Ref<const MatrixXd>& PyrC, IntegerVector term_n, 
         Pois_Term_Risk_Calc(modelform, tform, term_n, totalnum, fir, dfc, term_tot, T0, Td0, Tdd0, Te, R, Rd, Rdd, Dose, nonDose, beta_0, df0, dint, dslp, TTerm, nonDose_LIN, nonDose_PLIN, nonDose_LOGLIN, RdR, RddR, dfs, PyrC, s_weights, nthreads, KeepConstant, verbose, model_bool, gmix_theta, gmix_term);
         if ((R.minCoeff() <= 0) || (R.hasNaN())) {
             if (verbose >= 1) {
+                // # nocov start
                 Rcout << "C++ Error: A non-positive risk was detected: " << R.minCoeff() << endl;
                 Rcout << "C++ Warning: final failing values ";
                 for (int ijk = 0; ijk < totalnum; ijk++) {
@@ -968,6 +1004,7 @@ List LogLik_Pois_Omnibus(const Ref<const MatrixXd>& PyrC, IntegerVector term_n, 
                     Rcout << tform[ijk] << " ";
                 }
                 Rcout << " " << endl;
+                // # nocov end
             }
             temp_list = List::create(_["beta_0"] = wrap(beta_0), _["Deviation"] = R_NaN, _["Status"] = "FAILED_WITH_NEGATIVE_RISK", _["LogLik"] = R_NaN);
             return temp_list;
@@ -983,6 +1020,7 @@ List LogLik_Pois_Omnibus(const Ref<const MatrixXd>& PyrC, IntegerVector term_n, 
             beta_c[i] = beta_0[i];
         }
         while ((iteration < maxiter) && (iter_stop == 0)) {
+            Ll_improve = Ll[ind0];
             iteration++;
             beta_p = beta_c;  //
             beta_a = beta_c;  //
@@ -1015,6 +1053,7 @@ List LogLik_Pois_Omnibus(const Ref<const MatrixXd>& PyrC, IntegerVector term_n, 
                 Pois_Term_Risk_Calc(modelform, tform, term_n, totalnum, fir, dfc, term_tot, T0, Td0, Tdd0, Te, R, Rd, Rdd, Dose, nonDose, beta_0, df0, dint, dslp, TTerm, nonDose_LIN, nonDose_PLIN, nonDose_LOGLIN, RdR, RddR, dfs, PyrC, s_weights, nthreads, KeepConstant, verbose, model_bool, gmix_theta, gmix_term);
                 //
                 Cox_Pois_Check_Continue(model_bool, beta_0, beta_best, beta_c, cens_weight, dbeta, dev, dev_temp, fir, halfmax, halves, ind0, iter_stop, neg_limit, KeepConstant, Ll, Ll_iter_best, Lld, Lldd, Lls1, Lls2, Lls3, Lstar, nthreads, ntime, RiskPairs_Strata_Pois, dfs, PyrC, s_weights, R, Rd, Rdd, RddR, RdR, reqrdnum, tform, RiskFail,  RiskPairs, RiskPairs_Strata, Rls1, Rls2, Rls3, Strata_vals, term_n, ties_method, totalnum, TTerm, verbose);
+                Ll_improve = Ll[ind0] - Ll_improve;
             } else {
                 halves = 0;
                 while ((Ll[ind0] <= Ll_iter_best) && (halves < halfmax)) {  //  repeats until half-steps maxed or an improvement
@@ -1046,6 +1085,12 @@ List LogLik_Pois_Omnibus(const Ref<const MatrixXd>& PyrC, IntegerVector term_n, 
                     Pois_Dev_LL_Calc(reqrdnum, totalnum, fir, R, Rd, Rdd, beta_0, RdR, RddR, Ll, Lld, Lldd, RiskPairs_Strata_Pois, Strata_vals, dfs, PyrC, s_weights, dev_temp, nthreads, KeepConstant, verbose, model_bool, iter_stop, dev);
                     Print_LL(reqrdnum, totalnum, beta_0, Ll, Lld, Lldd, verbose, model_bool);
                     //
+                    Ll_improve = Ll[ind0] - Ll_improve;
+                } else {
+                    Ll_improve = Ll[ind0] - Ll_improve;
+                    if (abs(Ll_improve) < ll_epsilon) {   // ends if the score improvement is too low
+                        iter_stop = 1;
+                    }
                 }
             }
             Lld_worst = 0;
@@ -1072,7 +1117,7 @@ List LogLik_Pois_Omnibus(const Ref<const MatrixXd>& PyrC, IntegerVector term_n, 
             }
             if (model_bool["single"]) {
                 iter_stop = 1;
-            } else {}
+            }
         }
         //  -----------------------------------------------
         //  Performing Full Calculation to get full second derivative matrix
@@ -1119,6 +1164,7 @@ List LogLik_Pois_Omnibus(const Ref<const MatrixXd>& PyrC, IntegerVector term_n, 
     //
     int guess_max = guess_abs_best;
     if (verbose >= 3) {
+        // # nocov start
         Rcout << "C++ Note: Guess Results" << endl;
         Rcout << "Guess number, parameter values, Log-Likelihood" << endl;
         NumericVector beta_temp;
@@ -1130,6 +1176,7 @@ List LogLik_Pois_Omnibus(const Ref<const MatrixXd>& PyrC, IntegerVector term_n, 
                 Rcout << i << ", " << beta_temp << ", " << LL_fin[i] << endl;
             }
         }
+        // # nocov end
     }
     //
     maxiter = maxiters[guesses];
@@ -1157,6 +1204,7 @@ List LogLik_Pois_Omnibus(const Ref<const MatrixXd>& PyrC, IntegerVector term_n, 
     }
     while ((iteration < maxiter) && (iter_stop == 0)) {
         iteration++;
+        Ll_improve = Ll[ind0];
         beta_p = beta_c;  //
         beta_a = beta_c;  //
         beta_best = beta_c;  //
@@ -1191,6 +1239,7 @@ List LogLik_Pois_Omnibus(const Ref<const MatrixXd>& PyrC, IntegerVector term_n, 
             Pois_Term_Risk_Calc(modelform, tform, term_n, totalnum, fir, dfc, term_tot, T0, Td0, Tdd0, Te, R, Rd, Rdd, Dose, nonDose, beta_0, df0, dint, dslp, TTerm, nonDose_LIN, nonDose_PLIN, nonDose_LOGLIN, RdR, RddR, dfs, PyrC, s_weights, nthreads, KeepConstant, verbose, model_bool, gmix_theta, gmix_term);
             //
             Cox_Pois_Check_Continue(model_bool, beta_0, beta_best, beta_c, cens_weight, dbeta, dev, dev_temp, fir, halfmax, halves, ind0, iter_stop, neg_limit, KeepConstant, Ll, Ll_abs_best, Lld, Lldd, Lls1, Lls2, Lls3, Lstar, nthreads, ntime, RiskPairs_Strata_Pois, dfs, PyrC, s_weights, R, Rd, Rdd, RddR, RdR, reqrdnum, tform, RiskFail,  RiskPairs, RiskPairs_Strata, Rls1, Rls2, Rls3, Strata_vals, term_n, ties_method, totalnum, TTerm, verbose);
+            Ll_improve = Ll[ind0] - Ll_improve;
         } else {
             halves = 0;
             while ((Ll[ind0] <= Ll_abs_best) && (halves < halfmax)) {  //  repeats until half-steps maxed or an improvement
@@ -1222,6 +1271,13 @@ List LogLik_Pois_Omnibus(const Ref<const MatrixXd>& PyrC, IntegerVector term_n, 
                 //  Calculates log-likelihood
                 Pois_Dev_LL_Calc(reqrdnum, totalnum, fir, R, Rd, Rdd, beta_0, RdR, RddR, Ll, Lld, Lldd, RiskPairs_Strata_Pois, Strata_vals, dfs, PyrC, s_weights, dev_temp, nthreads, KeepConstant, verbose, model_bool, iter_stop, dev);
                 Print_LL(reqrdnum, totalnum, beta_0, Ll, Lld, Lldd, verbose, model_bool);
+                Ll_improve = Ll[ind0] - Ll_improve;
+            } else {
+                Ll_improve = Ll[ind0] - Ll_improve;
+                if (abs(Ll_improve) < ll_epsilon) {   // ends if the score improvement is too low
+                    iter_stop = 1;
+                    convgd = TRUE;
+                }
             }
         }
         Lld_worst = 0;
@@ -1283,7 +1339,7 @@ List LogLik_Pois_Omnibus(const Ref<const MatrixXd>& PyrC, IntegerVector term_n, 
         }
     }
     List para_list = List::create(_["term_n"] = term_n, _["tforms"] = tform);  //  stores the term information
-    List control_list = List::create(_["Iteration"] = iteration, _["Maximum Step"] = dbeta_max, _["Derivative Limiting"] = Lld_worst, _["Ended on Negative Limit"] = neg_limit);  //  stores the total number of iterations used
+    List control_list = List::create(_["Iteration"] = iteration, _["Maximum Step"] = dbeta_max, _["Derivative Limiting"] = Lld_worst, _["Ended on Negative Limit"] = neg_limit, _["Delta_LogLik"] = wrap(Ll_improve));  //  stores the total number of iterations used
     if (model_bool["single"]) {
         res_list = List::create(_["LogLik"] = wrap(Ll[0]), _["beta_0"] = wrap(beta_0), _["AIC"] = 2*(totalnum-accumulate(KeepConstant.begin(), KeepConstant.end(), 0.0))+dev, _["BIC"] = (totalnum-accumulate(KeepConstant.begin(), KeepConstant.end(), 0.0))*log(mat_row)-2*Ll[0], _["Deviation"] = dev, _["Parameter_Lists"] = para_list, _["Status"] = "PASSED");
         //  returns a list of results
@@ -1363,11 +1419,15 @@ List LogLik_Pois_Omnibus(const Ref<const MatrixXd>& PyrC, IntegerVector term_n, 
 //' @return only if it works
 //' @noRd
 //'
-List LogLik_CaseCon_Omnibus(IntegerVector term_n, StringVector tform, NumericMatrix& a_ns, Ref<MatrixXd> df0, IntegerVector dfc, int fir, string modelform, double lr, List optim_para, NumericVector maxiters, int guesses, int halfmax, double epsilon, double step_max, double thres_step_max, double deriv_epsilon, const Ref<const MatrixXd>& df_m, NumericVector tu, int verbose, IntegerVector KeepConstant, int term_tot, string ties_method, int nthreads, NumericVector& Strata_vals, List model_bool, const double gmix_theta, const IntegerVector gmix_term, const Ref<const MatrixXd>& Lin_Sys, const Ref<const VectorXd>& Lin_Res) {
+List LogLik_CaseCon_Omnibus(IntegerVector term_n, StringVector tform, NumericMatrix& a_ns, Ref<MatrixXd> df0, IntegerVector dfc, int fir, string modelform, List optim_para, const Ref<const MatrixXd>& df_m, NumericVector tu, int verbose, IntegerVector KeepConstant, int term_tot, string ties_method, int nthreads, NumericVector& Strata_vals, List model_bool, const double gmix_theta, const IntegerVector gmix_term, const Ref<const MatrixXd>& Lin_Sys, const Ref<const VectorXd>& Lin_Res) {
     //
     List temp_list = List::create(_["Status"] = "TEMP");  //  used as a dummy return value for code checking
     if (model_bool["constraint"]) {
-        if (verbose >= 1) { Rcout << "linear constataints are currently not compatable with Case-Control model calculation" << endl; }
+        if (verbose >= 1) {
+            // # nocov start
+            Rcout << "linear constataints are currently not compatable with Case-Control model calculation" << endl;
+            // # nocov end
+        }
         temp_list = List::create(_["Status"] = "FAILED_WITH_BAD_MODEL_CONSTRAINT", _["LogLik"] = R_NaN);
         return temp_list;
     }
@@ -1381,6 +1441,16 @@ List LogLik_CaseCon_Omnibus(IntegerVector term_n, StringVector tform, NumericMat
     int ntime = tu.size();
     int totalnum;
     int reqrdnum;
+    //
+    double lr = optim_para["lr"];
+    NumericVector maxiters = optim_para["maxiters"];
+    int halfmax = optim_para["halfmax"];
+    double epsilon = optim_para["epsilon"];
+    double step_max = optim_para["step_max"];
+    double thres_step_max = optim_para["thres_step_max"];
+    double deriv_epsilon = optim_para["deriv_epsilon"];
+    double ll_epsilon = optim_para["ll_epsilon"];
+    int guesses = optim_para["guesses"];
     //  ------------------------------------------------------------------------- //  initialize
     if (!model_bool["null"]) {
         totalnum = term_n.size();
@@ -1483,6 +1553,7 @@ List LogLik_CaseCon_Omnibus(IntegerVector term_n, StringVector tform, NumericMat
     //  ------------------------------------------------------------------------- //  initialize
     //  the log-likelihood is calculated in parallel over the risk groups
     vector <double> Ll_comp(2, Ll[0]);  //  vector to compare values
+    double Ll_improve = -1*Ll[0];
     double step_max0 = step_max;
     double thres_step_max0 = thres_step_max;
     //
@@ -1583,16 +1654,22 @@ List LogLik_CaseCon_Omnibus(IntegerVector term_n, StringVector tform, NumericMat
         for (int i = 0; i < group_num; i++) {
             strata_odds[i] = strata_def[i];
         }
-        if (verbose >= 4) { Rcout << "C++ Note: starting guess " << guess << endl; }
+        if (verbose >= 4) {
+            // # nocov start
+            Rcout << "C++ Note: starting guess " << guess << endl;
+            // # nocov end
+        }
         Cox_Term_Risk_Calc(modelform, tform, term_n, totalnum, fir, dfc, term_tot, T0, Td0, Tdd0, Te, R, Rd, Rdd, Dose, nonDose, beta_0, df0, thres_step_max, step_max, TTerm, nonDose_LIN, nonDose_PLIN, nonDose_LOGLIN, RdR, RddR, nthreads, KeepConstant, verbose, model_bool, gmix_theta, gmix_term);
         if ((R.minCoeff() <= 0) || (R.hasNaN())) {
             if (verbose >= 1) {
+                // # nocov start
                 Rcout << "C++ Error: A non-positive risk was detected: " << R.minCoeff() << endl;
                 Rcout << "C++ Warning: final failing values ";
                 for (int ijk = 0; ijk < totalnum; ijk++) {
                     Rcout << beta_0[ijk] << " ";
                 }
                 Rcout << " " << endl;
+                // # nocov end
             }
             //
             temp_list = List::create(_["beta_0"] = wrap(beta_0), _["StrataOdds"] = wrap(strata_odds), _["Deviation"] = R_NaN, _["Status"] = "FAILED_WITH_NEGATIVE_RISK", _["LogLik"] = R_NaN);
@@ -1610,6 +1687,7 @@ List LogLik_CaseCon_Omnibus(IntegerVector term_n, StringVector tform, NumericMat
             strata_c[i] = strata_odds[i];
         }
         while ((iteration < maxiter) && (iter_stop == 0)) {
+            Ll_improve = Ll[ind0];
             iteration++;
             beta_p = beta_c;  //
             beta_a = beta_c;  //
@@ -1663,7 +1741,7 @@ List LogLik_CaseCon_Omnibus(IntegerVector term_n, StringVector tform, NumericMat
                         Calc_Recur_LogLik(model_bool, group_num, RiskFail, RiskPairs, totalnum, ntime, R, Rd, Rdd, RdR, RddR, dev, Ll, Lld, Lldd, Recur_Base, Recur_First, Recur_Second, strata_odds, nthreads, KeepConstant, strata_cond, LldOdds, LlddOdds, LlddOddsBeta);
                         Print_LL(reqrdnum, totalnum, beta_0, Ll, Lld, Lldd, verbose, model_bool);
                         Print_LL_Background(reqrdnum, totalnum, group_num, reqrdcond, strata_odds, LldOdds, LlddOdds, LlddOddsBeta, verbose, model_bool);
-                        if (Ll[ind0] > Ll_abs_best) {  //  if a better point wasn't found, takes a half-step
+                        if (Ll[ind0] > Ll_iter_best) {  //  if a better point wasn't found, takes a half-step
                             for (int ijk = 0; ijk < totalnum; ijk++) {
                                 beta_best[ijk] = beta_c[ijk];
                             }
@@ -1679,6 +1757,7 @@ List LogLik_CaseCon_Omnibus(IntegerVector term_n, StringVector tform, NumericMat
                         }
                     }
                 }
+                Ll_improve = Ll[ind0] - Ll_improve;
             } else {
                 halves = 0;
                 while ((Ll[ind0] <= Ll_iter_best) && (halves < halfmax)) {  //  repeats until half-steps maxed or an improvement
@@ -1717,7 +1796,7 @@ List LogLik_CaseCon_Omnibus(IntegerVector term_n, StringVector tform, NumericMat
                         Print_LL(reqrdnum, totalnum, beta_0, Ll, Lld, Lldd, verbose, model_bool);
                         Print_LL_Background(reqrdnum, totalnum, group_num, reqrdcond, strata_odds, LldOdds, LlddOdds, LlddOddsBeta, verbose, model_bool);
                         //
-                        if (Ll[ind0] <= Ll_abs_best) {  //  if a better point wasn't found, takes a half-step
+                        if (Ll[ind0] <= Ll_iter_best) {  //  if a better point wasn't found, takes a half-step
                             for (int ijk = 0; ijk < totalnum; ijk++) {
                                 dbeta[ijk] = dbeta[ijk] * 0.5;  //
                             }
@@ -1758,6 +1837,14 @@ List LogLik_CaseCon_Omnibus(IntegerVector term_n, StringVector tform, NumericMat
                         strata_odds[ij] = strata_best[ij];
                     }
                     Cox_Term_Risk_Calc(modelform, tform, term_n, totalnum, fir, dfc, term_tot, T0, Td0, Tdd0, Te, R, Rd, Rdd, Dose, nonDose, beta_0, df0, thres_step_max, step_max, TTerm, nonDose_LIN, nonDose_PLIN, nonDose_LOGLIN, RdR, RddR, nthreads, KeepConstant, verbose, model_bool, gmix_theta, gmix_term);
+                    Calculate_Recursive(model_bool, group_num, RiskFail, RiskPairs, totalnum, ntime, R, Rd, Rdd, Recur_Base, Recur_First, Recur_Second , nthreads, KeepConstant);
+                    Calc_Recur_LogLik(model_bool, group_num, RiskFail, RiskPairs, totalnum, ntime, R, Rd, Rdd, RdR, RddR, dev, Ll, Lld, Lldd, Recur_Base, Recur_First, Recur_Second, strata_odds, nthreads, KeepConstant, strata_cond, LldOdds, LlddOdds, LlddOddsBeta);
+                    Ll_improve = Ll[ind0] - Ll_improve;
+                } else {
+                    Ll_improve = Ll[ind0] - Ll_improve;
+                    if (abs(Ll_improve) < ll_epsilon) {   // ends if the score improvement is too low
+                        iter_stop = 1;
+                    }
                 }
             }
             for (int ij = 0; ij < reqrdnum; ij++) {
@@ -1862,6 +1949,7 @@ List LogLik_CaseCon_Omnibus(IntegerVector term_n, StringVector tform, NumericMat
     //
     int guess_max = guess_abs_best;
     if (verbose >= 3) {
+        // # nocov start
         Rcout << "C++ Note: Guess Results" << endl;
         Rcout << "Guess number, parameter values, Log-Likelihood" << endl;
         NumericVector beta_temp;
@@ -1873,6 +1961,7 @@ List LogLik_CaseCon_Omnibus(IntegerVector term_n, StringVector tform, NumericMat
                 Rcout << i << ", " << beta_temp << ", " << LL_fin[i] << endl;
             }
         }
+        // # nocov end
     }
     //
     maxiter = maxiters[guesses];
@@ -1908,6 +1997,7 @@ List LogLik_CaseCon_Omnibus(IntegerVector term_n, StringVector tform, NumericMat
     //
     while ((iteration < maxiter) && (iter_stop == 0)) {
         iteration++;
+        Ll_improve = Ll[ind0];
         Print_LL(reqrdnum, totalnum, beta_0, Ll, Lld, Lldd, verbose, model_bool);
         Print_LL_Background(reqrdnum, totalnum, group_num, reqrdcond, strata_odds, LldOdds, LlddOdds, LlddOddsBeta, verbose, model_bool);
         beta_p = beta_c;  //
@@ -1978,6 +2068,7 @@ List LogLik_CaseCon_Omnibus(IntegerVector term_n, StringVector tform, NumericMat
                     }
                 }
             }
+            Ll_improve = Ll[ind0] - Ll_improve;
         } else {
             halves = 0;
             while ((Ll[ind0] <= Ll_iter_best) && (halves < halfmax)) {  //  repeats until half-steps maxed or an improvement
@@ -2059,6 +2150,15 @@ List LogLik_CaseCon_Omnibus(IntegerVector term_n, StringVector tform, NumericMat
                     strata_odds[ij] = strata_best[ij];
                 }
                 Cox_Term_Risk_Calc(modelform, tform, term_n, totalnum, fir, dfc, term_tot, T0, Td0, Tdd0, Te, R, Rd, Rdd, Dose, nonDose, beta_0, df0, thres_step_max, step_max, TTerm, nonDose_LIN, nonDose_PLIN, nonDose_LOGLIN, RdR, RddR, nthreads, KeepConstant, verbose, model_bool, gmix_theta, gmix_term);
+                Calculate_Recursive(model_bool, group_num, RiskFail, RiskPairs, totalnum, ntime, R, Rd, Rdd, Recur_Base, Recur_First, Recur_Second , nthreads, KeepConstant);
+                Calc_Recur_LogLik(model_bool, group_num, RiskFail, RiskPairs, totalnum, ntime, R, Rd, Rdd, RdR, RddR, dev, Ll, Lld, Lldd, Recur_Base, Recur_First, Recur_Second, strata_odds, nthreads, KeepConstant, strata_cond, LldOdds, LlddOdds, LlddOddsBeta);
+                Ll_improve = Ll[ind0] - Ll_improve;
+            } else {
+                Ll_improve = Ll[ind0] - Ll_improve;
+                if (abs(Ll_improve) < ll_epsilon) {   // ends if the score improvement is too low
+                    iter_stop = 1;
+                    convgd = TRUE;
+                }
             }
         }
         for (int ij = 0; ij < reqrdnum; ij++) {
@@ -2079,6 +2179,7 @@ List LogLik_CaseCon_Omnibus(IntegerVector term_n, StringVector tform, NumericMat
         }
         if (Lld_worst < deriv_epsilon) {  //  ends if the derivatives are low enough
             iter_stop = 1;
+            convgd = TRUE;
         }
         if (step_max < epsilon) {  //  if the maximum change is too low, then it ends
             iter_stop = 1;
@@ -2140,7 +2241,7 @@ List LogLik_CaseCon_Omnibus(IntegerVector term_n, StringVector tform, NumericMat
         //  returns a list of results
         return res_list;
     }
-    List control_list = List::create(_["Iteration"] = iteration, _["Maximum Step"] = dbeta_max, _["Derivative Limiting"] = Lld_worst, _["Ended on Negative Limit"] = neg_limit);  //  stores the total number of iterations used
+    List control_list = List::create(_["Iteration"] = iteration, _["Maximum Step"] = dbeta_max, _["Derivative Limiting"] = Lld_worst, _["Ended on Negative Limit"] = neg_limit, _["Delta_LogLik"] = wrap(Ll_improve));  //  stores the total number of iterations used
     //
     //
     NumericVector Lldd_vec(reqrdnum * reqrdnum);  //  simplfied information matrix
@@ -2216,7 +2317,7 @@ List LogLik_CaseCon_Omnibus(IntegerVector term_n, StringVector tform, NumericMat
 //' @return List of final results: Log-likelihood of optimum, first derivative of log-likelihood, second derivative matrix, parameter list, standard deviation estimate, AIC, model information
 //' @noRd
 //'
-List LogLik_Logist_Omnibus(const Ref<const MatrixXd>& CountEvent, IntegerVector term_n, StringVector tform, NumericMatrix& a_ns, Ref<MatrixXd> df0, IntegerVector dfc, int fir, string modelform, double lr, List optim_para, NumericVector maxiters, int guesses, int halfmax, double epsilon, double step_max, double thres_step_max, double deriv_epsilon, int verbose, IntegerVector KeepConstant, int term_tot, int nthreads, List model_bool, const double gmix_theta, const IntegerVector gmix_term, const Ref<const MatrixXd>& Lin_Sys, const Ref<const VectorXd>& Lin_Res) {
+List LogLik_Logist_Omnibus(const Ref<const MatrixXd>& CountEvent, IntegerVector term_n, StringVector tform, NumericMatrix& a_ns, Ref<MatrixXd> df0, IntegerVector dfc, int fir, string modelform, List optim_para, int verbose, IntegerVector KeepConstant, int term_tot, int nthreads, List model_bool, const double gmix_theta, const IntegerVector gmix_term, const Ref<const MatrixXd>& Lin_Sys, const Ref<const VectorXd>& Lin_Res) {
     //
     List temp_list = List::create(_["Status"] = "FAILED");  //  used as a dummy return value for code checking
     //
@@ -2228,6 +2329,15 @@ List LogLik_Logist_Omnibus(const Ref<const MatrixXd>& CountEvent, IntegerVector 
     //
     //  ------------------------------------------------------------------------- //  initialize
     const int mat_row = df0.rows();
+    double lr = optim_para["lr"];
+    NumericVector maxiters = optim_para["maxiters"];
+    int halfmax = optim_para["halfmax"];
+    double epsilon = optim_para["epsilon"];
+    double step_max = optim_para["step_max"];
+    double thres_step_max = optim_para["thres_step_max"];
+    double deriv_epsilon = optim_para["deriv_epsilon"];
+    double ll_epsilon = optim_para["ll_epsilon"];
+    int guesses = optim_para["guesses"];
     //
     int totalnum = term_n.size();
     int reqrdnum = totalnum - sum(KeepConstant);
@@ -2345,6 +2455,7 @@ List LogLik_Logist_Omnibus(const Ref<const MatrixXd>& CountEvent, IntegerVector 
     //
     NumericMatrix beta_fin(a_ns.rows(), a_ns.cols());
     NumericVector LL_fin(a_ns.rows());
+    double Ll_improve = -1*Ll[0];
     //
     double Ll_abs_best = 10;
     vector<double> beta_abs_best(totalnum, 0.0);
@@ -2402,9 +2513,16 @@ List LogLik_Logist_Omnibus(const Ref<const MatrixXd>& CountEvent, IntegerVector 
         //
         if ((P.minCoeff() <= 0) || (P.maxCoeff() >= 1) || (P.hasNaN())) {
             if (verbose >= 1) {
-                if (P.minCoeff() <= 0) { Rcout << "C++ Error: An invalid probability was detected: " << P.minCoeff() << endl; }
-                if (P.maxCoeff() >= 1) { Rcout << "C++ Error: An invalid probability was detected: " << P.maxCoeff() << endl; }
-                if (P.hasNaN()) { Rcout << "C++ Error: An invalid probability was detected" << endl; }
+                // # nocov start
+                if (P.minCoeff() <= 0) {
+                    Rcout << "C++ Error: An invalid probability was detected: " << P.minCoeff() << endl;
+                }
+                if (P.maxCoeff() >= 1) {
+                    Rcout << "C++ Error: An invalid probability was detected: " << P.maxCoeff() << endl;
+                }
+                if (P.hasNaN()) {
+                    Rcout << "C++ Error: An invalid probability was detected" << endl;
+                }
                 Rcout << "C++ Warning: final failing values ";
                 for (int ijk = 0; ijk < totalnum; ijk++) {
                     Rcout << beta_0[ijk] << " ";
@@ -2416,6 +2534,7 @@ List LogLik_Logist_Omnibus(const Ref<const MatrixXd>& CountEvent, IntegerVector 
                     Rcout << tform[ijk] << " ";
                 }
                 Rcout << " " << endl;
+                // # nocov end
             }
             temp_list = List::create(_["beta_0"] = wrap(beta_0), _["Deviation"] = R_NaN, _["Status"] = "FAILED_WITH_NEGATIVE_RISK", _["LogLik"] = R_NaN);
             return temp_list;
@@ -2431,6 +2550,7 @@ List LogLik_Logist_Omnibus(const Ref<const MatrixXd>& CountEvent, IntegerVector 
         }
         while ((iteration < maxiter) && (iter_stop == 0)) {
             iteration++;
+            Ll_improve = Ll[ind0];
             beta_p = beta_c;  //
             beta_a = beta_c;  //
             beta_best = beta_c;  //
@@ -2484,6 +2604,7 @@ List LogLik_Logist_Omnibus(const Ref<const MatrixXd>& CountEvent, IntegerVector 
                         beta_0[ijk] = beta_c[ijk];
                     }
                 }
+                Ll_improve = Ll[ind0] - Ll_improve;
                 //
             } else {
                 halves = 0;
@@ -2540,6 +2661,12 @@ List LogLik_Logist_Omnibus(const Ref<const MatrixXd>& CountEvent, IntegerVector 
                     //  Calculates log-likelihood
                     Calc_LogLik_Logist(model_bool, nthreads, totalnum, CountEvent, P, Pnot, Pd, Pdd, PdP, PnotdP, PddP, PnotddP, Ll, Lld, Lldd, KeepConstant);
                     //
+                    Ll_improve = Ll[ind0] - Ll_improve;
+                } else {
+                    Ll_improve = Ll[ind0] - Ll_improve;
+                    if (abs(Ll_improve) < ll_epsilon) {   // ends if the score improvement is too low
+                        iter_stop = 1;
+                    }
                 }
             }
             Lld_worst = 0;
@@ -2566,7 +2693,7 @@ List LogLik_Logist_Omnibus(const Ref<const MatrixXd>& CountEvent, IntegerVector 
             }
             if (model_bool["single"]) {
                 iter_stop = 1;
-            } else {}
+            }
         }
         //  -----------------------------------------------
         //  Performing Full Calculation to get full second derivative matrix
@@ -2612,6 +2739,7 @@ List LogLik_Logist_Omnibus(const Ref<const MatrixXd>& CountEvent, IntegerVector 
     //
     int guess_max = guess_abs_best;
     if (verbose >= 3) {
+        // # nocov start
         Rcout << "C++ Note: Guess Results" << endl;
         Rcout << "Guess number, parameter values, Log-Likelihood" << endl;
         NumericVector beta_temp;
@@ -2623,6 +2751,7 @@ List LogLik_Logist_Omnibus(const Ref<const MatrixXd>& CountEvent, IntegerVector 
                 Rcout << i << ", " << beta_temp << ", " << LL_fin[i] << endl;
             }
         }
+        // # nocov end
     }
     //
     maxiter = maxiters[guesses];
@@ -2655,6 +2784,7 @@ List LogLik_Logist_Omnibus(const Ref<const MatrixXd>& CountEvent, IntegerVector 
     }
     while ((iteration < maxiter) && (iter_stop == 0)) {
         iteration++;
+        Ll_improve = Ll[ind0];
         beta_p = beta_c;  //
         beta_a = beta_c;  //
         beta_best = beta_c;  //
@@ -2711,6 +2841,7 @@ List LogLik_Logist_Omnibus(const Ref<const MatrixXd>& CountEvent, IntegerVector 
                     beta_0[ijk] = beta_c[ijk];
                 }
             }
+            Ll_improve = Ll[ind0] - Ll_improve;
             //
         } else {
             halves = 0;
@@ -2769,6 +2900,13 @@ List LogLik_Logist_Omnibus(const Ref<const MatrixXd>& CountEvent, IntegerVector 
                 LinkCovertRP(model_bool, reqrdnum, R, Rd, Rdd, RdR, RddR, P, Pd, Pdd, Pnot, PdP, PddP, PnotdP, PnotddP);
                 //  Calculates log-likelihood
                 Calc_LogLik_Logist(model_bool, nthreads, totalnum, CountEvent, P, Pnot, Pd, Pdd, PdP, PnotdP, PddP, PnotddP, Ll, Lld, Lldd, KeepConstant);
+                Ll_improve = Ll[ind0] - Ll_improve;
+            } else {
+                Ll_improve = Ll[ind0] - Ll_improve;
+                if (abs(Ll_improve) < ll_epsilon) {   // ends if the score improvement is too low
+                    iter_stop = 1;
+                    convgd = TRUE;
+                }
             }
         }
         Lld_worst = 0;
@@ -2839,7 +2977,7 @@ List LogLik_Logist_Omnibus(const Ref<const MatrixXd>& CountEvent, IntegerVector 
         //  returns a list of results
         return res_list;
     }
-    List control_list = List::create(_["Iteration"] = iteration, _["Maximum Step"] = dbeta_max, _["Derivative Limiting"] = Lld_worst, _["Ended on Negative Limit"] = neg_limit);  //  stores the total number of iterations used
+    List control_list = List::create(_["Iteration"] = iteration, _["Maximum Step"] = dbeta_max, _["Derivative Limiting"] = Lld_worst, _["Ended on Negative Limit"] = neg_limit, _["Delta_LogLik"] = wrap(Ll_improve));  //  stores the total number of iterations used
     //
     NumericVector Lldd_vec(reqrdnum * reqrdnum);
     #ifdef _OPENMP

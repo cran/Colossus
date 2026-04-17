@@ -5,7 +5,7 @@ knitr::opts_chunk$set(
 )
 
 ## ----setup--------------------------------------------------------------------
-Sys.setenv("OMP_THREAD_LIMIT" = 1) # Reducing core use, to avoid accidental use of too many cores
+Sys.setenv(OMP_THREAD_LIMIT = 1) # Reducing core use, to avoid accidental use of too many cores
 library(Colossus)
 library(data.table)
 library(parallel)
@@ -19,8 +19,8 @@ library(parallel)
 
 ## ----eval=FALSE---------------------------------------------------------------
 # control <- list(
-#   "Ncores" = 1, "maxiter" = 100, "verbose" = 2,
-#   "epsilon" = 1e-9, "der_epsilon" = 1e-9
+#   ncores = 1, maxiter = 100, verbose = 2,
+#   ll_epsilon = 1e-9
 # )
 
 ## ----eval=FALSE---------------------------------------------------------------

@@ -1,4 +1,4 @@
-//  Copyright 2022 - 2025, Eric Giunta and the project collaborators, Please see main R package for license and usage details
+//  Copyright 2022 - 2026, Eric King-Giunta and the project collaborators, Please see main R package for license and usage details
 
 #ifndef SRC_GROUPING_H_
 #define SRC_GROUPING_H_
@@ -22,8 +22,6 @@ using Rcpp::NumericVector;
 using Rcpp::NumericMatrix;
 using Rcpp::StringVector;
 using Rcpp::List;
-
-template <typename T> int sign(T val);
 
 void Make_Groups(const int& ntime, const Ref<const MatrixXd>& df_m, IntegerMatrix& RiskFail, vector<vector<int> >& RiskPairs, NumericVector& tu, const int& nthreads, int& total_risk_groups);
 

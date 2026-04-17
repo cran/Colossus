@@ -16,6 +16,7 @@ get_form_joint <- function(formula_list, df, nthreads = as.numeric(detectCores()
   }
   thread_0 <- setDTthreads(nthreads) # save the old number and set the new number
   # ------------------------------------------------------------------------------ #
+  # nocov start
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
@@ -26,16 +27,17 @@ get_form_joint <- function(formula_list, df, nthreads = as.numeric(detectCores()
       }
     )
   }
+  # nocov end
   if (is.list(formula_list)) {
     if ("shared" %in% names(formula_list)) {
       formula_shared <- formula_list$shared
       formula_list <- formula_list[names(formula_list) != "shared"]
     } else {
-      formula_shared <- .~.
+      formula_shared <- . ~ .
     }
   } else if (is(formula_list, "formula")) {
     formula_list <- list(formula_list)
-    formula_shared <- .~.
+    formula_shared <- . ~ .
   } else {
     stop("Error: Joint formula list wasn't a list or a formula")
   }
@@ -45,12 +47,12 @@ get_form_joint <- function(formula_list, df, nthreads = as.numeric(detectCores()
     formula <- formula_list[[formula_i]]
     surv_obj <- Reduce(paste, deparse(formula[[2]]))
     model_obj <- paste(Reduce(paste, deparse(formula[[3]])), collapse = " ")
-    surv_obj <- gsub(" ", "", surv_obj)
-    model_obj <- gsub(" ", "", model_obj)
+    surv_obj <- gsub(" ", "", surv_obj, fixed = TRUE)
+    model_obj <- gsub(" ", "", model_obj, fixed = TRUE)
     res <- get_form_list(surv_obj, model_obj, df)
     model <- res$model
     df <- res$data
-    if (!grepl("pois", model$surv_model_type)) {
+    if (!grepl("pois", model$surv_model_type, fixed = TRUE)) {
       stop("Error: Atleast one model was not a poisson model")
     }
     model_temp <- list(model)
@@ -72,26 +74,26 @@ get_form_joint <- function(formula_list, df, nthreads = as.numeric(detectCores()
     model_2 <- model_list[[model_i]]
     # The pyr should all be the same
     if (model_1$pyr != model_2$pyr) {
-      stop(paste("Error: The joint models need to use the same person-year column. Instead they use ", model_1$pyr, " and ", model_2$pyr, ".", sep = ""))
+      stop("Error: The joint models need to use the same person-year column. Instead they use ", model_1$pyr, " and ", model_2$pyr, ".")
     }
     # The strata should match
     if (any(model_1$strata != model_2$strata)) {
-      stop(paste("Error: The joint models need to use the same stratification.", sep = ""))
+      stop("Error: The joint models need to use the same stratification.")
     }
     # The modelform should match
     if (model_1$modelform != model_2$modelform) {
-      stop(paste("Error: The joint models need to use the same modelform. Instead they use ", model_1$modelform, " and ", model_2$modelform, ".", sep = ""))
+      stop("Error: The joint models need to use the same modelform. Instead they use ", model_1$modelform, " and ", model_2$modelform, ".")
     }
     if (model_1$gmix_theta != model_2$gmix_theta) {
-      stop(paste("Error: The joint models need to use the same geometric mixture theta value. Instead they use ", model_1$gmix_theta, " and ", model_2$gmix_theta, ".", sep = ""))
+      stop("Error: The joint models need to use the same geometric mixture theta value. Instead they use ", model_1$gmix_theta, " and ", model_2$gmix_theta, ".")
     }
   }
   if (length(model_share$tform) != 0) {
     if (model_1$modelform != model_share$modelform) {
-      stop(paste("Error: The joint models and the shared model need to use the same modelform. Instead they use ", model_1$modelform, " and ", model_share$modelform, ".", sep = ""))
+      stop("Error: The joint models and the shared model need to use the same modelform. Instead they use ", model_1$modelform, " and ", model_share$modelform, ".")
     }
     if (model_1$gmix_theta != model_share$gmix_theta) {
-      stop(paste("Error: The joint models and the shared model need to use the same geometric mixture theta value. Instead they use ", model_1$gmix_theta, " and ", model_share$gmix_theta, ".", sep = ""))
+      stop("Error: The joint models and the shared model need to use the same geometric mixture theta value. Instead they use ", model_1$gmix_theta, " and ", model_share$gmix_theta, ".")
     }
   } else {
     model_share$modelform <- model_1$modelform
@@ -101,13 +103,13 @@ get_form_joint <- function(formula_list, df, nthreads = as.numeric(detectCores()
   # Pull it all out
   events <- c()
   name_list <- list(
-    "shared" = model_share$names
+    shared = model_share$names
   )
   term_n_list <- list(
-    "shared" = model_share$term_n
+    shared = model_share$term_n
   )
   tform_list <- list(
-    "shared" = model_share$tform
+    shared = model_share$tform
   )
   for (model_i in seq_along(model_list)) {
     model <- model_list[[model_i]]
@@ -174,7 +176,7 @@ get_form_joint <- function(formula_list, df, nthreads = as.numeric(detectCores()
   thread_1 <- setDTthreads(thread_0) # revert the old number
   # ------------------------------------------------------------------------------ #
   list(
-    "model" = model, "data" = df
+    model = model, data = df
   )
 }
 
@@ -193,15 +195,15 @@ get_form_joint <- function(formula_list, df, nthreads = as.numeric(detectCores()
 #' library(data.table)
 #' ## basic example code reproduced from the starting-description vignette
 #' df <- data.table::data.table(
-#'   "UserID" = c(112, 114, 213, 214, 115, 116, 117),
-#'   "Starting_Age" = c(18, 20, 18, 19, 21, 20, 18),
-#'   "Ending_Age" = c(30, 45, 57, 47, 36, 60, 55),
-#'   "Cancer_Status" = c(0, 0, 1, 0, 1, 0, 0),
-#'   "a" = c(0, 1, 1, 0, 1, 0, 1),
-#'   "b" = c(1, 1.1, 2.1, 2, 0.1, 1, 0.2),
-#'   "c" = c(10, 11, 10, 11, 12, 9, 11),
-#'   "d" = c(0, 0, 0, 1, 1, 1, 1),
-#'   "e" = c(0, 0, 1, 0, 0, 0, 1)
+#'   UserID = c(112, 114, 213, 214, 115, 116, 117),
+#'   Starting_Age = c(18, 20, 18, 19, 21, 20, 18),
+#'   Ending_Age = c(30, 45, 57, 47, 36, 60, 55),
+#'   Cancer_Status = c(0, 0, 1, 0, 1, 0, 0),
+#'   a = c(0, 1, 1, 0, 1, 0, 1),
+#'   b = c(1, 1.1, 2.1, 2, 0.1, 1, 0.2),
+#'   c = c(10, 11, 10, 11, 12, 9, 11),
+#'   d = c(0, 0, 0, 1, 1, 1, 1),
+#'   e = c(0, 0, 1, 0, 0, 0, 1)
 #' )
 #' formula <- Cox(Starting_Age, Ending_Age, Cancer_Status) ~
 #'   loglinear(a, b, c, 0) + plinear(d, 0) + multiplicative()
@@ -214,13 +216,13 @@ get_form <- function(formula, df, nthreads = as.numeric(detectCores()) / 2) {
   }
   thread_0 <- setDTthreads(nthreads) # save the old number and set the new number
   # ------------------------------------------------------------------------------ #
-  if (length(lapply(strsplit(Reduce(paste, deparse(formula)), ""), function(x) which(x == "~"))[[1]]) != 1) {
+  if (length(lapply(strsplit(Reduce(paste, deparse(formula)), "", fixed = TRUE), function(x) which(x == "~"))[[1]]) != 1) {
     stop("Error: The formula contained multiple '~', invalid formula")
   }
   surv_obj <- Reduce(paste, deparse(formula[[2]]))
   model_obj <- paste(Reduce(paste, deparse(formula[[3]])), collapse = " ")
-  surv_obj <- gsub(" ", "", surv_obj)
-  model_obj <- gsub(" ", "", model_obj)
+  surv_obj <- gsub(" ", "", surv_obj, fixed = TRUE)
+  model_obj <- gsub(" ", "", model_obj, fixed = TRUE)
   res <- get_form_list(surv_obj, model_obj, df)
   model <- res$model
   df <- res$data
@@ -251,21 +253,21 @@ get_form <- function(formula, df, nthreads = as.numeric(detectCores()) / 2) {
     modelform <- "M"
   }
   #
-  if (grepl("cox", surv_model_type)) {
+  if (grepl("cox", surv_model_type, fixed = TRUE)) {
     model <- coxmodel(tstart, tend, event, strata, weight, null, term_n, tform, names, modelform, gmix_term, gmix_theta, c(), c(), df, expres_calls)
-  } else if (grepl("finegray", surv_model_type)) {
+  } else if (grepl("finegray", surv_model_type, fixed = TRUE)) {
     model <- coxmodel(tstart, tend, event, strata, weight, null, term_n, tform, names, modelform, gmix_term, gmix_theta, c(), c(), df, expres_calls)
-  } else if (grepl("pois", surv_model_type)) {
+  } else if (grepl("pois", surv_model_type, fixed = TRUE)) {
     model <- poismodel(pyr, event, strata, null, term_n, tform, names, modelform, gmix_term, gmix_theta, c(), c(), df, expres_calls)
     if (all(strata != "NONE")) {
+      strata <- sapply(strata, function(x) tryCatch(match.arg(x, choices = names(df)), error = function(e) x), USE.NAMES = FALSE)
       if (!all(strata %in% names(df))) {
         stop("Error: One of the strata was not in the original data.")
       }
-      #   Check_Strata_Model(term_n, tform, modelform, gmix_term, gmix_theta)
     } # verifies that a stratified model can be used
-  } else if ((grepl("casecon", surv_model_type)) || (grepl("case_con", surv_model_type))) {
+  } else if ((grepl("casecon", surv_model_type, fixed = TRUE)) || (grepl("case_con", surv_model_type, fixed = TRUE))) {
     model <- caseconmodel(tstart, tend, event, strata, null, term_n, tform, names, modelform, gmix_term, gmix_theta, c(), c(), df, expres_calls)
-  } else if ((grepl("logit", surv_model_type)) || (grepl("logistic", surv_model_type))) {
+  } else if ((grepl("logit", surv_model_type, fixed = TRUE)) || (grepl("logistic", surv_model_type, fixed = TRUE))) {
     model <- logitmodel(trials, event, strata, term_n, tform, names, modelform, gmix_term, gmix_theta, c(), c(), df, expres_calls)
   } else {
     stop("Error: Bad survival model type passed")
@@ -274,7 +276,7 @@ get_form <- function(formula, df, nthreads = as.numeric(detectCores()) / 2) {
   thread_1 <- setDTthreads(thread_0) # revert the old number
   # ------------------------------------------------------------------------------ #
   list(
-    "model" = model, "data" = df
+    model = model, data = df
   )
 }
 
@@ -291,6 +293,7 @@ get_form <- function(formula, df, nthreads = as.numeric(detectCores()) / 2) {
 #' @return returns the list of model values
 #' @family Formula Interpretation
 get_form_list <- function(surv_obj, model_obj, df) {
+  # nocov start
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
@@ -301,8 +304,9 @@ get_form_list <- function(surv_obj, model_obj, df) {
       }
     )
   }
-  surv_obj <- gsub(" ", "", surv_obj)
-  model_obj <- gsub(" ", "", model_obj)
+  # nocov end
+  surv_obj <- gsub(" ", "", surv_obj, fixed = TRUE)
+  model_obj <- gsub(" ", "", model_obj, fixed = TRUE)
   #
   surv_list <- get_form_surv(surv_obj, df)
   df <- surv_list$data
@@ -329,7 +333,7 @@ get_form_list <- function(surv_obj, model_obj, df) {
   expres_calls <- model$expres_calls
   #
   list(
-    "model" = list(
+    model = list(
       surv_model_type = surv_model_type,
       tstart = tstart,
       tend = tend,
@@ -347,7 +351,7 @@ get_form_list <- function(surv_obj, model_obj, df) {
       null = null,
       expres_calls = expres_calls
     ),
-    "data" = df
+    data = df
   )
 }
 
@@ -360,8 +364,8 @@ get_form_list <- function(surv_obj, model_obj, df) {
 #' @return returns the left hand side of the formula reading
 #' @family Formula Interpretation
 get_form_surv <- function(surv_obj, df) {
-  surv_obj <- gsub(" ", "", surv_obj)
-  surv_obj <- gsub("\"", "", surv_obj) # remove literal strings if needed
+  surv_obj <- gsub(" ", "", surv_obj, fixed = TRUE)
+  surv_obj <- gsub("\"", "", surv_obj, fixed = TRUE) # remove literal strings if needed
   surv_model_type <- "NONE"
   tstart <- "NONE"
   tend <- "NONE"
@@ -372,7 +376,7 @@ get_form_surv <- function(surv_obj, df) {
   trials <- "NONE"
   #
   # split the survival model type
-  second_split <- lapply(strsplit(surv_obj, ""), function(x) which(x == "("))[[1]]
+  second_split <- lapply(strsplit(surv_obj, "", fixed = TRUE), function(x) which(x == "("))[[1]]
   if (length(second_split) == 0) {
     stop("Error: The left hand side did not contain (")
   }
@@ -384,7 +388,7 @@ get_form_surv <- function(surv_obj, df) {
   surv_para_list <- list()
   for (i in seq_along(surv_paras)) {
     para_cur <- surv_paras[i]
-    para_break <- lapply(strsplit(para_cur, ""), function(x) which(x == "="))[[1]]
+    para_break <- lapply(strsplit(para_cur, "", fixed = TRUE), function(x) which(x == "="))[[1]]
     if (length(para_break) == 0) {
       # no name, just add to list
       surv_para_list[[i]] <- para_cur
@@ -394,7 +398,15 @@ get_form_surv <- function(surv_obj, df) {
       surv_para_list[[item_name]] <- item_value
     }
   }
-  if (surv_type %in% c("cox", "coxph")) {
+  full_acceptable <- c("cox", "coxph", "cx", "cox_strata", "coxph_strata", "finegray", "fine_gray", "fg", "finegray_strata", "fine_gray_strata", "fg_strata", "poisson", "pois", "poisson_strata", "pois_strata", "casecon", "casecontrol", "case_control", "casecon_time", "casecontrol_time", "case_control_time", "casecon_strata", "casecontrol_strata", "case_control_strata", "casecon_strata_time", "casecontrol_strata_time", "case_control_strata_time", "casecon_time_strata", "casecontrol_time_strata", "case_control_time_strata", "logit", "logistic")
+  surv_type <- match.arg(surv_type, full_acceptable)
+  ## Try to fix any issues with the survival parameter names
+  if (!is.null(names(surv_para_list))) {
+    names(surv_para_list) <- tolower(names(surv_para_list))
+    paraArgs <- c("tstart", "tend", "event", "strata", "weight", "pyr", "trials", "events") # UPDATE IF NEW OPTIONS ARE ADDED
+    names(surv_para_list) <- lapply(names(surv_para_list), function(x) tryCatch(match.arg(x, choices = paraArgs), error = function(e) x))
+  }
+  if (surv_type %in% c("cox", "coxph", "cx")) {
     res <- do.call(ColossusCoxSurv, surv_para_list)
     tstart <- res$tstart
     tend <- res$tend
@@ -486,7 +498,7 @@ get_form_surv <- function(surv_obj, df) {
   }
   #
   list(
-    "surv" = list(
+    surv = list(
       surv_model_type = surv_model_type,
       tstart = tstart,
       tend = tend,
@@ -496,7 +508,7 @@ get_form_surv <- function(surv_obj, df) {
       strata = strata,
       weight = weight
     ),
-    "data" = df
+    data = df
   )
 }
 
@@ -510,7 +522,7 @@ get_form_surv <- function(surv_obj, df) {
 #' @family Formula Interpretation
 get_form_risk <- function(model_obj, df) {
   #
-  model_obj <- gsub(" ", "", model_obj)
+  model_obj <- gsub(" ", "", model_obj, fixed = TRUE)
   term_n <- c()
   tform <- c()
   names <- c()
@@ -520,15 +532,15 @@ get_form_risk <- function(model_obj, df) {
   null <- FALSE
   expres_calls <- list() # storing any variables transformed, ie factor, ns, bs, etc. to be recalled when the data is reloaded
   #
-  right_model_terms <- strsplit(model_obj, "\\+")[[1]]
+  right_model_terms <- strsplit(model_obj, "+", fixed = TRUE)[[1]]
   for (term_i in seq_along(right_model_terms)) {
     # seperate the term type or model-formula from parameters
-    third_split <- lapply(strsplit(right_model_terms[term_i], ""), function(x) which(x == "("))[[1]]
+    third_split <- lapply(strsplit(right_model_terms[term_i], "", fixed = TRUE), function(x) which(x == "("))[[1]]
     if (length(third_split) == 0) {
-      stop(paste('Error: right hand side element "', right_model_terms[term_i], '" did not contain (', sep = ""))
+      stop('Error: right hand side element "', right_model_terms[term_i], '" did not contain (')
     }
     model_type <- tolower(substr(right_model_terms[term_i], 1, third_split - 1))
-    model_type <- gsub("_", "-", model_type)
+    model_type <- gsub("_", "-", model_type, fixed = TRUE)
     tform_acceptable <- c(
       "plin", "lin", "loglin", "loglin-dose", "lin-dose",
       "lin-quad-dose", "lin-exp-dose", "plinear", "product-linear", "linear",
@@ -545,6 +557,7 @@ get_form_risk <- function(model_obj, df) {
       "gmix", "geometric-mixture", "gmix-r", "relative-geometric-mixture",
       "gmix-e", "excess-geometric-mixture"
     )
+    model_type <- match.arg(model_type, c(tform_acceptable, modelform_acceptable, "null"))
     if (model_type == "null") {
       null <- TRUE
     } else if (model_type %in% tform_acceptable) {
@@ -561,9 +574,10 @@ get_form_risk <- function(model_obj, df) {
       for (subterm_i in seq_along(model_paras)) {
         # add element
         # check if the element is a function
-        if (grepl("\\(", model_paras[subterm_i])) {
+        if (grepl("(", model_paras[subterm_i], fixed = TRUE)) {
           # Some function is being used
-          if (substr(model_paras[subterm_i], 1, 7) == "factor(") {
+          # if (substr(model_paras[subterm_i], 1, 7) == "factor(") {
+          if (startsWith(model_paras[subterm_i], "factor(")) {
             # baseline is set by using factor(column;baseline=level)
             factor_args <- substr(model_paras[subterm_i], 8, nchar(model_paras[subterm_i]) - 1)
             factor_args <- nested_split(factor_args)
@@ -571,7 +585,7 @@ get_form_risk <- function(model_obj, df) {
             factor_arg_list <- list()
             for (i in seq_along(factor_args)) {
               para_cur <- factor_args[i]
-              para_break <- lapply(strsplit(para_cur, ""), function(x) which(x == "="))[[1]]
+              para_break <- lapply(strsplit(para_cur, "", fixed = TRUE), function(x) which(x == "="))[[1]]
               if (length(para_break) == 0) {
                 # no name, just add to list
                 factor_arg_list[[i]] <- para_cur
@@ -581,7 +595,7 @@ get_form_risk <- function(model_obj, df) {
                 factor_arg_list[[item_name]] <- parse_literal_string(item_value)
               }
             }
-            repeat_list <- c(list("_exp_type" = "factor"), copy(factor_arg_list)) # The arguements needed to repeat the processing
+            repeat_list <- c(list(`_exp_type` = "factor"), copy(factor_arg_list)) # The arguements needed to repeat the processing
             # Either the item is named x, or is it the first
             if ("x" %in% names(factor_arg_list)) {
               factor_col <- factor_arg_list$x
@@ -591,8 +605,9 @@ get_form_risk <- function(model_obj, df) {
               names(factor_arg_list)[[1]] <- "x"
               factor_arg_list[["x"]] <- copy(df[[factor_arg_list$x]])
             }
+            factor_col <- sapply(factor_col, function(x) tryCatch(match.arg(x, choices = names(df)), error = function(e) x), USE.NAMES = FALSE)[[1]]
             if (!(factor_col %in% names(df))) {
-              stop(paste("Error: Column: ", factor_col, " not in data", sep = ""))
+              stop("Error: Column: ", factor_col, " not in data")
             }
             xtemp <- do.call(factor, factor_arg_list)
             if (!("levels" %in% names(repeat_list))) { # using the levels will recreate the same factoring
@@ -605,17 +620,19 @@ get_form_risk <- function(model_obj, df) {
             level_ref <- paste(factor_col, levels(xtemp)[1], sep = "_")
             col_name <- col_name[col_name != level_ref]
             expres_calls[[length(expres_calls) + 1]] <- repeat_list
-          } else if (substr(model_paras[subterm_i], 1, 2) == "I(") {
+            # } else if (substr(model_paras[subterm_i], 1, 2) == "I(") {
+          } else if (startsWith(model_paras[subterm_i], "I(")) {
             factor_args <- substr(model_paras[subterm_i], 3, nchar(model_paras[subterm_i]) - 1)
-            repeat_list <- c(list("_exp_type" = "power"), list(factor_args))
-            vals <- strsplit(factor_args, "\\^")[[1]]
+            repeat_list <- c(list(`_exp_type` = "power"), list(factor_args))
+            vals <- strsplit(factor_args, "^", fixed = TRUE)[[1]]
             if (length(vals) != 2) {
               stop("Error: I() currently only available for I(var^n)")
             }
             col <- vals[1]
             raised <- vals[2]
+            col <- sapply(col, function(x) tryCatch(match.arg(x, choices = names(df)), error = function(e) x), USE.NAMES = FALSE)[[1]]
             if (!(col %in% names(df))) {
-              stop(paste("Error: Column: ", col, " not in data", sep = ""))
+              stop("Error: Column: ", col, " not in data")
             }
             options(warn = -1)
             if (all(vapply(raised, function(x) grepl("^[\\-]{0,1}[0-9]*\\.{0,1}[0-9]*$", x), logical(1))) || all(vapply(raised, function(x) grepl("^[\\-]{0,1}[0-9]+e[\\-]{0,1}[0-9]+$", x), logical(1)))) {
@@ -627,7 +644,8 @@ get_form_risk <- function(model_obj, df) {
             col_name <- factor_args
             df[[col_name]] <- df[[col]]^raised
             expres_calls[[length(expres_calls) + 1]] <- repeat_list
-          } else if (substr(model_paras[subterm_i], 1, 3) == "ns(") {
+            # } else if (substr(model_paras[subterm_i], 1, 3) == "ns(") {
+          } else if (startsWith(model_paras[subterm_i], "ns(")) {
             # natural cubic spline
             factor_args <- substr(model_paras[subterm_i], 4, nchar(model_paras[subterm_i]) - 1)
             factor_args <- nested_split(factor_args)
@@ -635,7 +653,7 @@ get_form_risk <- function(model_obj, df) {
             factor_arg_list <- list()
             for (i in seq_along(factor_args)) {
               para_cur <- factor_args[i]
-              para_break <- lapply(strsplit(para_cur, ""), function(x) which(x == "="))[[1]]
+              para_break <- lapply(strsplit(para_cur, "", fixed = TRUE), function(x) which(x == "="))[[1]]
               if (length(para_break) == 0) {
                 # no name, just add to list
                 factor_arg_list[[i]] <- para_cur
@@ -645,7 +663,7 @@ get_form_risk <- function(model_obj, df) {
                 factor_arg_list[[item_name]] <- parse_literal_string(item_value)
               }
             }
-            repeat_list <- c(list("_exp_type" = "ns"), copy(factor_arg_list)) # The arguements needed to repeat the processing
+            repeat_list <- c(list(`_exp_type` = "ns"), copy(factor_arg_list)) # The arguements needed to repeat the processing
             # Either the item is named x, or is it the first
             if ("x" %in% names(factor_arg_list)) {
               factor_col <- factor_arg_list$x
@@ -658,8 +676,9 @@ get_form_risk <- function(model_obj, df) {
             if (system.file(package = "splines") == "") {
               stop("Error: Attempted to use ns(), but splines not detected on system.")
             }
+            factor_col <- sapply(factor_col, function(x) tryCatch(match.arg(x, choices = names(df)), error = function(e) x), USE.NAMES = FALSE)[[1]]
             if (!(factor_col %in% names(df))) {
-              stop(paste("Error: Column: ", factor_col, " not in data", sep = ""))
+              stop("Error: Column: ", factor_col, " not in data")
             }
             xtemp <- do.call(splines::ns, factor_arg_list)
             #
@@ -677,7 +696,7 @@ get_form_risk <- function(model_obj, df) {
             #
             col_name <- c()
             for (i in seq_len(ncol(xtemp))) {
-              x_col <- paste(factor_col, "_ns", i, sep = "")
+              x_col <- paste0(factor_col, "_ns", i)
               if (!(x_col %in% names(df))) {
                 df[[x_col]] <- xtemp[, i]
               }
@@ -685,7 +704,8 @@ get_form_risk <- function(model_obj, df) {
             }
             expres_calls[[length(expres_calls) + 1]] <- repeat_list
             ##
-          } else if (substr(model_paras[subterm_i], 1, 3) == "bs(") {
+            # } else if (substr(model_paras[subterm_i], 1, 3) == "bs(") {
+          } else if (startsWith(model_paras[subterm_i], "bs(")) {
             # b-spline for polynomial spline
             factor_args <- substr(model_paras[subterm_i], 4, nchar(model_paras[subterm_i]) - 1)
             factor_args <- nested_split(factor_args)
@@ -693,7 +713,7 @@ get_form_risk <- function(model_obj, df) {
             factor_arg_list <- list()
             for (i in seq_along(factor_args)) {
               para_cur <- factor_args[i]
-              para_break <- lapply(strsplit(para_cur, ""), function(x) which(x == "="))[[1]]
+              para_break <- sapply(strsplit(para_cur, "", fixed = TRUE), function(x) which(x == "="))[[1]]
               if (length(para_break) == 0) {
                 # no name, just add to list
                 factor_arg_list[[i]] <- para_cur
@@ -703,7 +723,7 @@ get_form_risk <- function(model_obj, df) {
                 factor_arg_list[[item_name]] <- parse_literal_string(item_value)
               }
             }
-            repeat_list <- c(list("_exp_type" = "bs"), copy(factor_arg_list)) # The arguements needed to repeat the processing
+            repeat_list <- c(list(`_exp_type` = "bs"), copy(factor_arg_list)) # The arguements needed to repeat the processing
             # Either the item is named x, or is it the first
             if ("x" %in% names(factor_arg_list)) {
               factor_col <- factor_arg_list$x
@@ -716,8 +736,9 @@ get_form_risk <- function(model_obj, df) {
             if (system.file(package = "splines") == "") {
               stop("Error: Attempted to use bs(), but splines not detected on system.")
             }
+            factor_col <- sapply(factor_col, function(x) tryCatch(match.arg(x, choices = names(df)), error = function(e) x), USE.NAMES = FALSE)[[1]]
             if (!(factor_col %in% names(df))) {
-              stop(paste("Error: Column: ", factor_col, " not in data", sep = ""))
+              stop("Error: Column: ", factor_col, " not in data")
             }
             xtemp <- do.call(splines::bs, factor_arg_list)
             #
@@ -737,7 +758,7 @@ get_form_risk <- function(model_obj, df) {
             }
             col_name <- c()
             for (i in seq_len(ncol(xtemp))) {
-              x_col <- paste(factor_col, "_bs", i, sep = "")
+              x_col <- paste0(factor_col, "_bs", i)
               if (!(x_col %in% names(df))) {
                 df[[x_col]] <- xtemp[, i]
               }
@@ -748,7 +769,7 @@ get_form_risk <- function(model_obj, df) {
           } else {
             # ----------------------------------------------------------------------------------- #
             # generic function call
-            para_split <- lapply(strsplit(model_paras[subterm_i], ""), function(x) which(x == "("))[[1]]
+            para_split <- sapply(strsplit(model_paras[subterm_i], "", fixed = TRUE), function(x) which(x == "("))[[1]]
             exp_name <- substr(model_paras[subterm_i], 1, para_split - 1)
             factor_args <- substr(model_paras[subterm_i], para_split + 1, nchar(model_paras[subterm_i]) - 1)
             factor_args <- nested_split(factor_args)
@@ -756,7 +777,7 @@ get_form_risk <- function(model_obj, df) {
             factor_arg_list <- list()
             for (i in seq_along(factor_args)) {
               para_cur <- factor_args[i]
-              para_break <- lapply(strsplit(para_cur, ""), function(x) which(x == "="))[[1]]
+              para_break <- sapply(strsplit(para_cur, "", fixed = TRUE), function(x) which(x == "="))[[1]]
               if (length(para_break) == 0) {
                 # no name, just add to list
                 factor_arg_list[[i]] <- para_cur
@@ -766,7 +787,7 @@ get_form_risk <- function(model_obj, df) {
                 factor_arg_list[[item_name]] <- parse_literal_string(item_value)
               }
             }
-            repeat_list <- c(list("_exp_type" = exp_name), copy(factor_arg_list)) # The arguements needed to repeat the processing
+            repeat_list <- c(list(`_exp_type` = exp_name), copy(factor_arg_list)) # The arguements needed to repeat the processing
             # Either the item is named x, or is it the first
             factor_col <- factor_arg_list[[1]]
             factor_vals <- unlist(factor_arg_list, use.names = FALSE)
@@ -775,21 +796,22 @@ get_form_risk <- function(model_obj, df) {
                 factor_arg_list[[i]] <- copy(df[[factor_vals[[i]]]])
               }
             }
+            factor_col <- sapply(factor_col, function(x) tryCatch(match.arg(x, choices = names(df)), error = function(e) x), USE.NAMES = FALSE)[[1]]
             if (!(factor_col %in% names(df))) {
-              stop(paste("Error: Column: ", factor_col, " not in data", sep = ""))
+              stop("Error: Column: ", factor_col, " not in data")
             }
             xtemp <- do.call(exp_name, factor_arg_list)
             #
             col_name <- c()
             if (is.atomic(xtemp)) {
-              x_col <- paste(factor_col, "_", exp_name, sep = "")
+              x_col <- paste0(factor_col, "_", exp_name)
               if (!(x_col %in% names(df))) {
                 df[[x_col]] <- xtemp
               }
               col_name <- c(col_name, x_col)
             } else {
               for (i in seq_len(ncol(xtemp))) {
-                x_col <- paste(factor_col, "_", exp_name, i, sep = "")
+                x_col <- paste0(factor_col, "_", exp_name, i)
                 if (!(x_col %in% names(df))) {
                   df[[x_col]] <- xtemp[, i]
                 }
@@ -798,16 +820,17 @@ get_form_risk <- function(model_obj, df) {
             }
             expres_calls[[length(expres_calls) + 1]] <- repeat_list
           }
-        } else if (grepl("\\*", model_paras[subterm_i])) {
+        } else if (grepl("*", model_paras[subterm_i], fixed = TRUE)) {
           # interaction element
-          repeat_list <- c(list("_exp_type" = "interaction"), model_paras[subterm_i]) # The arguements needed to repeat the processing
+          repeat_list <- c(list(`_exp_type` = "interaction"), model_paras[subterm_i]) # The arguements needed to repeat the processing
           #
           # split into the columns
-          cols <- strsplit(model_paras[subterm_i], "\\*")[[1]]
+          cols <- strsplit(model_paras[subterm_i], "*", fixed = TRUE)[[1]]
+          cols <- sapply(cols, function(x) tryCatch(match.arg(x, choices = names(df)), error = function(e) x), USE.NAMES = FALSE)
           for (col in cols) {
             if (!(col %in% names(df))) {
               # good, it is in there
-              stop(paste("Error: Interaction column missing: ", col, sep = ""))
+              stop("Error: Interaction column missing: ", col)
             }
           }
           interact_tables <- do.call(c, lapply(seq_along(cols), combn, x = cols, simplify = FALSE))
@@ -856,7 +879,7 @@ get_form_risk <- function(model_obj, df) {
               }
               for (comb in combs) {
                 #
-                entries <- strsplit(comb, ":")[[1]]
+                entries <- strsplit(comb, ":", fixed = TRUE)[[1]]
                 df[[comb]] <- 1
                 for (j in entries) {
                   df[[comb]] <- df[[comb]] * df[[j]]
@@ -878,8 +901,9 @@ get_form_risk <- function(model_obj, df) {
               df$CONST <- 1
             }
           }
+          element_col <- sapply(element_col, function(x) tryCatch(match.arg(x, choices = names(df)), error = function(e) x), USE.NAMES = FALSE)[[1]]
           if (!element_col %in% names(df)) {
-            stop(paste("Error: Subterm column missing: ", col, sep = ""))
+            stop("Error: Subterm column missing: ", element_col)
           }
           if (is.null(levels(df[[element_col]]))) {
             col_name <- c(element_col)
@@ -887,7 +911,7 @@ get_form_risk <- function(model_obj, df) {
             # it is a factor
             factor_arg_list <- list()
             factor_arg_list[[1]] <- element_col
-            repeat_list <- c(list("_exp_type" = "factor"), copy(factor_arg_list))
+            repeat_list <- c(list(`_exp_type` = "factor"), copy(factor_arg_list))
             repeat_list[["levels"]] <- levels(df[[element_col]])
             expres_calls[[length(expres_calls) + 1]] <- repeat_list
             val <- factorize(df, element_col)
@@ -922,13 +946,13 @@ get_form_risk <- function(model_obj, df) {
         } else if (model_type %in% c("lin-exp-dose", "linear-exponential-dose", "linear-exponential-piecewise")) {
           model_terms <- c("lin_exp_slope", "lin_exp_int", "lin_exp_exp_slope")
         } else {
-          stop(paste("Error: Unknown subterm type used, ", model_type, sep = ""))
+          stop("Error: Unknown subterm type used, ", model_type)
         }
         for (col in col_name) {
           for (model_term in model_terms) {
-            if (grepl("_int", model_term)) {
+            if (grepl("_int", model_term, fixed = TRUE)) {
               # we want to create a second column, for the intercept, to be normalized differently
-              new_col <- paste(col, ":intercept", sep = "")
+              new_col <- paste0(col, ":intercept")
               if (!(new_col %in% names(df))) {
                 df[, new_col] <- df[, col, with = FALSE]
               }
@@ -955,7 +979,7 @@ get_form_risk <- function(model_obj, df) {
       } else if (model_type %in% c("gm", "gmix", "geometric-mixture")) {
         model_type <- "GMIX"
         model_paras <- substr(right_model_terms[term_i], third_split + 1, nchar(right_model_terms[term_i]) - 1)
-        model_paras <- gsub("\"", "", model_paras) # remove literal strings if needed
+        model_paras <- gsub("\"", "", model_paras, fixed = TRUE) # remove literal strings if needed
         #
         if (is.na(model_paras) || model_paras == "") {
           # Nothing, just give the defaults
@@ -963,9 +987,9 @@ get_form_risk <- function(model_obj, df) {
           gmix_term <- c()
         } else {
           # There is something, but what?
-          if (grepl(",", model_paras)) {
+          if (grepl(",", model_paras, fixed = TRUE)) {
             # Multiple items
-            model_paras <- tolower(strsplit(model_paras, ",")[[1]])
+            model_paras <- tolower(strsplit(model_paras, ",", fixed = TRUE)[[1]])
             # we need to start by checking if the first thing is a number
             if (all(vapply(model_paras[1], function(x) grepl("^[\\-]{0,1}[0-9]*\\.{0,1}[0-9]*$", x), logical(1))) || all(vapply(model_paras[1], function(x) grepl("^[\\-]{0,1}[0-9]+e[\\-]{0,1}[0-9]+$", x), logical(1)))) {
               # Good, the first item is a number
@@ -973,7 +997,7 @@ get_form_risk <- function(model_obj, df) {
               para_else <- model_paras[2:length(model_paras)]
               # Check if they are all valid
               if (all(vapply(para_else, function(x) grepl(x, "er"), logical(1)))) {
-                gmix_term <- ifelse(para_else == "e", 1, 0)
+                gmix_term <- as.numeric(para_else == "e")
               } else {
                 # Remaining entry was wrong
                 stop("Error: Gmix term had an invalid option after the theta value. Please only use 'e/r'")
@@ -981,10 +1005,10 @@ get_form_risk <- function(model_obj, df) {
             } else {
               # wasn't a number
               gmix_theta <- 0.5
-              para_else <- model_paras[1:length(model_paras)]
+              para_else <- model_paras[seq_along(model_paras)]
               # Check if they are all valid
               if (all(vapply(para_else, function(x) grepl(x, "er"), logical(1)))) {
-                gmix_term <- ifelse(para_else == "e", 1, 0)
+                gmix_term <- as.numeric(para_else == "e")
               } else {
                 # Remaining entry was wrong
                 stop("Error: Gmix term had an invalid option. Please only use a number or 'e/r'")
@@ -998,10 +1022,10 @@ get_form_risk <- function(model_obj, df) {
               gmix_term <- c()
             } else {
               # it is not a number, is it a 'e' or 'r'?
-              if (grepl(tolower(model_paras), "er")) {
+              if (grepl(tolower(model_paras), "er", fixed = TRUE)) {
                 # it is an option!
                 gmix_theta <- 0.5
-                gmix_term <- ifelse(tolower(model_paras) == "e", 1, 0)
+                gmix_term <- as.numeric(tolower(model_paras) == "e")
               } else {
                 # Doesn't match anything
                 stop("Error: Gmix term had an invalid option. Please only use a number or 'e/r'")
@@ -1017,7 +1041,7 @@ get_form_risk <- function(model_obj, df) {
           # Nothing, just give the defaults
           gmix_theta <- 0.5
         } else {
-          model_paras <- tolower(strsplit(model_paras, ",")[[1]])
+          model_paras <- tolower(strsplit(model_paras, ",", fixed = TRUE)[[1]])
           gmix_theta <- as.numeric(model_paras[1])
         }
       } else if (model_type %in% c("gmix-e", "excess-geometric-mixture")) {
@@ -1027,7 +1051,7 @@ get_form_risk <- function(model_obj, df) {
           # Nothing, just give the defaults
           gmix_theta <- 0.5
         } else {
-          model_paras <- tolower(strsplit(model_paras, ",")[[1]])
+          model_paras <- tolower(strsplit(model_paras, ",", fixed = TRUE)[[1]])
           gmix_theta <- as.numeric(model_paras[1])
         }
       }
@@ -1037,7 +1061,7 @@ get_form_risk <- function(model_obj, df) {
         stop("Error: modelform defined twice")
       }
     } else {
-      stop(paste("Error: Unknown option encountered, ", model_type, sep = ""))
+      stop("Error: Unknown option encountered, ", model_type)
     }
   }
   if (!null) {
@@ -1062,11 +1086,11 @@ get_form_risk <- function(model_obj, df) {
   for (col in all_name) {
     # Make sure it exists
     if (!(col %in% names(df))) {
-      stop(paste("Error: Column missing from data: ", col, sep = ""))
+      stop("Error: Column missing from data: ", col)
     }
     # Make sure it can be a number
     if (!is.numeric(df[[col]])) {
-      stop(paste("Error: Column was not numeric: ", col, sep = ""))
+      stop("Error: Column was not numeric: ", col)
     }
   }
   #
@@ -1100,17 +1124,17 @@ get_form_risk <- function(model_obj, df) {
   }
   #
   model <- list(
-    "term_n" = term_n,
-    "tform" = tform,
-    "names" = names,
-    "modelform" = modelform,
-    "gmix_term" = gmix_term,
-    "gmix_theta" = gmix_theta,
-    "null" = null,
-    "expres_calls" = expres_calls
+    term_n = term_n,
+    tform = tform,
+    names = names,
+    modelform = modelform,
+    gmix_term = gmix_term,
+    gmix_theta = gmix_theta,
+    null = null,
+    expres_calls = expres_calls
   )
   list(
-    "model" = model, "data" = df
+    model = model, data = df
   )
 }
 
@@ -1141,7 +1165,7 @@ ColossusExpressionCall <- function(calls, df) {
       df <- val$df
     } else if (call[["_exp_type"]] == "power") {
       factor_args <- call[names(call) != "_exp_type"][[1]]
-      vals <- strsplit(factor_args, "\\^")[[1]]
+      vals <- strsplit(factor_args, "^", fixed = TRUE)[[1]]
       col <- vals[1]
       raised <- vals[2]
       raised <- as.numeric(raised)
@@ -1163,7 +1187,7 @@ ColossusExpressionCall <- function(calls, df) {
       xtemp <- do.call(splines::ns, factor_arg_list)
       #
       for (i in seq_len(ncol(xtemp))) {
-        x_col <- paste(factor_col, "_ns", i, sep = "")
+        x_col <- paste0(factor_col, "_ns", i)
         if (!(x_col %in% names(df))) {
           df[[x_col]] <- xtemp[, i]
         }
@@ -1186,7 +1210,7 @@ ColossusExpressionCall <- function(calls, df) {
       xtemp <- do.call(splines::bs, factor_arg_list)
       #
       for (i in seq_len(ncol(xtemp))) {
-        x_col <- paste(factor_col, "_bs", i, sep = "")
+        x_col <- paste0(factor_col, "_bs", i)
         if (!(x_col %in% names(df))) {
           df[[x_col]] <- xtemp[, i]
         }
@@ -1194,17 +1218,7 @@ ColossusExpressionCall <- function(calls, df) {
       ##
     } else if (call["_exp_type"] == "interaction") {
       # split into the columns
-      cols <- strsplit(call[[2]], "\\*")[[1]]
-      #      recur_interact <- function(x, y) {
-      #        if (length(y) == 1) {
-      #          return(paste(x, y[[1]], sep = ":"))
-      #        } else {
-      #          for (i in y[[1]]) {
-      #            y0 <- paste(x, i, sep = ":")
-      #            return(recur_interact(y0, y[2:length(y)]))
-      #          }
-      #        }
-      #      }
+      cols <- strsplit(call[[2]], "*", fixed = TRUE)[[1]]
       interact_tables <- do.call(c, lapply(seq_along(cols), combn, x = cols, simplify = FALSE))
       for (i_table in interact_tables) {
         vals <- unlist(i_table, use.names = FALSE)
@@ -1242,7 +1256,7 @@ ColossusExpressionCall <- function(calls, df) {
           }
           for (comb in combs) {
             #
-            entries <- strsplit(comb, ":")[[1]]
+            entries <- strsplit(comb, ":", fixed = TRUE)[[1]]
             df[[comb]] <- 1
             for (j in entries) {
               df[[comb]] <- df[[comb]] * df[[j]]
@@ -1266,13 +1280,13 @@ ColossusExpressionCall <- function(calls, df) {
       xtemp <- do.call(exp_name, factor_arg_list)
       #
       if (is.atomic(xtemp)) {
-        x_col <- paste(factor_col, "_", exp_name, sep = "")
+        x_col <- paste0(factor_col, "_", exp_name)
         if (!(x_col %in% names(df))) {
           df[[x_col]] <- xtemp
         }
       } else {
         for (i in seq_len(ncol(xtemp))) {
-          x_col <- paste(factor_col, "_", exp_name, i, sep = "")
+          x_col <- paste0(factor_col, "_", exp_name, i)
           if (!(x_col %in% names(df))) {
             df[[x_col]] <- xtemp[, i]
           }
@@ -1309,14 +1323,14 @@ ColossusCoxSurv <- function(...) {
   tstart <- "%trunc%"
   tend <- "%trunc%"
   event <- "NULL"
-  indx <- pmatch(argName[argName != ""], c("tstart", "tend", "event"), nomatch = 0L)
+  indx <- pmatch(argName[nzchar(argName)], c("tstart", "tend", "event"), nomatch = 0L)
   if (any(indx == 0L)) {
     stop(gettextf(
       "Error: Argument '%s' not matched in survival object",
-      argName[argName != ""][indx == 0L]
+      argName[nzchar(argName)][indx == 0L]
     ), domain = NA)
   }
-  if (all(argName == "")) {
+  if (all(!nzchar(argName))) {
     # If none have names, assume (start, end, event) or (end, event)
     if (length(args) == 2) {
       tstart <- "%trunc%"
@@ -1329,7 +1343,7 @@ ColossusCoxSurv <- function(...) {
     } else {
       stop("Error: Incorrect number of arguments to survival object")
     }
-  } else if (any(argName == "")) {
+  } else if (any(!nzchar(argName))) {
     # start by directly assigning what is available
     if ("tstart" %in% argName) {
       tstart <- args$tstart
@@ -1375,7 +1389,7 @@ ColossusCoxSurv <- function(...) {
       event <- args$event
     }
   }
-  list("tstart" = tstart, "tend" = tend, "event" = event)
+  list(tstart = tstart, tend = tend, event = event)
 }
 
 #' Interprets basic cox survival formula RHS with strata
@@ -1401,7 +1415,7 @@ ColossusCoxStrataSurv <- function(...) {
   if ("strata" %in% argName) {
     strata <- parse_literal_string(args$strata)
     res <- do.call(ColossusCoxSurv, args[names(args) != "strata"])
-  } else if (all(argName == "")) {
+  } else if (all(!nzchar(argName))) {
     strata <- parse_literal_string(args[[length(args)]])
     res <- do.call(ColossusCoxSurv, args[seq_len(length(args) - 1)])
   } else {
@@ -1439,7 +1453,7 @@ ColossusFineGraySurv <- function(...) {
   if ("weight" %in% argName) {
     weight <- args$weight
     res <- do.call(ColossusCoxSurv, args[names(args) != "weight"])
-  } else if (all(argName == "")) {
+  } else if (all(!nzchar(argName))) {
     weight <- args[[length(args)]]
     res <- do.call(ColossusCoxSurv, args[seq_len(length(args) - 1)])
   } else {
@@ -1477,7 +1491,7 @@ ColossusFineGrayStrataSurv <- function(...) {
   if ("weight" %in% argName) {
     weight <- args$weight
     res <- do.call(ColossusCoxStrataSurv, args[names(args) != "weight"])
-  } else if (all(argName == "")) {
+  } else if (all(!nzchar(argName))) {
     weight <- args[[length(args)]]
     res <- do.call(ColossusCoxStrataSurv, args[seq_len(length(args) - 1)])
   } else {
@@ -1515,14 +1529,14 @@ ColossusPoisSurv <- function(...) {
   pyr <- "NULL"
   event <- "NULL"
   strata <- "NULL"
-  indx <- pmatch(argName[argName != ""], c("pyr", "event"), nomatch = 0L)
+  indx <- pmatch(argName[nzchar(argName)], c("pyr", "event"), nomatch = 0L)
   if (any(indx == 0L)) {
     stop(gettextf(
       "Error: Argument '%s' not matched in survival object",
-      argName[argName != ""][indx == 0L]
+      argName[nzchar(argName)][indx == 0L]
     ), domain = NA)
   }
-  if (all(argName == "")) {
+  if (all(!nzchar(argName))) {
     # If none have names, assume (pyr, event, and all strata)
     if (length(args) == 2) {
       pyr <- args[[1]]
@@ -1532,7 +1546,7 @@ ColossusPoisSurv <- function(...) {
       event <- args[[2]]
       strata <- unlist(args[3:length(args)], use.names = FALSE)
     }
-  } else if (any(argName == "")) {
+  } else if (any(!nzchar(argName))) {
     # start by directly assigning what is available
     if ("pyr" %in% argName) {
       pyr <- args$pyr
@@ -1561,7 +1575,7 @@ ColossusPoisSurv <- function(...) {
     pyr <- args$pyr
     event <- args$event
   }
-  list("pyr" = pyr, "event" = event, "strata" = strata)
+  list(pyr = pyr, event = event, strata = strata)
 }
 
 # --------------------------------------------------------------------------------- #
@@ -1589,7 +1603,7 @@ ColossusCaseConSurv <- function(...) {
   } else {
     stop("Error: Entry must be unnamed or named 'event'")
   }
-  list("event" = event)
+  list(event = event)
 }
 
 #' Interprets basic case-control survival formula RHS with grouping by risk group
@@ -1614,14 +1628,14 @@ ColossusCaseConTimeSurv <- function(...) {
   tstart <- "%trunc%"
   tend <- "%trunc%"
   event <- "NULL"
-  indx <- pmatch(argName[argName != ""], c("tstart", "tend", "event"), nomatch = 0L)
+  indx <- pmatch(argName[nzchar(argName)], c("tstart", "tend", "event"), nomatch = 0L)
   if (any(indx == 0L)) {
     stop(gettextf(
       "Error: Argument '%s' not matched in survival object",
-      argName[argName != ""][indx == 0L]
+      argName[nzchar(argName)][indx == 0L]
     ), domain = NA)
   }
-  if (all(argName == "")) {
+  if (all(!nzchar(argName))) {
     # If none have names, assume (start, end, event) or (end, event)
     if (length(args) == 2) {
       tstart <- "%trunc%"
@@ -1634,7 +1648,7 @@ ColossusCaseConTimeSurv <- function(...) {
     } else {
       stop("Error: Incorrect number of arguments to survival object")
     }
-  } else if (any(argName == "")) {
+  } else if (any(!nzchar(argName))) {
     # start by directly assigning what is available
     if ("tstart" %in% argName) {
       tstart <- args$tstart
@@ -1680,7 +1694,7 @@ ColossusCaseConTimeSurv <- function(...) {
       event <- args$event
     }
   }
-  list("tstart" = tstart, "tend" = tend, "event" = event)
+  list(tstart = tstart, tend = tend, event = event)
 }
 
 #' Interprets basic case-control survival formula RHS with grouping by strata
@@ -1702,11 +1716,11 @@ ColossusCaseConStrataSurv <- function(...) {
   if (length(args) > 2) {
     stop("Error: Too many entries in Case-Control survival object matched on strata")
   }
-  indx <- pmatch(argName[argName != ""], c("strata", "event"), nomatch = 0L)
+  indx <- pmatch(argName[nzchar(argName)], c("strata", "event"), nomatch = 0L)
   if (any(indx == 0L)) {
     stop(gettextf(
       "Error: Argument '%s' not matched in survival object",
-      argName[argName != ""][indx == 0L]
+      argName[nzchar(argName)][indx == 0L]
     ), domain = NA)
   }
   #
@@ -1721,7 +1735,7 @@ ColossusCaseConStrataSurv <- function(...) {
     strata <- parse_literal_string(args[[2]])
   }
   #
-  list("event" = event, "strata" = strata)
+  list(event = event, strata = strata)
 }
 
 #' Interprets basic case-control survival formula RHS with grouping by strata and risk group
@@ -1747,7 +1761,7 @@ ColossusCaseConTimeStrataSurv <- function(...) {
   if ("strata" %in% argName) {
     strata <- parse_literal_string(args$strata)
     res <- do.call(ColossusCaseConTimeSurv, args[names(args) != "strata"])
-  } else if (all(argName == "")) {
+  } else if (all(!nzchar(argName))) {
     strata <- parse_literal_string(args[[length(args)]])
     res <- do.call(ColossusCaseConTimeSurv, args[seq_len(length(args) - 1)])
   } else {
@@ -1783,17 +1797,17 @@ ColossusLogitSurv <- function(...) {
   }
   trials <- "NULL"
   events <- "NULL"
-  indx <- pmatch(argName[argName != ""], c("trials", "event", "events"), nomatch = 0L)
+  indx <- pmatch(argName[nzchar(argName)], c("trials", "event", "events"), nomatch = 0L)
   if (any(indx == 0L)) {
     stop(gettextf(
       "Error: Argument '%s' not matched in survival object",
-      argName[argName != ""][indx == 0L]
+      argName[nzchar(argName)][indx == 0L]
     ), domain = NA)
   }
   if (("event" %in% argName) && ("events" %in% argName)) {
     stop("Error: Cannot provide both 'event' and 'events'")
   }
-  if (all(argName == "")) {
+  if (all(!nzchar(argName))) {
     if (length(args) == 1) {
       # should just be the events
       # assume only one trial
@@ -1806,7 +1820,7 @@ ColossusLogitSurv <- function(...) {
     }
   } else {
     # atleast one is named
-    if (any(argName == "")) {
+    if (any(!nzchar(argName))) {
       # one is named
       if ("trials" %in% argName) {
         trials <- args$trials
@@ -1825,5 +1839,5 @@ ColossusLogitSurv <- function(...) {
       events <- args[names(args) != "trials"][[1]]
     }
   }
-  list("event" = events, "trials" = trials)
+  list(event = events, trials = trials)
 }

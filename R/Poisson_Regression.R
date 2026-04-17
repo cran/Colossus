@@ -13,6 +13,7 @@
 RunPoissonRegression_Omnibus <- function(df, pyr0 = "pyr", event0 = "event", names = c("CONST"), term_n = c(0), tform = "loglin", keep_constant = c(0), a_n = c(0), modelform = "M", control = list(), strat_col = "null", model_control = list(), cons_mat = as.matrix(c(0)), cons_vec = c(0)) {
   func_t_start <- Sys.time()
   initial_size <- nrow(df)
+  # nocov start
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
@@ -23,12 +24,16 @@ RunPoissonRegression_Omnibus <- function(df, pyr0 = "pyr", event0 = "event", nam
       }
     )
   }
+  # nocov end
   control <- Def_Control(control)
   model_control <- Def_model_control(model_control)
   if (typeof(a_n) != "list") {
     a_n <- list(a_n)
   }
-  df <- df[get(pyr0) > 0, ]
+  df <- df[get(pyr0) > 0, ] # filter to data with more than 0 duration
+  if (min(df[, event0, with = FALSE]) < 0) {
+    stop("Error: negative events in atleast one row")
+  }
   if (model_control$null == FALSE) {
     if (min(keep_constant) > 0) {
       stop("Error: Atleast one parameter must be free")
@@ -53,9 +58,11 @@ RunPoissonRegression_Omnibus <- function(df, pyr0 = "pyr", event0 = "event", nam
     strata_vals <- val$levels
     ## ------------------------------------------------------------------------------- ##
     if (control$verbose >= 3) {
+      # nocov start
       message(paste("Note: ", length(strat_col), " strata used",
         sep = ""
       ))
+      # nocov end
     }
   } else {
     val <- list(cols = c("a"))
@@ -129,7 +136,7 @@ RunPoissonRegression_Omnibus <- function(df, pyr0 = "pyr", event0 = "event", nam
   e$RunTime <- func_t_end - func_t_start
   e$UsedRecords <- run_size
   e$RejectedRecords <- initial_size - run_size
-  return(e)
+  e
 }
 
 #' Predicts how many events are due to baseline vs excess
@@ -142,6 +149,7 @@ RunPoissonRegression_Omnibus <- function(df, pyr0 = "pyr", event0 = "event", nam
 #' @return returns a list of the final results
 #'
 RunPoissonEventAssignment <- function(df, pyr0 = "pyr", event0 = "event", names = c("CONST"), term_n = c(0), tform = "loglin", keep_constant = c(0), a_n = c(0), modelform = "M", control = list(), strat_col = "null", model_control = list()) {
+  # nocov start
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
@@ -152,11 +160,15 @@ RunPoissonEventAssignment <- function(df, pyr0 = "pyr", event0 = "event", names 
       }
     )
   }
+  # nocov end
   control <- Def_Control(control)
   control$maxiters <- c(1, control$maxiter)
   control$guesses <- 1
   control <- Def_Control(control)
   df <- df[get(pyr0) > 0, ]
+  if (min(df[, event0, with = FALSE]) < 0) {
+    stop("Error: negative events in atleast one row")
+  }
   model_control <- Def_model_control(model_control)
   if (min(keep_constant) > 0) {
     stop("Error: Atleast one parameter must be free")
@@ -179,9 +191,11 @@ RunPoissonEventAssignment <- function(df, pyr0 = "pyr", event0 = "event", names 
     strata_vals <- val$levels
     ## ------------------------------------------------------------------------------- ##
     if (control$verbose >= 3) {
+      # nocov start
       message(paste("Note: ", length(strat_col), " strata used",
         sep = ""
       ))
+      # nocov end
     }
   } else {
     val <- list(cols = c("a"))
@@ -207,7 +221,7 @@ RunPoissonEventAssignment <- function(df, pyr0 = "pyr", event0 = "event", names 
     modelform, control, keep_constant,
     term_tot, model_control
   )
-  return(e)
+  e
 }
 
 #' Calculates poisson residuals
@@ -222,6 +236,7 @@ RunPoissonEventAssignment <- function(df, pyr0 = "pyr", event0 = "event", names 
 #' @family Poisson Wrapper Functions
 #' @importFrom rlang .data
 RunPoissonRegression_Residual <- function(df, pyr0 = "pyr", event0 = "event", names = c("CONST"), term_n = c(0), tform = "loglin", keep_constant = c(0), a_n = c(0), modelform = "M", control = list(), strat_col = "null", model_control = list()) {
+  # nocov start
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
@@ -232,6 +247,7 @@ RunPoissonRegression_Residual <- function(df, pyr0 = "pyr", event0 = "event", na
       }
     )
   }
+  # nocov end
   cons_mat <- as.matrix(c(0))
   cons_vec <- c(0)
   control <- Def_Control(control)
@@ -239,6 +255,9 @@ RunPoissonRegression_Residual <- function(df, pyr0 = "pyr", event0 = "event", na
     a_n <- list(a_n)
   }
   df <- df[get(pyr0) > 0, ]
+  if (min(df[, event0, with = FALSE]) < 0) {
+    stop("Error: negative events in atleast one row")
+  }
   model_control <- Def_model_control(model_control)
   if (min(keep_constant) > 0) {
     stop("Error: Atleast one parameter must be free")
@@ -261,9 +280,11 @@ RunPoissonRegression_Residual <- function(df, pyr0 = "pyr", event0 = "event", na
     strata_vals <- val$levels
     ## ------------------------------------------------------------------------------- ##
     if (control$verbose >= 3) {
+      # nocov start
       message(paste("Note: ", length(strat_col), " strata used",
         sep = ""
       ))
+      # nocov end
     }
   } else {
     val <- list(cols = c("a"))
@@ -286,7 +307,7 @@ RunPoissonRegression_Residual <- function(df, pyr0 = "pyr", event0 = "event", na
     ]),
     model_control
   )
-  return(e)
+  e
 }
 
 #' Calculates the likelihood curve for a poisson model directly
@@ -302,6 +323,7 @@ RunPoissonRegression_Residual <- function(df, pyr0 = "pyr", event0 = "event", na
 #' @importFrom rlang .data
 PoissonCurveSolver <- function(df, pyr0 = "pyr", event0 = "event", names = c("CONST"), term_n = c(0), tform = "loglin", keep_constant = c(0), a_n = c(0), modelform = "M", control = list(), strat_col = "null", model_control = list(), cons_mat = as.matrix(c(0)), cons_vec = c(0)) {
   func_t_start <- Sys.time()
+  # nocov start
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
@@ -312,12 +334,16 @@ PoissonCurveSolver <- function(df, pyr0 = "pyr", event0 = "event", names = c("CO
       }
     )
   }
+  # nocov end
   control <- Def_Control(control)
   model_control <- Def_model_control(model_control)
   if (typeof(a_n) != "list") {
     a_n <- list(a_n)
   }
   df <- df[get(pyr0) > 0, ]
+  if (min(df[, event0, with = FALSE]) < 0) {
+    stop("Error: negative events in atleast one row")
+  }
   if (min(keep_constant) > 0) {
     stop("Error: Atleast one parameter must be free")
   }
@@ -339,9 +365,11 @@ PoissonCurveSolver <- function(df, pyr0 = "pyr", event0 = "event", names = c("CO
     strata_vals <- val$levels
     ## ------------------------------------------------------------------------------- ##
     if (control$verbose >= 3) {
+      # nocov start
       message(paste("Note: ", length(strat_col), " strata used",
         sep = ""
       ))
+      # nocov end
     }
   } else {
     val <- list(cols = c("a"))
@@ -389,7 +417,7 @@ PoissonCurveSolver <- function(df, pyr0 = "pyr", event0 = "event", names = c("CO
   }
   func_t_end <- Sys.time()
   e$RunTime <- func_t_end - func_t_start
-  return(e)
+  e
 }
 
 #' Performs Poisson regression using the omnibus function with multiple column realizations
@@ -409,6 +437,7 @@ PoissonCurveSolver <- function(df, pyr0 = "pyr", event0 = "event", names = c("CO
 RunPoisRegression_Omnibus_Multidose <- function(df, pyr0 = "pyr", event0 = "event", names = c("CONST"), term_n = c(0), tform = "loglin", keep_constant = c(0), a_n = c(0), modelform = "M", realization_columns = matrix(c("temp00", "temp01", "temp10", "temp11"), nrow = 2), realization_index = c("temp0", "temp1"), control = list(), strat_col = "null", model_control = list(), cons_mat = as.matrix(c(0)), cons_vec = c(0)) {
   func_t_start <- Sys.time()
   initial_size <- nrow(df)
+  # nocov start
   if (class(df)[[1]] != "data.table") {
     tryCatch(
       {
@@ -419,6 +448,7 @@ RunPoisRegression_Omnibus_Multidose <- function(df, pyr0 = "pyr", event0 = "even
       }
     )
   }
+  # nocov end
   #
   control <- Def_Control(control)
   model_control <- Def_model_control(model_control)
@@ -458,9 +488,11 @@ RunPoisRegression_Omnibus_Multidose <- function(df, pyr0 = "pyr", event0 = "even
     strata_vals <- val$levels
     ## ------------------------------------------------------------------------------- ##
     if (control$verbose >= 3) {
+      # nocov start
       message(paste("Note: ", length(strat_col), " strata used",
         sep = ""
       ))
+      # nocov end
     }
   } else {
     val <- list(cols = c("a"))
@@ -476,24 +508,24 @@ RunPoisRegression_Omnibus_Multidose <- function(df, pyr0 = "pyr", event0 = "even
     # pass
   } else {
     # the number of columns per realization does not match the number of indexes provided
-    stop(paste("Error:", length(realization_index),
+    stop(
+      "Error: ", length(realization_index),
       " column indexes provided, but ",
       length(realization_columns[, 1]),
-      " rows of realizations columns provided",
-      sep = " "
-    ))
+      " rows of realizations columns provided"
+    )
   }
   if (all(realization_index %in% all_names)) {
     # pass
   } else {
-    stop(paste("Error: Atleast one realization column provided was not used in the model", sep = " "))
+    stop("Error: Atleast one realization column provided was not used in the model")
   }
   #  all_names <- unique(c(all_names, as.vector(realization_columns)))
   dose_names <- unique(as.vector(realization_columns))
   if (all(dose_names %in% names(df))) {
     # pass
   } else {
-    stop(paste("Error: Atleast one realization column provided was not in the data.table", sep = " "))
+    stop("Error: Atleast one realization column provided was not in the data.table")
   }
   dfc <- match(names, all_names)
   dose_cols <- matrix(match(realization_columns, dose_names), nrow = nrow(realization_columns))
@@ -527,5 +559,5 @@ RunPoisRegression_Omnibus_Multidose <- function(df, pyr0 = "pyr", event0 = "even
   e$UsedRecords <- run_size
   e$RejectedRecords <- initial_size - run_size
   # df <- copy(df)
-  return(e)
+  e
 }
