@@ -468,7 +468,7 @@ regressions converge with similar scores.</p>
 <span id="cb2-46"><a href="#cb2-46" tabindex="-1"></a><span class="co">#&gt; Last iteration improved the log-likelihood by: 3.28859e-05</span></span>
 <span id="cb2-47"><a href="#cb2-47" tabindex="-1"></a><span class="co">#&gt; Analysis converged</span></span>
 <span id="cb2-48"><a href="#cb2-48" tabindex="-1"></a><span class="co">#&gt; Records Used: 64, Records Removed: 0</span></span>
-<span id="cb2-49"><a href="#cb2-49" tabindex="-1"></a><span class="co">#&gt; Run finished in 0.10291 seconds</span></span>
+<span id="cb2-49"><a href="#cb2-49" tabindex="-1"></a><span class="co">#&gt; Run finished in 0.12343 seconds</span></span>
 <span id="cb2-50"><a href="#cb2-50" tabindex="-1"></a><span class="co">#&gt; |--------------------------------------------------------------------------------|</span></span>
 <span id="cb2-51"><a href="#cb2-51" tabindex="-1"></a></span>
 <span id="cb2-52"><a href="#cb2-52" tabindex="-1"></a>e2 <span class="ot">&lt;-</span> <span class="fu">CoxRun</span>(<span class="fu">Cox</span>(time, status) <span class="sc">~</span> <span class="fu">loglinear</span>(temperature, <span class="dv">0</span>) <span class="sc">+</span> <span class="fu">plinear</span>(voltage, <span class="dv">0</span>),</span>
@@ -495,7 +495,7 @@ regressions converge with similar scores.</p>
 <span id="cb2-73"><a href="#cb2-73" tabindex="-1"></a><span class="co">#&gt; Last iteration improved the log-likelihood by: 3.57097e-05</span></span>
 <span id="cb2-74"><a href="#cb2-74" tabindex="-1"></a><span class="co">#&gt; Analysis converged</span></span>
 <span id="cb2-75"><a href="#cb2-75" tabindex="-1"></a><span class="co">#&gt; Records Used: 64, Records Removed: 0</span></span>
-<span id="cb2-76"><a href="#cb2-76" tabindex="-1"></a><span class="co">#&gt; Run finished in 0.08743 seconds</span></span>
+<span id="cb2-76"><a href="#cb2-76" tabindex="-1"></a><span class="co">#&gt; Run finished in 0.08316 seconds</span></span>
 <span id="cb2-77"><a href="#cb2-77" tabindex="-1"></a><span class="co">#&gt; |--------------------------------------------------------------------------------|</span></span></code></pre></div>
 <p>Next, suppose we were interested in the confidence intervals. Suppose
 we want 95% confidence intervals for both the Wald and likelihood-based
@@ -543,7 +543,7 @@ The two boundaries are off by less than 0.1.</p>
 <span id="cb3-31"><a href="#cb3-31" tabindex="-1"></a><span class="co">#&gt; Lower limit converged to at -0.0098972 at a score of -107.30968 with of goal of -107.30969</span></span>
 <span id="cb3-32"><a href="#cb3-32" tabindex="-1"></a><span class="co">#&gt; Central estimate was 0.7597</span></span>
 <span id="cb3-33"><a href="#cb3-33" tabindex="-1"></a><span class="co">#&gt; Upper limit converged to at 1.5599 at a score of -107.30968 with of goal of -107.30969</span></span>
-<span id="cb3-34"><a href="#cb3-34" tabindex="-1"></a><span class="co">#&gt; Run finished in 0.05152 seconds</span></span>
+<span id="cb3-34"><a href="#cb3-34" tabindex="-1"></a><span class="co">#&gt; Run finished in 0.02643 seconds</span></span>
 <span id="cb3-35"><a href="#cb3-35" tabindex="-1"></a><span class="co">#&gt; |--------------------------------------------------------------------------------|</span></span>
 <span id="cb3-36"><a href="#cb3-36" tabindex="-1"></a></span>
 <span id="cb3-37"><a href="#cb3-37" tabindex="-1"></a>curve_control <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
@@ -567,7 +567,7 @@ The two boundaries are off by less than 0.1.</p>
 <span id="cb3-55"><a href="#cb3-55" tabindex="-1"></a><span class="co">#&gt; Lower limit converged to at 0.84123 at a score of -107.30968 with of goal of -107.30969</span></span>
 <span id="cb3-56"><a href="#cb3-56" tabindex="-1"></a><span class="co">#&gt; Central estimate was 1.9872</span></span>
 <span id="cb3-57"><a href="#cb3-57" tabindex="-1"></a><span class="co">#&gt; Upper limit converged to at 3.242 at a score of -107.30968 with of goal of -107.30969</span></span>
-<span id="cb3-58"><a href="#cb3-58" tabindex="-1"></a><span class="co">#&gt; Run finished in 0.05256 seconds</span></span>
+<span id="cb3-58"><a href="#cb3-58" tabindex="-1"></a><span class="co">#&gt; Run finished in 0.02405 seconds</span></span>
 <span id="cb3-59"><a href="#cb3-59" tabindex="-1"></a><span class="co">#&gt; |--------------------------------------------------------------------------------|</span></span></code></pre></div>
 <p>Next, we analyze a model with a linear effect. We would expect the
 predictions to be further off. The boundaries for temperature are
@@ -604,7 +604,7 @@ voltage boundaries are much further off.</p>
 <span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a><span class="co">#&gt; Lower limit converged to at 0.12897 at a score of -106.16586 with of goal of -106.16587</span></span>
 <span id="cb4-29"><a href="#cb4-29" tabindex="-1"></a><span class="co">#&gt; Central estimate was 0.95011</span></span>
 <span id="cb4-30"><a href="#cb4-30" tabindex="-1"></a><span class="co">#&gt; Upper limit converged to at 1.8401 at a score of -106.16587 with of goal of -106.16587</span></span>
-<span id="cb4-31"><a href="#cb4-31" tabindex="-1"></a><span class="co">#&gt; Run finished in 0.02752 seconds</span></span>
+<span id="cb4-31"><a href="#cb4-31" tabindex="-1"></a><span class="co">#&gt; Run finished in 0.03457 seconds</span></span>
 <span id="cb4-32"><a href="#cb4-32" tabindex="-1"></a><span class="co">#&gt; |--------------------------------------------------------------------------------|</span></span>
 <span id="cb4-33"><a href="#cb4-33" tabindex="-1"></a></span>
 <span id="cb4-34"><a href="#cb4-34" tabindex="-1"></a>a_n <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">1.138152</span>, <span class="fl">1.988403</span>)</span>
@@ -629,7 +629,7 @@ voltage boundaries are much further off.</p>
 <span id="cb4-53"><a href="#cb4-53" tabindex="-1"></a><span class="co">#&gt; Lower limit converged to at 1.9709 at a score of -106.16585 with of goal of -106.16587</span></span>
 <span id="cb4-54"><a href="#cb4-54" tabindex="-1"></a><span class="co">#&gt; Central estimate was 8.8044</span></span>
 <span id="cb4-55"><a href="#cb4-55" tabindex="-1"></a><span class="co">#&gt; Upper limit converged to at 34.471 at a score of -106.16586 with of goal of -106.16587</span></span>
-<span id="cb4-56"><a href="#cb4-56" tabindex="-1"></a><span class="co">#&gt; Run finished in 0.0261 seconds</span></span>
+<span id="cb4-56"><a href="#cb4-56" tabindex="-1"></a><span class="co">#&gt; Run finished in 0.05398 seconds</span></span>
 <span id="cb4-57"><a href="#cb4-57" tabindex="-1"></a><span class="co">#&gt; |--------------------------------------------------------------------------------|</span></span></code></pre></div>
 </div>
 <div id="illustration-of-issues-with-likelihood-boundary-algorithm" class="section level3">

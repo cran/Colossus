@@ -2,7 +2,7 @@ Package: Colossus
 Type: Package
 Title: "Risk Model Regression and Analysis with Complex Non-Linear
         Models"
-Version: 1.5
+Version: 1.5.1
 Authors@R: c(
     person("Eric", "King-Giunta", email="egiunta@ksu.edu", role=c("aut", "cre"), comment = c(ORCID = "0000-0002-1577-766X")),
     person("Amir", "Bahadori", role=c("ctb"), comment = c(ORCID = "0000-0002-4589-105X")),
@@ -34,7 +34,7 @@ VignetteBuilder: knitr
 Language: en-US
 Biarch: TRUE
 NeedsCompilation: yes
-Packaged: 2026-04-16 14:01:40 UTC; user
+Packaged: 2026-04-21 14:17:51 UTC; user
 Author: Eric King-Giunta [aut, cre] (ORCID:
     <https://orcid.org/0000-0002-1577-766X>),
   Amir Bahadori [ctb] (ORCID: <https://orcid.org/0000-0002-4589-105X>),
@@ -49,4 +49,4 @@ Author: Eric King-Giunta [aut, cre] (ORCID:
   NRC [fnd]
 Maintainer: Eric King-Giunta <egiunta@ksu.edu>
 Repository: CRAN
-Date/Publication: 2026-04-17 07:30:12 UTC
+Date/Publication: 2026-04-22 20:30:22 UTC
